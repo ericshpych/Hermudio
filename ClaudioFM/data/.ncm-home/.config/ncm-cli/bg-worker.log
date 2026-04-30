@@ -1,0 +1,1036 @@
+[bg-login] 登录失败：二维码已过期，请重新获取
+[UnifiedPlayService] 已启动，等待命令...
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：南三环东路 - DOUDOU | --:--
+[PlayReportService] session 已保存: id=B2487D52E92FA038E832C24D3631BA1A, duration=0
+2026-04-27 13:44:06[PlayDataReportApi] 发送回传 biz={"id":"B2487D52E92FA038E832C24D3631BA1A","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777297446579}
+[PlayReportService] startplay 回传发送成功: id=B2487D52E92FA038E832C24D3631BA1A
+[bg-login] 登录成功：登录成功，欢迎 Ericshp！
+[bg-login] 登录失败：二维码已过期，请重新获取
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=B2487D52E92FA038E832C24D3631BA1A, startLogTime=1777297446579, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=213842, pausedMs=0, netMs=213842, netSec=213, time=213
+[PlayReportService] 准备发送 play 回传: id=B2487D52E92FA038E832C24D3631BA1A, time=213, end=ui
+2026-04-27 13:47:40[PlayDataReportApi] 发送回传 biz={"id":"B2487D52E92FA038E832C24D3631BA1A","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777297446579,"time":213,"end":"ui"}
+[PlayReportService] play 回传发送成功
+正在播放：南三环东路 - DOUDOU | --:--
+[UnifiedPlayService] 忽略切歌产生的 trackEnd stop
+[PlayReportService] session 已保存: id=B2487D52E92FA038E832C24D3631BA1A, duration=0
+2026-04-27 13:47:40[PlayDataReportApi] 发送回传 biz={"id":"B2487D52E92FA038E832C24D3631BA1A","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777297660525}
+[PlayReportService] startplay 回传发送成功: id=B2487D52E92FA038E832C24D3631BA1A
+[_fetchUrl] 获取失败 682F6A28C65D9F0B2342A9A1C8AB9262 (682F6A28C65D9F0B2342A9A1C8AB9262): 该歌曲暂无音源或暂无播放权限
+已跳过：682F6A28C65D9F0B2342A9A1C8AB9262（获取链接失败）
+队列已播放完毕
+[_fetchUrl] 获取失败 0ACB1B5FE42C4919D4E02D30055CF604 (0ACB1B5FE42C4919D4E02D30055CF604): 该歌曲暂无音源或暂无播放权限
+已跳过：0ACB1B5FE42C4919D4E02D30055CF604（获取链接失败）
+队列已播放完毕
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=B2487D52E92FA038E832C24D3631BA1A, startLogTime=1777297660525, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=24791, pausedMs=0, netMs=24791, netSec=24, time=24
+[PlayReportService] 准备发送 play 回传: id=B2487D52E92FA038E832C24D3631BA1A, time=24, end=ui
+2026-04-27 13:48:05[PlayDataReportApi] 发送回传 biz={"id":"B2487D52E92FA038E832C24D3631BA1A","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777297660525,"time":24,"end":"ui"}
+[PlayReportService] play 回传发送成功
+正在播放：忽然之间 - 莫文蔚 | --:--
+[PlayReportService] session 已保存: id=4C1B24BA36B871D8982CBB688945A42C, duration=0
+2026-04-27 13:48:05[PlayDataReportApi] 发送回传 biz={"id":"4C1B24BA36B871D8982CBB688945A42C","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777297685413}
+[UnifiedPlayService] 忽略切歌产生的 trackEnd stop
+[PlayReportService] startplay 回传发送成功: id=4C1B24BA36B871D8982CBB688945A42C
+[_fetchUrl] 获取失败 682F6A28C65D9F0B2342A9A1C8AB9262 (682F6A28C65D9F0B2342A9A1C8AB9262): 该歌曲暂无音源或暂无播放权限
+已跳过：682F6A28C65D9F0B2342A9A1C8AB9262（获取链接失败）
+队列已播放完毕
+[_fetchUrl] 获取失败 682F6A28C65D9F0B2342A9A1C8AB9262 (682F6A28C65D9F0B2342A9A1C8AB9262): 该歌曲暂无音源或暂无播放权限
+已跳过：682F6A28C65D9F0B2342A9A1C8AB9262（获取链接失败）
+队列已播放完毕
+[_fetchUrl] 获取失败 682F6A28C65D9F0B2342A9A1C8AB9262 (682F6A28C65D9F0B2342A9A1C8AB9262): 该歌曲暂无音源或暂无播放权限
+已跳过：682F6A28C65D9F0B2342A9A1C8AB9262（获取链接失败）
+队列已播放完毕
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=4C1B24BA36B871D8982CBB688945A42C, startLogTime=1777297685413, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=52546, pausedMs=0, netMs=52546, netSec=52, time=52
+[PlayReportService] 准备发送 play 回传: id=4C1B24BA36B871D8982CBB688945A42C, time=52, end=ui
+2026-04-27 13:48:57[PlayDataReportApi] 发送回传 biz={"id":"4C1B24BA36B871D8982CBB688945A42C","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777297685413,"time":52,"end":"ui"}
+[PlayReportService] play 回传发送成功
+正在播放：南三环东路 - DOUDOU | --:--
+[UnifiedPlayService] 忽略切歌产生的 trackEnd stop
+[PlayReportService] session 已保存: id=B2487D52E92FA038E832C24D3631BA1A, duration=0
+2026-04-27 13:48:58[PlayDataReportApi] 发送回传 biz={"id":"B2487D52E92FA038E832C24D3631BA1A","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777297738066}
+[PlayReportService] startplay 回传发送成功: id=B2487D52E92FA038E832C24D3631BA1A
+[_fetchUrl] 获取失败 682F6A28C65D9F0B2342A9A1C8AB9262 (682F6A28C65D9F0B2342A9A1C8AB9262): 该歌曲暂无音源或暂无播放权限
+已跳过：682F6A28C65D9F0B2342A9A1C8AB9262（获取链接失败）
+队列已播放完毕
+[_fetchUrl] 获取失败 0ACB1B5FE42C4919D4E02D30055CF604 (0ACB1B5FE42C4919D4E02D30055CF604): 该歌曲暂无音源或暂无播放权限
+已跳过：0ACB1B5FE42C4919D4E02D30055CF604（获取链接失败）
+队列已播放完毕
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=B2487D52E92FA038E832C24D3631BA1A, startLogTime=1777297738066, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=20736, pausedMs=0, netMs=20736, netSec=20, time=20
+[PlayReportService] 准备发送 play 回传: id=B2487D52E92FA038E832C24D3631BA1A, time=20, end=ui
+2026-04-27 13:49:18[PlayDataReportApi] 发送回传 biz={"id":"B2487D52E92FA038E832C24D3631BA1A","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777297738066,"time":20,"end":"ui"}
+[PlayReportService] play 回传发送成功
+正在播放：不归女孩 - Sunken Boat 沉舟乐队 | --:--
+[UnifiedPlayService] 忽略切歌产生的 trackEnd stop
+[PlayReportService] session 已保存: id=8A6AD07EC8F9BE1265575182E7CC2637, duration=0
+2026-04-27 13:49:18[PlayDataReportApi] 发送回传 biz={"id":"8A6AD07EC8F9BE1265575182E7CC2637","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777297758898}
+[PlayReportService] startplay 回传发送成功: id=8A6AD07EC8F9BE1265575182E7CC2637
+[_fetchUrl] 获取失败 BEE9BA754B268C580920C139EC368B71 (BEE9BA754B268C580920C139EC368B71): 该歌曲暂无音源或暂无播放权限
+已跳过：BEE9BA754B268C580920C139EC368B71（获取链接失败）
+队列已播放完毕
+[_fetchUrl] 获取失败 BEE9BA754B268C580920C139EC368B71 (BEE9BA754B268C580920C139EC368B71): 该歌曲暂无音源或暂无播放权限
+已跳过：BEE9BA754B268C580920C139EC368B71（获取链接失败）
+队列已播放完毕
+[_fetchUrl] 获取失败 B9923974BC693DE7AEBD61AFC6DDAB20 (B9923974BC693DE7AEBD61AFC6DDAB20): 该歌曲暂无音源或暂无播放权限
+已跳过：B9923974BC693DE7AEBD61AFC6DDAB20（获取链接失败）
+队列已播放完毕
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=8A6AD07EC8F9BE1265575182E7CC2637, startLogTime=1777297758898, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=40754, pausedMs=0, netMs=40754, netSec=40, time=40
+[PlayReportService] 准备发送 play 回传: id=8A6AD07EC8F9BE1265575182E7CC2637, time=40, end=ui
+2026-04-27 13:49:59[PlayDataReportApi] 发送回传 biz={"id":"8A6AD07EC8F9BE1265575182E7CC2637","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777297758898,"time":40,"end":"ui"}
+[PlayReportService] play 回传发送成功
+正在播放：Sonsii - 九宝乐队 | --:--
+[UnifiedPlayService] 忽略切歌产生的 trackEnd stop
+[PlayReportService] session 已保存: id=F0A20E7D98542CCA8411C91F0CF71668, duration=0
+2026-04-27 13:49:59[PlayDataReportApi] 发送回传 biz={"id":"F0A20E7D98542CCA8411C91F0CF71668","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777297799748}
+[PlayReportService] startplay 回传发送成功: id=F0A20E7D98542CCA8411C91F0CF71668
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=F0A20E7D98542CCA8411C91F0CF71668, startLogTime=1777297799748, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=41584, pausedMs=0, netMs=41584, netSec=41, time=41
+[PlayReportService] 准备发送 play 回传: id=F0A20E7D98542CCA8411C91F0CF71668, time=41, end=ui
+2026-04-27 13:50:41[PlayDataReportApi] 发送回传 biz={"id":"F0A20E7D98542CCA8411C91F0CF71668","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777297799748,"time":41,"end":"ui"}
+[PlayReportService] play 回传发送成功
+正在播放：不归女孩 - Sunken Boat 沉舟乐队 | --:--
+[UnifiedPlayService] 忽略切歌产生的 trackEnd stop
+[PlayReportService] session 已保存: id=8A6AD07EC8F9BE1265575182E7CC2637, duration=0
+2026-04-27 13:50:41[PlayDataReportApi] 发送回传 biz={"id":"8A6AD07EC8F9BE1265575182E7CC2637","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777297841446}
+[PlayReportService] startplay 回传发送成功: id=8A6AD07EC8F9BE1265575182E7CC2637
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=8A6AD07EC8F9BE1265575182E7CC2637, startLogTime=1777297841446, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=3349, pausedMs=0, netMs=3349, netSec=3, time=3
+[PlayReportService] 准备发送 play 回传: id=8A6AD07EC8F9BE1265575182E7CC2637, time=3, end=ui
+2026-04-27 13:50:44[PlayDataReportApi] 发送回传 biz={"id":"8A6AD07EC8F9BE1265575182E7CC2637","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777297841446,"time":3,"end":"ui"}
+[PlayReportService] play 回传发送成功
+正在播放：小镇英雄青年 - 王贰浪 | --:--
+[UnifiedPlayService] 忽略切歌产生的 trackEnd stop
+[PlayReportService] session 已保存: id=47A4BA99B7032302CAB2BBB7F17DC274, duration=0
+2026-04-27 13:50:44[PlayDataReportApi] 发送回传 biz={"id":"47A4BA99B7032302CAB2BBB7F17DC274","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777297844850}
+[PlayReportService] startplay 回传发送成功: id=47A4BA99B7032302CAB2BBB7F17DC274
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=47A4BA99B7032302CAB2BBB7F17DC274, startLogTime=1777297844850, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=188102, pausedMs=0, netMs=188102, netSec=188, time=188
+[PlayReportService] 准备发送 play 回传: id=47A4BA99B7032302CAB2BBB7F17DC274, time=188, end=playend
+2026-04-27 13:53:52[PlayDataReportApi] 发送回传 biz={"id":"47A4BA99B7032302CAB2BBB7F17DC274","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777297844850,"time":188,"end":"playend"}
+[PlayReportService] play 回传发送成功
+队列已播放完毕
+[_fetchUrl] 获取失败 F2A9F4788A66105038CB47551AED2CD7 (F2A9F4788A66105038CB47551AED2CD7): 该歌曲暂无音源或暂无播放权限
+已跳过：F2A9F4788A66105038CB47551AED2CD7（获取链接失败）
+队列已播放完毕
+[UnifiedPlayService] 30 秒无活动，自动退出
+[UnifiedPlayService] 已启动，等待命令...
+[_fetchUrl] 获取失败 71785C292203417F9AC4E7F9F082AAD0 (71785C292203417F9AC4E7F9F082AAD0): 该歌曲暂无音源或暂无播放权限
+已跳过：71785C292203417F9AC4E7F9F082AAD0（获取链接失败）
+队列已播放完毕
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：不归女孩 - Sunken Boat 沉舟乐队 | --:--
+[PlayReportService] session 已保存: id=8A6AD07EC8F9BE1265575182E7CC2637, duration=0
+2026-04-27 15:15:13[PlayDataReportApi] 发送回传 biz={"id":"8A6AD07EC8F9BE1265575182E7CC2637","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777302913987}
+[PlayReportService] startplay 回传发送成功: id=8A6AD07EC8F9BE1265575182E7CC2637
+[_fetchUrl] 获取失败 B9923974BC693DE7AEBD61AFC6DDAB20 (B9923974BC693DE7AEBD61AFC6DDAB20): 该歌曲暂无音源或暂无播放权限
+已跳过：B9923974BC693DE7AEBD61AFC6DDAB20（获取链接失败）
+队列已播放完毕
+[UnifiedPlayService] 30 秒无活动，自动退出
+[UnifiedPlayService] 已启动，等待命令...
+[_fetchUrl] 获取失败 71785C292203417F9AC4E7F9F082AAD0 (71785C292203417F9AC4E7F9F082AAD0): 该歌曲暂无音源或暂无播放权限
+已跳过：71785C292203417F9AC4E7F9F082AAD0（获取链接失败）
+队列已播放完毕
+[UnifiedPlayService] 30 秒无活动，自动退出
+[UnifiedPlayService] 已启动，等待命令...
+[_fetchUrl] 获取失败 E8C64BF18F12C09D0189449C2B9DDE9A (E8C64BF18F12C09D0189449C2B9DDE9A): 该歌曲暂无音源或暂无播放权限
+已跳过：E8C64BF18F12C09D0189449C2B9DDE9A（获取链接失败）
+队列已播放完毕
+[_fetchUrl] 获取失败 B9923974BC693DE7AEBD61AFC6DDAB20 (B9923974BC693DE7AEBD61AFC6DDAB20): 该歌曲暂无音源或暂无播放权限
+已跳过：B9923974BC693DE7AEBD61AFC6DDAB20（获取链接失败）
+队列已播放完毕
+[UnifiedPlayService] 30 秒无活动，自动退出
+[UnifiedPlayService] 已启动，等待命令...
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=8A6AD07EC8F9BE1265575182E7CC2637, startLogTime=1777302913987, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=41288372, pausedMs=0, netMs=41288372, netSec=41288, time=41288
+[PlayReportService] 准备发送 play 回传: id=8A6AD07EC8F9BE1265575182E7CC2637, time=41288, end=ui
+2026-04-28 02:43:22[PlayDataReportApi] 发送回传 biz={"id":"8A6AD07EC8F9BE1265575182E7CC2637","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777302913987,"time":41288,"end":"ui"}
+[PlayReportService] play 回传发送成功
+正在播放：若生如野草 - 张德伊玲 | --:--
+[PlayReportService] session 已保存: id=C2F3E9FDA1DFE2B2D0EF5ACF1A929B81, duration=0
+2026-04-28 02:43:23[PlayDataReportApi] 发送回传 biz={"id":"C2F3E9FDA1DFE2B2D0EF5ACF1A929B81","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777344203649}
+[PlayReportService] startplay 回传发送成功: id=C2F3E9FDA1DFE2B2D0EF5ACF1A929B81
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=C2F3E9FDA1DFE2B2D0EF5ACF1A929B81, startLogTime=1777344203649, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=9093, pausedMs=0, netMs=9093, netSec=9, time=9
+[PlayReportService] 准备发送 play 回传: id=C2F3E9FDA1DFE2B2D0EF5ACF1A929B81, time=9, end=ui
+2026-04-28 02:43:32[PlayDataReportApi] 发送回传 biz={"id":"C2F3E9FDA1DFE2B2D0EF5ACF1A929B81","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777344203649,"time":9,"end":"ui"}
+[PlayReportService] play 回传发送成功
+正在播放：土坡上的狗尾草 (Live版) - 谭维维 | --:--
+[UnifiedPlayService] 忽略切歌产生的 trackEnd stop
+[PlayReportService] session 已保存: id=57CDFBA205E470C246AF2EABC06604F1, duration=0
+2026-04-28 02:43:32[PlayDataReportApi] 发送回传 biz={"id":"57CDFBA205E470C246AF2EABC06604F1","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777344212838}
+[PlayReportService] startplay 回传发送成功: id=57CDFBA205E470C246AF2EABC06604F1
+[_fetchUrl] 获取失败 B83AD9367213AFC617A258B313FC576B (B83AD9367213AFC617A258B313FC576B): 该歌曲暂无音源或暂无播放权限
+已跳过：B83AD9367213AFC617A258B313FC576B（获取链接失败）
+队列已播放完毕
+[_fetchUrl] 获取失败 A22B5D7AA18176A673929929EC6EE6CA (A22B5D7AA18176A673929929EC6EE6CA): 该歌曲暂无音源或暂无播放权限
+已跳过：A22B5D7AA18176A673929929EC6EE6CA（获取链接失败）
+队列已播放完毕
+[_fetchUrl] 获取失败 D3EFC93155724300F690C55FA36A5172 (D3EFC93155724300F690C55FA36A5172): 该歌曲暂无音源或暂无播放权限
+已跳过：D3EFC93155724300F690C55FA36A5172（获取链接失败）
+队列已播放完毕
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=57CDFBA205E470C246AF2EABC06604F1, startLogTime=1777344212838, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=27241, pausedMs=0, netMs=27241, netSec=27, time=27
+[PlayReportService] 准备发送 play 回传: id=57CDFBA205E470C246AF2EABC06604F1, time=27, end=ui
+2026-04-28 02:44:00[PlayDataReportApi] 发送回传 biz={"id":"57CDFBA205E470C246AF2EABC06604F1","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777344212838,"time":27,"end":"ui"}
+[PlayReportService] play 回传发送成功
+正在播放：干杯时我会想起你 - 新学校合唱团 | --:--
+[PlayReportService] session 已保存: id=0CF8F5A24131EFE6951279747885685A, duration=0
+2026-04-28 02:44:00[PlayDataReportApi] 发送回传 biz={"id":"0CF8F5A24131EFE6951279747885685A","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777344240181}
+[UnifiedPlayService] 忽略切歌产生的 trackEnd stop
+[PlayReportService] startplay 回传发送成功: id=0CF8F5A24131EFE6951279747885685A
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=0CF8F5A24131EFE6951279747885685A, startLogTime=1777344240181, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=151752, pausedMs=0, netMs=151752, netSec=151, time=151
+[PlayReportService] 准备发送 play 回传: id=0CF8F5A24131EFE6951279747885685A, time=151, end=playend
+2026-04-28 02:46:31[PlayDataReportApi] 发送回传 biz={"id":"0CF8F5A24131EFE6951279747885685A","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777344240181,"time":151,"end":"playend"}
+[PlayReportService] play 回传发送成功
+队列已播放完毕
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：皮囊 - 犬儒乐队 | --:--
+[PlayReportService] session 已保存: id=56C73D66AD4F082247FDFE8526293C6A, duration=0
+2026-04-28 02:46:33[PlayDataReportApi] 发送回传 biz={"id":"56C73D66AD4F082247FDFE8526293C6A","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777344393050}
+[PlayReportService] startplay 回传发送成功: id=56C73D66AD4F082247FDFE8526293C6A
+[_fetchUrl] 获取失败 B83AD9367213AFC617A258B313FC576B (B83AD9367213AFC617A258B313FC576B): 该歌曲暂无音源或暂无播放权限
+已跳过：B83AD9367213AFC617A258B313FC576B（获取链接失败）
+队列已播放完毕
+[UnifiedPlayService] 30 秒无活动，自动退出
+[UnifiedPlayService] 已启动，等待命令...
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=56C73D66AD4F082247FDFE8526293C6A, startLogTime=1777344393050, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=382981, pausedMs=0, netMs=382981, netSec=382, time=382
+[PlayReportService] 准备发送 play 回传: id=56C73D66AD4F082247FDFE8526293C6A, time=382, end=ui
+2026-04-28 02:52:56[PlayDataReportApi] 发送回传 biz={"id":"56C73D66AD4F082247FDFE8526293C6A","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777344393050,"time":382,"end":"ui"}
+[PlayReportService] play 回传发送成功
+正在播放：想去海边 - 夏日入侵企画 | --:--
+[PlayReportService] session 已保存: id=7B62833E11730E8515B8E0745E4C27D1, duration=0
+2026-04-28 02:52:56[PlayDataReportApi] 发送回传 biz={"id":"7B62833E11730E8515B8E0745E4C27D1","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777344776367}
+[PlayReportService] startplay 回传发送成功: id=7B62833E11730E8515B8E0745E4C27D1
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=7B62833E11730E8515B8E0745E4C27D1, startLogTime=1777344776367, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=265203, pausedMs=0, netMs=265203, netSec=265, time=265
+[PlayReportService] 准备发送 play 回传: id=7B62833E11730E8515B8E0745E4C27D1, time=265, end=ui
+2026-04-28 02:57:21[PlayDataReportApi] 发送回传 biz={"id":"7B62833E11730E8515B8E0745E4C27D1","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777344776367,"time":265,"end":"ui"}
+[PlayReportService] play 回传发送成功
+正在播放：滥俗的歌 - 汉堡黄 | --:--
+[UnifiedPlayService] 忽略切歌产生的 trackEnd stop
+[PlayReportService] session 已保存: id=EBCA6A8BD2427A1E1C61A5AF56E0C35C, duration=0
+2026-04-28 02:57:21[PlayDataReportApi] 发送回传 biz={"id":"EBCA6A8BD2427A1E1C61A5AF56E0C35C","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777345041674}
+[PlayReportService] startplay 回传发送成功: id=EBCA6A8BD2427A1E1C61A5AF56E0C35C
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=EBCA6A8BD2427A1E1C61A5AF56E0C35C, startLogTime=1777345041674, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=276307, pausedMs=0, netMs=276307, netSec=276, time=276
+[PlayReportService] 准备发送 play 回传: id=EBCA6A8BD2427A1E1C61A5AF56E0C35C, time=276, end=playend
+2026-04-28 03:01:57[PlayDataReportApi] 发送回传 biz={"id":"EBCA6A8BD2427A1E1C61A5AF56E0C35C","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777345041674,"time":276,"end":"playend"}
+[PlayReportService] play 回传发送成功
+队列已播放完毕
+[UnifiedPlayService] 30 秒无活动，自动退出
+
+│ 有新版本: 0.1.2 → 0.1.3  运行 ncm-cli upgrade 升级
+
+[bg-login] 登录成功：登录成功，欢迎 Ericshp！
+
+│ 有新版本: 0.1.2 → 0.1.3  运行 ncm-cli upgrade 升级
+
+
+│ 有新版本: 0.1.2 → 0.1.3  运行 ncm-cli upgrade 升级
+
+[bg-login] 登录失败：二维码已过期，请重新获取
+[bg-login] 登录失败：二维码已过期，请重新获取
+[bg-login] 登录失败：二维码已过期，请重新获取
+[bg-login] 登录失败：二维码已过期，请重新获取
+[bg-login] 登录成功：登录成功，欢迎 Ericshp！
+[UnifiedPlayService] 已启动，等待命令...
+[_fetchUrl] 获取失败 123456 (123456): 获取歌曲详情失败：参数错误：123456
+已跳过：123456（获取链接失败）
+队列已播放完毕
+[UnifiedPlayService] 30 秒无活动，自动退出
+[UnifiedPlayService] 已启动，等待命令...
+[_fetchUrl] 获取失败 123456 (123456): 获取歌曲详情失败：参数错误：123456
+已跳过：123456（获取链接失败）
+队列已播放完毕
+[UnifiedPlayService] 30 秒无活动，自动退出
+[UnifiedPlayService] 已启动，等待命令...
+[_fetchUrl] 获取失败 123456 (123456): 获取歌曲详情失败：参数错误：123456
+已跳过：123456（获取链接失败）
+队列已播放完毕
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：晴天 - 周杰伦- | --:--
+[PlayReportService] session 已保存: id=83D4F941340C6C8BF753115C61E1C15C, duration=0
+2026-04-28 16:14:02[PlayDataReportApi] 发送回传 biz={"id":"83D4F941340C6C8BF753115C61E1C15C","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777392842636}
+[PlayReportService] startplay 回传发送成功: id=83D4F941340C6C8BF753115C61E1C15C
+[_fetchUrl] 获取失败 123456 (123456): 获取歌曲详情失败：参数错误：123456
+已跳过：123456（获取链接失败）
+队列已播放完毕
+[UnifiedPlayService] 30 秒无活动，自动退出
+[UnifiedPlayService] 已启动，等待命令...
+[_fetchUrl] 获取失败 123456 (123456): 获取歌曲详情失败：参数错误：123456
+已跳过：123456（获取链接失败）
+队列已播放完毕
+[UnifiedPlayService] 30 秒无活动，自动退出
+[UnifiedPlayService] 已启动，等待命令...
+[_fetchUrl] 获取失败 65194810E0D869B2C6B5F6B597C8522D (65194810E0D869B2C6B5F6B597C8522D): 该歌曲暂无音源或暂无播放权限
+已跳过：65194810E0D869B2C6B5F6B597C8522D（获取链接失败）
+队列已播放完毕
+[_fetchUrl] 获取失败 65194810E0D869B2C6B5F6B597C8522D (65194810E0D869B2C6B5F6B597C8522D): 该歌曲暂无音源或暂无播放权限
+已跳过：65194810E0D869B2C6B5F6B597C8522D（获取链接失败）
+队列已播放完毕
+[UnifiedPlayService] 30 秒无活动，自动退出
+[UnifiedPlayService] 已启动，等待命令...
+[_fetchUrl] 获取失败 65194810E0D869B2C6B5F6B597C8522D (65194810E0D869B2C6B5F6B597C8522D): 该歌曲暂无音源或暂无播放权限
+已跳过：65194810E0D869B2C6B5F6B597C8522D（获取链接失败）
+队列已播放完毕
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+[UnifiedPlayService] 30 秒无活动，自动退出
+[UnifiedPlayService] 已启动，等待命令...
+[_fetchUrl] 获取失败 123456 (123456): 获取歌曲详情失败：参数错误：123456
+已跳过：123456（获取链接失败）
+队列已播放完毕
+[UnifiedPlayService] 30 秒无活动，自动退出
+[UnifiedPlayService] 已启动，等待命令...
+[_fetchUrl] 获取失败 65194810E0D869B2C6B5F6B597C8522D (65194810E0D869B2C6B5F6B597C8522D): 该歌曲暂无音源或暂无播放权限
+已跳过：65194810E0D869B2C6B5F6B597C8522D（获取链接失败）
+队列已播放完毕
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+[UnifiedPlayService] 30 秒无活动，自动退出
+[UnifiedPlayService] 已启动，等待命令...
+[_fetchUrl] 获取失败 123456 (123456): 获取歌曲详情失败：参数错误：123456
+已跳过：123456（获取链接失败）
+队列已播放完毕
+[_fetchUrl] 获取失败 123456 (123456): 获取歌曲详情失败：参数错误：123456
+已跳过：123456（获取链接失败）
+队列已播放完毕
+[UnifiedPlayService] 30 秒无活动，自动退出
+[UnifiedPlayService] 已启动，等待命令...
+[_fetchUrl] 获取失败 123456 (123456): 获取歌曲详情失败：参数错误：123456
+已跳过：123456（获取链接失败）
+队列已播放完毕
+[_fetchUrl] 获取失败 65194810E0D869B2C6B5F6B597C8522D (65194810E0D869B2C6B5F6B597C8522D): 该歌曲暂无音源或暂无播放权限
+已跳过：65194810E0D869B2C6B5F6B597C8522D（获取链接失败）
+队列已播放完毕
+[UnifiedPlayService] 30 秒无活动，自动退出
+[UnifiedPlayService] 已启动，等待命令...
+[_fetchUrl] 获取失败 2652820720 (2652820720): 获取歌曲详情失败：参数错误：2652820720
+已跳过：2652820720（获取链接失败）
+队列已播放完毕
+[UnifiedPlayService] 30 秒无活动，自动退出
+[bg-login] 登录失败：二维码已过期，请重新获取
+[bg-login] 登录失败：二维码已过期，请重新获取
+[bg-login] 登录成功：登录成功，欢迎 Ericshp！
+[UnifiedPlayService] 已启动，等待命令...
+[_fetchUrl] 获取失败 1973665667 (1973665667): 获取歌曲详情失败：参数错误：1973665667
+已跳过：1973665667（获取链接失败）
+[_fetchUrl] 获取失败 509781655 (509781655): 获取歌曲详情失败：参数错误：509781655
+已跳过：509781655（获取链接失败）
+队列已播放完毕
+[_fetchUrl] 获取失败 509781655 (509781655): 获取歌曲详情失败：参数错误：509781655
+已跳过：509781655（获取链接失败）
+队列已播放完毕
+[_fetchUrl] 获取失败 108485 (108485): 获取歌曲详情失败：参数错误：108485
+已跳过：108485（获取链接失败）
+队列已播放完毕
+[_fetchUrl] 获取失败 423406145 (423406145): 获取歌曲详情失败：参数错误：423406145
+已跳过：423406145（获取链接失败）
+队列已播放完毕
+[UnifiedPlayService] 30 秒无活动，自动退出
+[UnifiedPlayService] 已启动，等待命令...
+[_fetchUrl] 获取失败 2652820720 (2652820720): 获取歌曲详情失败：参数错误：2652820720
+已跳过：2652820720（获取链接失败）
+队列已播放完毕
+[UnifiedPlayService] 30 秒无活动，自动退出
+[UnifiedPlayService] 已启动，等待命令...
+[_fetchUrl] 获取失败 108485 (108485): 获取歌曲详情失败：参数错误：108485
+已跳过：108485（获取链接失败）
+队列已播放完毕
+[UnifiedPlayService] 30 秒无活动，自动退出
+[UnifiedPlayService] 已启动，等待命令...
+[_fetchUrl] 获取失败 1973665667 (1973665667): 获取歌曲详情失败：参数错误：1973665667
+已跳过：1973665667（获取链接失败）
+队列已播放完毕
+[_fetchUrl] 获取失败 509781655 (509781655): 获取歌曲详情失败：参数错误：509781655
+已跳过：509781655（获取链接失败）
+队列已播放完毕
+[_fetchUrl] 获取失败 509781655 (509781655): 获取歌曲详情失败：参数错误：509781655
+已跳过：509781655（获取链接失败）
+队列已播放完毕
+[UnifiedPlayService] 30 秒无活动，自动退出
+[bg-login] 登录成功：登录成功，欢迎 Ericshp！
+[UnifiedPlayService] 已启动，等待命令...
+[_fetchUrl] 获取失败 423406145 (423406145): 获取歌曲详情失败：参数错误：423406145
+已跳过：423406145（获取链接失败）
+队列已播放完毕
+[_fetchUrl] 获取失败 108485 (108485): 获取歌曲详情失败：参数错误：108485
+已跳过：108485（获取链接失败）
+队列已播放完毕
+[_fetchUrl] 获取失败 423406145 (423406145): 获取歌曲详情失败：参数错误：423406145
+已跳过：423406145（获取链接失败）
+队列已播放完毕
+[_fetchUrl] 获取失败 509781655 (509781655): 获取歌曲详情失败：参数错误：509781655
+已跳过：509781655（获取链接失败）
+队列已播放完毕
+[UnifiedPlayService] 30 秒无活动，自动退出
+[UnifiedPlayService] 已启动，等待命令...
+[_fetchUrl] 获取失败 2652820720 (2652820720): 获取歌曲详情失败：参数错误：2652820720
+已跳过：2652820720（获取链接失败）
+队列已播放完毕
+[UnifiedPlayService] 30 秒无活动，自动退出
+[UnifiedPlayService] 已启动，等待命令...
+[_fetchUrl] 获取失败 65194810E0D869B2C6B5F6B597C8522D (65194810E0D869B2C6B5F6B597C8522D): 该歌曲暂无音源或暂无播放权限
+已跳过：65194810E0D869B2C6B5F6B597C8522D（获取链接失败）
+队列已播放完毕
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：想你就写信 (Live) - 周杰伦 | --:--
+[PlayReportService] session 已保存: id=1FE878C72DD80C6FF2EF58488309EA48, duration=0
+2026-04-29 04:06:19[PlayDataReportApi] 发送回传 biz={"id":"1FE878C72DD80C6FF2EF58488309EA48","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777435579390}
+[PlayReportService] startplay 回传发送成功: id=1FE878C72DD80C6FF2EF58488309EA48
+[bg-login] 登录成功：登录成功，欢迎 Ericshp！
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=1FE878C72DD80C6FF2EF58488309EA48, startLogTime=1777435579390, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=16305330, pausedMs=0, netMs=16305330, netSec=16305, time=16305
+[PlayReportService] 准备发送 play 回传: id=1FE878C72DD80C6FF2EF58488309EA48, time=16305, end=ui
+2026-04-29 08:38:04[PlayDataReportApi] 发送回传 biz={"id":"1FE878C72DD80C6FF2EF58488309EA48","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777435579390,"time":16305,"end":"ui"}
+[PlayReportService] play 回传发送成功
+正在播放：想你就写信 (Live) - 周杰伦 | --:--
+[PlayReportService] session 已保存: id=1FE878C72DD80C6FF2EF58488309EA48, duration=0
+2026-04-29 08:38:04[PlayDataReportApi] 发送回传 biz={"id":"1FE878C72DD80C6FF2EF58488309EA48","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777451884909}
+[UnifiedPlayService] 忽略切歌产生的 trackEnd stop
+[PlayReportService] startplay 回传发送成功: id=1FE878C72DD80C6FF2EF58488309EA48
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=1FE878C72DD80C6FF2EF58488309EA48, startLogTime=1777451884909, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=238878, pausedMs=0, netMs=238878, netSec=238, time=238
+[PlayReportService] 准备发送 play 回传: id=1FE878C72DD80C6FF2EF58488309EA48, time=238, end=playend
+2026-04-29 08:42:03[PlayDataReportApi] 发送回传 biz={"id":"1FE878C72DD80C6FF2EF58488309EA48","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777451884909,"time":238,"end":"playend"}
+[PlayReportService] play 回传发送成功
+[_fetchUrl] 获取失败 65194810E0D869B2C6B5F6B597C8522D (65194810E0D869B2C6B5F6B597C8522D): 该歌曲暂无音源或暂无播放权限
+已跳过：65194810E0D869B2C6B5F6B597C8522D（获取链接失败）
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：想你就写信 (Live) - 周杰伦 | 3:59
+[PlayReportService] session 已保存: id=1FE878C72DD80C6FF2EF58488309EA48, duration=239
+2026-04-29 08:42:04[PlayDataReportApi] 发送回传 biz={"id":"1FE878C72DD80C6FF2EF58488309EA48","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777452124098}
+[PlayReportService] startplay 回传发送成功: id=1FE878C72DD80C6FF2EF58488309EA48
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=1FE878C72DD80C6FF2EF58488309EA48, startLogTime=1777452124098, duration=239
+[PlayReportService] 计算播放时长: elapsedMs=238651, pausedMs=0, netMs=238651, netSec=238, time=238
+[PlayReportService] 准备发送 play 回传: id=1FE878C72DD80C6FF2EF58488309EA48, time=238, end=playend
+2026-04-29 08:46:02[PlayDataReportApi] 发送回传 biz={"id":"1FE878C72DD80C6FF2EF58488309EA48","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777452124098,"time":238,"end":"playend"}
+[PlayReportService] play 回传发送成功
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：想你就写信 (Live) - 周杰伦 | 3:59
+[PlayReportService] session 已保存: id=1FE878C72DD80C6FF2EF58488309EA48, duration=239
+2026-04-29 08:46:02[PlayDataReportApi] 发送回传 biz={"id":"1FE878C72DD80C6FF2EF58488309EA48","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777452362875}
+[PlayReportService] startplay 回传发送成功: id=1FE878C72DD80C6FF2EF58488309EA48
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=1FE878C72DD80C6FF2EF58488309EA48, startLogTime=1777452362875, duration=239
+[PlayReportService] 计算播放时长: elapsedMs=238719, pausedMs=0, netMs=238719, netSec=238, time=238
+[PlayReportService] 准备发送 play 回传: id=1FE878C72DD80C6FF2EF58488309EA48, time=238, end=playend
+2026-04-29 08:50:01[PlayDataReportApi] 发送回传 biz={"id":"1FE878C72DD80C6FF2EF58488309EA48","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777452362875,"time":238,"end":"playend"}
+[PlayReportService] play 回传发送成功
+队列已播放完毕
+[UnifiedPlayService] 30 秒无活动，自动退出
+[UnifiedPlayService] 已启动，等待命令...
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：想你就写信 (Live) - 周杰伦 | --:--
+[PlayReportService] session 已保存: id=1FE878C72DD80C6FF2EF58488309EA48, duration=0
+2026-04-29 09:50:32[PlayDataReportApi] 发送回传 biz={"id":"1FE878C72DD80C6FF2EF58488309EA48","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777456232990}
+[PlayReportService] startplay 回传发送成功: id=1FE878C72DD80C6FF2EF58488309EA48
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=1FE878C72DD80C6FF2EF58488309EA48, startLogTime=1777456232990, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=265137, pausedMs=0, netMs=265137, netSec=265, time=265
+[PlayReportService] 准备发送 play 回传: id=1FE878C72DD80C6FF2EF58488309EA48, time=265, end=ui
+2026-04-29 09:54:58[PlayDataReportApi] 发送回传 biz={"id":"1FE878C72DD80C6FF2EF58488309EA48","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777456232990,"time":265,"end":"ui"}
+[PlayReportService] play 回传发送成功
+正在播放：海屿你 - 马也_Crabbit | --:--
+[UnifiedPlayService] 忽略切歌产生的 trackEnd stop
+[PlayReportService] session 已保存: id=629A46ABD7047D6250F6A69FD0ECF221, duration=0
+2026-04-29 09:54:58[PlayDataReportApi] 发送回传 biz={"id":"629A46ABD7047D6250F6A69FD0ECF221","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777456498314}
+[PlayReportService] startplay 回传发送成功: id=629A46ABD7047D6250F6A69FD0ECF221
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=629A46ABD7047D6250F6A69FD0ECF221, startLogTime=1777456498314, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=2194408, pausedMs=0, netMs=2194408, netSec=2194, time=2194
+[PlayReportService] 准备发送 play 回传: id=629A46ABD7047D6250F6A69FD0ECF221, time=2194, end=ui
+2026-04-29 10:31:32[PlayDataReportApi] 发送回传 biz={"id":"629A46ABD7047D6250F6A69FD0ECF221","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777456498314,"time":2194,"end":"ui"}
+[PlayReportService] play 回传发送成功
+正在播放：愿与愁 - 林俊杰 | --:--
+[UnifiedPlayService] 忽略切歌产生的 trackEnd stop
+[PlayReportService] session 已保存: id=C7CB32EE64D809C70461A97FC861950D, duration=0
+2026-04-29 10:31:32[PlayDataReportApi] 发送回传 biz={"id":"C7CB32EE64D809C70461A97FC861950D","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777458692865}
+[PlayReportService] startplay 回传发送成功: id=C7CB32EE64D809C70461A97FC861950D
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=C7CB32EE64D809C70461A97FC861950D, startLogTime=1777458692865, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=231531, pausedMs=0, netMs=231531, netSec=231, time=231
+[PlayReportService] 准备发送 play 回传: id=C7CB32EE64D809C70461A97FC861950D, time=231, end=playend
+2026-04-29 10:35:24[PlayDataReportApi] 发送回传 biz={"id":"C7CB32EE64D809C70461A97FC861950D","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777458692865,"time":231,"end":"playend"}
+[PlayReportService] play 回传发送成功
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：海屿你 - 马也_Crabbit | 4:56
+[PlayReportService] session 已保存: id=629A46ABD7047D6250F6A69FD0ECF221, duration=296
+2026-04-29 10:35:24[PlayDataReportApi] 发送回传 biz={"id":"629A46ABD7047D6250F6A69FD0ECF221","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777458924521}
+[PlayReportService] startplay 回传发送成功: id=629A46ABD7047D6250F6A69FD0ECF221
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=629A46ABD7047D6250F6A69FD0ECF221, startLogTime=1777458924521, duration=296
+[PlayReportService] 计算播放时长: elapsedMs=296074, pausedMs=0, netMs=296074, netSec=296, time=296
+[PlayReportService] 准备发送 play 回传: id=629A46ABD7047D6250F6A69FD0ECF221, time=296, end=playend
+2026-04-29 10:40:20[PlayDataReportApi] 发送回传 biz={"id":"629A46ABD7047D6250F6A69FD0ECF221","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777458924521,"time":296,"end":"playend"}
+[PlayReportService] play 回传发送成功
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：愿与愁 - 林俊杰 | 3:52
+[PlayReportService] session 已保存: id=C7CB32EE64D809C70461A97FC861950D, duration=232
+2026-04-29 10:40:20[PlayDataReportApi] 发送回传 biz={"id":"C7CB32EE64D809C70461A97FC861950D","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777459220723}
+[PlayReportService] startplay 回传发送成功: id=C7CB32EE64D809C70461A97FC861950D
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=C7CB32EE64D809C70461A97FC861950D, startLogTime=1777459220723, duration=232
+[PlayReportService] 计算播放时长: elapsedMs=231639, pausedMs=0, netMs=231639, netSec=231, time=231
+[PlayReportService] 准备发送 play 回传: id=C7CB32EE64D809C70461A97FC861950D, time=231, end=playend
+2026-04-29 10:44:12[PlayDataReportApi] 发送回传 biz={"id":"C7CB32EE64D809C70461A97FC861950D","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777459220723,"time":231,"end":"playend"}
+[PlayReportService] play 回传发送成功
+队列已播放完毕
+[UnifiedPlayService] 30 秒无活动，自动退出
+[UnifiedPlayService] 已启动，等待命令...
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：流行 - 李宇春 | --:--
+[PlayReportService] session 已保存: id=4E84BFE61CFA6188B7700427303CC03D, duration=0
+2026-04-29 10:48:53[PlayDataReportApi] 发送回传 biz={"id":"4E84BFE61CFA6188B7700427303CC03D","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777459733927}
+[PlayReportService] startplay 回传发送成功: id=4E84BFE61CFA6188B7700427303CC03D
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=4E84BFE61CFA6188B7700427303CC03D, startLogTime=1777459733927, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=197746, pausedMs=0, netMs=197746, netSec=197, time=197
+[PlayReportService] 准备发送 play 回传: id=4E84BFE61CFA6188B7700427303CC03D, time=197, end=playend
+2026-04-29 10:52:11[PlayDataReportApi] 发送回传 biz={"id":"4E84BFE61CFA6188B7700427303CC03D","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777459733927,"time":197,"end":"playend"}
+[PlayReportService] play 回传发送成功
+队列已播放完毕
+[UnifiedPlayService] 30 秒无活动，自动退出
+[UnifiedPlayService] 已启动，等待命令...
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：想你就写信 (Live) - 周杰伦 | --:--
+[PlayReportService] session 已保存: id=1FE878C72DD80C6FF2EF58488309EA48, duration=0
+2026-04-29 10:54:40[PlayDataReportApi] 发送回传 biz={"id":"1FE878C72DD80C6FF2EF58488309EA48","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777460080085}
+[PlayReportService] startplay 回传发送成功: id=1FE878C72DD80C6FF2EF58488309EA48
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+[PlayReportService] 未找到有效 session，跳过回传
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+[bg-login] 登录成功：登录成功，欢迎 Ericshp！
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：流行 - 李宇春 | --:--
+[PlayReportService] session 已保存: id=4E84BFE61CFA6188B7700427303CC03D, duration=0
+2026-04-29 10:56:52[PlayDataReportApi] 发送回传 biz={"id":"4E84BFE61CFA6188B7700427303CC03D","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777460212493}
+[PlayReportService] startplay 回传发送成功: id=4E84BFE61CFA6188B7700427303CC03D
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=4E84BFE61CFA6188B7700427303CC03D, startLogTime=1777460212493, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=10681, pausedMs=0, netMs=10681, netSec=10, time=10
+[PlayReportService] 准备发送 play 回传: id=4E84BFE61CFA6188B7700427303CC03D, time=10, end=ui
+2026-04-29 10:57:03[PlayDataReportApi] 发送回传 biz={"id":"4E84BFE61CFA6188B7700427303CC03D","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777460212493,"time":10,"end":"ui"}
+[PlayReportService] play 回传发送成功
+正在播放：流行 - 李宇春 | --:--
+[UnifiedPlayService] 忽略切歌产生的 trackEnd stop
+[PlayReportService] session 已保存: id=4E84BFE61CFA6188B7700427303CC03D, duration=0
+2026-04-29 10:57:03[PlayDataReportApi] 发送回传 biz={"id":"4E84BFE61CFA6188B7700427303CC03D","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777460223290}
+[PlayReportService] startplay 回传发送成功: id=4E84BFE61CFA6188B7700427303CC03D
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=4E84BFE61CFA6188B7700427303CC03D, startLogTime=1777460223290, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=2099, pausedMs=0, netMs=2099, netSec=2, time=2
+[PlayReportService] 准备发送 play 回传: id=4E84BFE61CFA6188B7700427303CC03D, time=2, end=ui
+2026-04-29 10:57:05[PlayDataReportApi] 发送回传 biz={"id":"4E84BFE61CFA6188B7700427303CC03D","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777460223290,"time":2,"end":"ui"}
+[PlayReportService] play 回传发送成功
+正在播放：流行 - 李宇春 | --:--
+[UnifiedPlayService] 忽略切歌产生的 trackEnd stop
+[PlayReportService] session 已保存: id=4E84BFE61CFA6188B7700427303CC03D, duration=0
+2026-04-29 10:57:05[PlayDataReportApi] 发送回传 biz={"id":"4E84BFE61CFA6188B7700427303CC03D","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777460225467}
+[PlayReportService] startplay 回传发送成功: id=4E84BFE61CFA6188B7700427303CC03D
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=4E84BFE61CFA6188B7700427303CC03D, startLogTime=1777460225467, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=1163545, pausedMs=0, netMs=1163545, netSec=1163, time=1163
+[PlayReportService] 准备发送 play 回传: id=4E84BFE61CFA6188B7700427303CC03D, time=1163, end=ui
+2026-04-29 11:16:29[PlayDataReportApi] 发送回传 biz={"id":"4E84BFE61CFA6188B7700427303CC03D","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777460225467,"time":1163,"end":"ui"}
+[PlayReportService] play 回传发送成功
+正在播放：流行 - 李宇春 | --:--
+[UnifiedPlayService] 忽略切歌产生的 trackEnd stop
+[PlayReportService] session 已保存: id=4E84BFE61CFA6188B7700427303CC03D, duration=0
+2026-04-29 11:16:29[PlayDataReportApi] 发送回传 biz={"id":"4E84BFE61CFA6188B7700427303CC03D","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777461389132}
+[PlayReportService] startplay 回传发送成功: id=4E84BFE61CFA6188B7700427303CC03D
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=4E84BFE61CFA6188B7700427303CC03D, startLogTime=1777461389132, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=137813, pausedMs=0, netMs=137813, netSec=137, time=137
+[PlayReportService] 准备发送 play 回传: id=4E84BFE61CFA6188B7700427303CC03D, time=137, end=ui
+2026-04-29 11:18:46[PlayDataReportApi] 发送回传 biz={"id":"4E84BFE61CFA6188B7700427303CC03D","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777461389132,"time":137,"end":"ui"}
+[PlayReportService] play 回传发送成功
+正在播放：海屿你 - 马也_Crabbit | --:--
+[UnifiedPlayService] 忽略切歌产生的 trackEnd stop
+[PlayReportService] session 已保存: id=629A46ABD7047D6250F6A69FD0ECF221, duration=0
+2026-04-29 11:18:47[PlayDataReportApi] 发送回传 biz={"id":"629A46ABD7047D6250F6A69FD0ECF221","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777461527067}
+[PlayReportService] startplay 回传发送成功: id=629A46ABD7047D6250F6A69FD0ECF221
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=629A46ABD7047D6250F6A69FD0ECF221, startLogTime=1777461527067, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=14422, pausedMs=0, netMs=14422, netSec=14, time=14
+[PlayReportService] 准备发送 play 回传: id=629A46ABD7047D6250F6A69FD0ECF221, time=14, end=ui
+2026-04-29 11:19:01[PlayDataReportApi] 发送回传 biz={"id":"629A46ABD7047D6250F6A69FD0ECF221","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777461527067,"time":14,"end":"ui"}
+[PlayReportService] play 回传发送成功
+正在播放：DB 9F 72 a8 B4 1C 62 8a 3C 96 22 8B 5B 03 23 6F 81 16 64 76 3E 0a D8 16 - RDS真实狠货 | --:--
+[UnifiedPlayService] 忽略切歌产生的 trackEnd stop
+[PlayReportService] session 已保存: id=1C5AFCC991BC2719A6F45789231797EB, duration=0
+2026-04-29 11:19:01[PlayDataReportApi] 发送回传 biz={"id":"1C5AFCC991BC2719A6F45789231797EB","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777461541602}
+[PlayReportService] startplay 回传发送成功: id=1C5AFCC991BC2719A6F45789231797EB
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=1C5AFCC991BC2719A6F45789231797EB, startLogTime=1777461541602, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=184384, pausedMs=0, netMs=184384, netSec=184, time=184
+[PlayReportService] 准备发送 play 回传: id=1C5AFCC991BC2719A6F45789231797EB, time=184, end=ui
+2026-04-29 11:22:05[PlayDataReportApi] 发送回传 biz={"id":"1C5AFCC991BC2719A6F45789231797EB","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777461541602,"time":184,"end":"ui"}
+[PlayReportService] play 回传发送成功
+正在播放：海屿你 - 马也_Crabbit | --:--
+[UnifiedPlayService] 忽略切歌产生的 trackEnd stop
+[PlayReportService] session 已保存: id=629A46ABD7047D6250F6A69FD0ECF221, duration=0
+2026-04-29 11:22:06[PlayDataReportApi] 发送回传 biz={"id":"629A46ABD7047D6250F6A69FD0ECF221","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777461726105}
+[PlayReportService] startplay 回传发送成功: id=629A46ABD7047D6250F6A69FD0ECF221
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=629A46ABD7047D6250F6A69FD0ECF221, startLogTime=1777461726105, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=24877, pausedMs=0, netMs=24877, netSec=24, time=24
+[PlayReportService] 准备发送 play 回传: id=629A46ABD7047D6250F6A69FD0ECF221, time=24, end=ui
+2026-04-29 11:22:30[PlayDataReportApi] 发送回传 biz={"id":"629A46ABD7047D6250F6A69FD0ECF221","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777461726105,"time":24,"end":"ui"}
+[PlayReportService] play 回传发送成功
+正在播放：DB 9F 72 a8 B4 1C 62 8a 3C 96 22 8B 5B 03 23 6F 81 16 64 76 3E 0a D8 16 - RDS真实狠货 | --:--
+[UnifiedPlayService] 忽略切歌产生的 trackEnd stop
+[PlayReportService] session 已保存: id=1C5AFCC991BC2719A6F45789231797EB, duration=0
+2026-04-29 11:22:31[PlayDataReportApi] 发送回传 biz={"id":"1C5AFCC991BC2719A6F45789231797EB","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777461751089}
+[PlayReportService] startplay 回传发送成功: id=1C5AFCC991BC2719A6F45789231797EB
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=1C5AFCC991BC2719A6F45789231797EB, startLogTime=1777461751089, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=293665, pausedMs=0, netMs=293665, netSec=293, time=293
+[PlayReportService] 准备发送 play 回传: id=1C5AFCC991BC2719A6F45789231797EB, time=293, end=ui
+2026-04-29 11:27:24[PlayDataReportApi] 发送回传 biz={"id":"1C5AFCC991BC2719A6F45789231797EB","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777461751089,"time":293,"end":"ui"}
+[PlayReportService] play 回传发送成功
+正在播放：海屿你 - 马也_Crabbit | --:--
+[UnifiedPlayService] 忽略切歌产生的 trackEnd stop
+[PlayReportService] session 已保存: id=629A46ABD7047D6250F6A69FD0ECF221, duration=0
+2026-04-29 11:27:24[PlayDataReportApi] 发送回传 biz={"id":"629A46ABD7047D6250F6A69FD0ECF221","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777462044872}
+[PlayReportService] startplay 回传发送成功: id=629A46ABD7047D6250F6A69FD0ECF221
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=629A46ABD7047D6250F6A69FD0ECF221, startLogTime=1777462044872, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=120427, pausedMs=0, netMs=120427, netSec=120, time=120
+[PlayReportService] 准备发送 play 回传: id=629A46ABD7047D6250F6A69FD0ECF221, time=120, end=ui
+2026-04-29 11:29:25[PlayDataReportApi] 发送回传 biz={"id":"629A46ABD7047D6250F6A69FD0ECF221","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777462044872,"time":120,"end":"ui"}
+[PlayReportService] play 回传发送成功
+正在播放：流行 - 李宇春 | --:--
+[UnifiedPlayService] 忽略切歌产生的 trackEnd stop
+[PlayReportService] session 已保存: id=4E84BFE61CFA6188B7700427303CC03D, duration=0
+2026-04-29 11:29:25[PlayDataReportApi] 发送回传 biz={"id":"4E84BFE61CFA6188B7700427303CC03D","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777462165496}
+[PlayReportService] startplay 回传发送成功: id=4E84BFE61CFA6188B7700427303CC03D
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=4E84BFE61CFA6188B7700427303CC03D, startLogTime=1777462165496, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=429432, pausedMs=0, netMs=429432, netSec=429, time=429
+[PlayReportService] 准备发送 play 回传: id=4E84BFE61CFA6188B7700427303CC03D, time=429, end=ui
+2026-04-29 11:36:34[PlayDataReportApi] 发送回传 biz={"id":"4E84BFE61CFA6188B7700427303CC03D","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777462165496,"time":429,"end":"ui"}
+[PlayReportService] play 回传发送成功
+正在播放：想你就写信 (Live) - 周杰伦 | --:--
+[PlayReportService] session 已保存: id=1FE878C72DD80C6FF2EF58488309EA48, duration=0
+2026-04-29 11:36:35[PlayDataReportApi] 发送回传 biz={"id":"1FE878C72DD80C6FF2EF58488309EA48","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777462595047}
+[UnifiedPlayService] 忽略切歌产生的 trackEnd stop
+[PlayReportService] startplay 回传发送成功: id=1FE878C72DD80C6FF2EF58488309EA48
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=1FE878C72DD80C6FF2EF58488309EA48, startLogTime=1777462595047, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=8308, pausedMs=0, netMs=8308, netSec=8, time=8
+[PlayReportService] 准备发送 play 回传: id=1FE878C72DD80C6FF2EF58488309EA48, time=8, end=playend
+2026-04-29 11:36:43[PlayDataReportApi] 发送回传 biz={"id":"1FE878C72DD80C6FF2EF58488309EA48","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777462595047,"time":8,"end":"playend"}
+[PlayReportService] play 回传发送成功
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：流行 - 李宇春 | 3:18
+[PlayReportService] session 已保存: id=4E84BFE61CFA6188B7700427303CC03D, duration=198
+2026-04-29 11:36:43[PlayDataReportApi] 发送回传 biz={"id":"4E84BFE61CFA6188B7700427303CC03D","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777462603472}
+[PlayReportService] startplay 回传发送成功: id=4E84BFE61CFA6188B7700427303CC03D
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=4E84BFE61CFA6188B7700427303CC03D, startLogTime=1777462603472, duration=198
+[PlayReportService] 计算播放时长: elapsedMs=116976, pausedMs=0, netMs=116976, netSec=116, time=116
+[PlayReportService] 准备发送 play 回传: id=4E84BFE61CFA6188B7700427303CC03D, time=116, end=ui
+2026-04-29 11:38:40[PlayDataReportApi] 发送回传 biz={"id":"4E84BFE61CFA6188B7700427303CC03D","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777462603472,"time":116,"end":"ui"}
+[PlayReportService] play 回传发送成功
+正在播放：愿与愁 - 林俊杰 | --:--
+[UnifiedPlayService] 忽略切歌产生的 trackEnd stop
+[PlayReportService] session 已保存: id=C7CB32EE64D809C70461A97FC861950D, duration=0
+2026-04-29 11:38:40[PlayDataReportApi] 发送回传 biz={"id":"C7CB32EE64D809C70461A97FC861950D","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777462720557}
+[PlayReportService] startplay 回传发送成功: id=C7CB32EE64D809C70461A97FC861950D
+[_fetchUrl] 获取失败 A5F24029CBF2D9295DEE71B102E618A2 (A5F24029CBF2D9295DEE71B102E618A2): 该歌曲暂无音源或暂无播放权限
+已跳过：A5F24029CBF2D9295DEE71B102E618A2（获取链接失败）
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=C7CB32EE64D809C70461A97FC861950D, startLogTime=1777462720557, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=316584, pausedMs=0, netMs=316584, netSec=316, time=316
+[PlayReportService] 准备发送 play 回传: id=C7CB32EE64D809C70461A97FC861950D, time=316, end=ui
+2026-04-29 11:43:57[PlayDataReportApi] 发送回传 biz={"id":"C7CB32EE64D809C70461A97FC861950D","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777462720557,"time":316,"end":"ui"}
+[PlayReportService] play 回传发送成功
+正在播放：流行 - 李宇春 | 3:18
+[UnifiedPlayService] 忽略切歌产生的 trackEnd stop
+[PlayReportService] session 已保存: id=4E84BFE61CFA6188B7700427303CC03D, duration=198
+2026-04-29 11:43:57[PlayDataReportApi] 发送回传 biz={"id":"4E84BFE61CFA6188B7700427303CC03D","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777463037242}
+[PlayReportService] startplay 回传发送成功: id=4E84BFE61CFA6188B7700427303CC03D
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=4E84BFE61CFA6188B7700427303CC03D, startLogTime=1777463037242, duration=198
+[PlayReportService] 计算播放时长: elapsedMs=111893, pausedMs=0, netMs=111893, netSec=111, time=111
+[PlayReportService] 准备发送 play 回传: id=4E84BFE61CFA6188B7700427303CC03D, time=111, end=ui
+2026-04-29 11:45:49[PlayDataReportApi] 发送回传 biz={"id":"4E84BFE61CFA6188B7700427303CC03D","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777463037242,"time":111,"end":"ui"}
+[PlayReportService] play 回传发送成功
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：流行 - 李宇春 | 3:18
+[UnifiedPlayService] 忽略切歌产生的 trackEnd stop
+[PlayReportService] session 已保存: id=4E84BFE61CFA6188B7700427303CC03D, duration=198
+2026-04-29 11:45:49[PlayDataReportApi] 发送回传 biz={"id":"4E84BFE61CFA6188B7700427303CC03D","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777463149246}
+[PlayReportService] startplay 回传发送成功: id=4E84BFE61CFA6188B7700427303CC03D
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=4E84BFE61CFA6188B7700427303CC03D, startLogTime=1777463149246, duration=198
+[PlayReportService] 计算播放时长: elapsedMs=2204, pausedMs=0, netMs=2204, netSec=2, time=2
+[PlayReportService] 准备发送 play 回传: id=4E84BFE61CFA6188B7700427303CC03D, time=2, end=playend
+2026-04-29 11:45:51[PlayDataReportApi] 发送回传 biz={"id":"4E84BFE61CFA6188B7700427303CC03D","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777463149246,"time":2,"end":"playend"}
+[PlayReportService] play 回传发送成功
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：流行 - 李宇春 | 3:18
+[PlayReportService] session 已保存: id=4E84BFE61CFA6188B7700427303CC03D, duration=198
+2026-04-29 11:45:51[PlayDataReportApi] 发送回传 biz={"id":"4E84BFE61CFA6188B7700427303CC03D","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777463151510}
+[PlayReportService] startplay 回传发送成功: id=4E84BFE61CFA6188B7700427303CC03D
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=4E84BFE61CFA6188B7700427303CC03D, startLogTime=1777463151510, duration=198
+[PlayReportService] 计算播放时长: elapsedMs=885, pausedMs=0, netMs=885, netSec=0, time=0
+[PlayReportService] time=0，跳过回传
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：海屿你 - 马也_Crabbit | 4:56
+[PlayReportService] session 已保存: id=629A46ABD7047D6250F6A69FD0ECF221, duration=296
+2026-04-29 11:45:52[PlayDataReportApi] 发送回传 biz={"id":"629A46ABD7047D6250F6A69FD0ECF221","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777463152396}
+[PlayReportService] startplay 回传发送成功: id=629A46ABD7047D6250F6A69FD0ECF221
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=629A46ABD7047D6250F6A69FD0ECF221, startLogTime=1777463152396, duration=296
+[PlayReportService] 计算播放时长: elapsedMs=940, pausedMs=0, netMs=940, netSec=0, time=0
+[PlayReportService] time=0，跳过回传
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：DB 9F 72 a8 B4 1C 62 8a 3C 96 22 8B 5B 03 23 6F 81 16 64 76 3E 0a D8 16 - RDS真实狠货 | 5:37
+[PlayReportService] session 已保存: id=1C5AFCC991BC2719A6F45789231797EB, duration=337
+2026-04-29 11:45:53[PlayDataReportApi] 发送回传 biz={"id":"1C5AFCC991BC2719A6F45789231797EB","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777463153338}
+[PlayReportService] startplay 回传发送成功: id=1C5AFCC991BC2719A6F45789231797EB
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=1C5AFCC991BC2719A6F45789231797EB, startLogTime=1777463153338, duration=337
+[PlayReportService] 计算播放时长: elapsedMs=1141, pausedMs=0, netMs=1141, netSec=1, time=1
+[PlayReportService] 准备发送 play 回传: id=1C5AFCC991BC2719A6F45789231797EB, time=1, end=playend
+2026-04-29 11:45:54[PlayDataReportApi] 发送回传 biz={"id":"1C5AFCC991BC2719A6F45789231797EB","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777463153338,"time":1,"end":"playend"}
+[PlayReportService] play 回传发送成功
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：海屿你 - 马也_Crabbit | 4:56
+[PlayReportService] session 已保存: id=629A46ABD7047D6250F6A69FD0ECF221, duration=296
+2026-04-29 11:45:54[PlayDataReportApi] 发送回传 biz={"id":"629A46ABD7047D6250F6A69FD0ECF221","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777463154534}
+[PlayReportService] startplay 回传发送成功: id=629A46ABD7047D6250F6A69FD0ECF221
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=629A46ABD7047D6250F6A69FD0ECF221, startLogTime=1777463154534, duration=296
+[PlayReportService] 计算播放时长: elapsedMs=999, pausedMs=0, netMs=999, netSec=0, time=0
+[PlayReportService] time=0，跳过回传
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：DB 9F 72 a8 B4 1C 62 8a 3C 96 22 8B 5B 03 23 6F 81 16 64 76 3E 0a D8 16 - RDS真实狠货 | 5:37
+[PlayReportService] session 已保存: id=1C5AFCC991BC2719A6F45789231797EB, duration=337
+2026-04-29 11:45:55[PlayDataReportApi] 发送回传 biz={"id":"1C5AFCC991BC2719A6F45789231797EB","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777463155535}
+[PlayReportService] startplay 回传发送成功: id=1C5AFCC991BC2719A6F45789231797EB
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=1C5AFCC991BC2719A6F45789231797EB, startLogTime=1777463155535, duration=337
+[PlayReportService] 计算播放时长: elapsedMs=1204, pausedMs=0, netMs=1204, netSec=1, time=1
+[PlayReportService] 准备发送 play 回传: id=1C5AFCC991BC2719A6F45789231797EB, time=1, end=playend
+2026-04-29 11:45:56[PlayDataReportApi] 发送回传 biz={"id":"1C5AFCC991BC2719A6F45789231797EB","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777463155535,"time":1,"end":"playend"}
+[PlayReportService] play 回传发送成功
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：海屿你 - 马也_Crabbit | 4:56
+[PlayReportService] session 已保存: id=629A46ABD7047D6250F6A69FD0ECF221, duration=296
+2026-04-29 11:45:56[PlayDataReportApi] 发送回传 biz={"id":"629A46ABD7047D6250F6A69FD0ECF221","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777463156794}
+[PlayReportService] startplay 回传发送成功: id=629A46ABD7047D6250F6A69FD0ECF221
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=629A46ABD7047D6250F6A69FD0ECF221, startLogTime=1777463156794, duration=296
+[PlayReportService] 计算播放时长: elapsedMs=1039, pausedMs=0, netMs=1039, netSec=1, time=1
+[PlayReportService] 准备发送 play 回传: id=629A46ABD7047D6250F6A69FD0ECF221, time=1, end=playend
+2026-04-29 11:45:57[PlayDataReportApi] 发送回传 biz={"id":"629A46ABD7047D6250F6A69FD0ECF221","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777463156794,"time":1,"end":"playend"}
+[PlayReportService] play 回传发送成功
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：流行 - 李宇春 | 3:18
+[PlayReportService] session 已保存: id=4E84BFE61CFA6188B7700427303CC03D, duration=198
+2026-04-29 11:45:57[PlayDataReportApi] 发送回传 biz={"id":"4E84BFE61CFA6188B7700427303CC03D","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777463157885}
+[PlayReportService] startplay 回传发送成功: id=4E84BFE61CFA6188B7700427303CC03D
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=4E84BFE61CFA6188B7700427303CC03D, startLogTime=1777463157885, duration=198
+[PlayReportService] 计算播放时长: elapsedMs=1010, pausedMs=0, netMs=1010, netSec=1, time=1
+[PlayReportService] 准备发送 play 回传: id=4E84BFE61CFA6188B7700427303CC03D, time=1, end=playend
+2026-04-29 11:45:58[PlayDataReportApi] 发送回传 biz={"id":"4E84BFE61CFA6188B7700427303CC03D","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777463157885,"time":1,"end":"playend"}
+[PlayReportService] play 回传发送成功
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：想你就写信 (Live) - 周杰伦 | 3:59
+[PlayReportService] session 已保存: id=1FE878C72DD80C6FF2EF58488309EA48, duration=239
+2026-04-29 11:45:58[PlayDataReportApi] 发送回传 biz={"id":"1FE878C72DD80C6FF2EF58488309EA48","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777463158946}
+[PlayReportService] startplay 回传发送成功: id=1FE878C72DD80C6FF2EF58488309EA48
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=1FE878C72DD80C6FF2EF58488309EA48, startLogTime=1777463158946, duration=239
+[PlayReportService] 计算播放时长: elapsedMs=1130, pausedMs=0, netMs=1130, netSec=1, time=1
+[PlayReportService] 准备发送 play 回传: id=1FE878C72DD80C6FF2EF58488309EA48, time=1, end=playend
+2026-04-29 11:46:00[PlayDataReportApi] 发送回传 biz={"id":"1FE878C72DD80C6FF2EF58488309EA48","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777463158946,"time":1,"end":"playend"}
+[PlayReportService] play 回传发送成功
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：愿与愁 - 林俊杰 | 3:52
+[PlayReportService] session 已保存: id=C7CB32EE64D809C70461A97FC861950D, duration=232
+2026-04-29 11:46:00[PlayDataReportApi] 发送回传 biz={"id":"C7CB32EE64D809C70461A97FC861950D","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777463160128}
+[PlayReportService] startplay 回传发送成功: id=C7CB32EE64D809C70461A97FC861950D
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=C7CB32EE64D809C70461A97FC861950D, startLogTime=1777463160128, duration=232
+[PlayReportService] 计算播放时长: elapsedMs=24145, pausedMs=0, netMs=24145, netSec=24, time=24
+[PlayReportService] 准备发送 play 回传: id=C7CB32EE64D809C70461A97FC861950D, time=24, end=ui
+2026-04-29 11:46:24[PlayDataReportApi] 发送回传 biz={"id":"C7CB32EE64D809C70461A97FC861950D","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777463160128,"time":24,"end":"ui"}
+[PlayReportService] play 回传发送成功
+[_fetchUrl] 获取失败 A5F24029CBF2D9295DEE71B102E618A2 (A5F24029CBF2D9295DEE71B102E618A2): 该歌曲暂无音源或暂无播放权限
+已跳过：A5F24029CBF2D9295DEE71B102E618A2（获取链接失败）
+队列已播放完毕
+[UnifiedPlayService] 30 秒无活动，自动退出
+[UnifiedPlayService] 已启动，等待命令...
+[_fetchUrl] 获取失败 B00B541A44441B7DE9416A86EB1891E8 (B00B541A44441B7DE9416A86EB1891E8): 该歌曲暂无音源或暂无播放权限
+已跳过：B00B541A44441B7DE9416A86EB1891E8（获取链接失败）
+队列已播放完毕
+[UnifiedPlayService] 30 秒无活动，自动退出
+[UnifiedPlayService] 已启动，等待命令...
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：愿与愁 - 林俊杰 | --:--
+[PlayReportService] session 已保存: id=C7CB32EE64D809C70461A97FC861950D, duration=0
+2026-04-29 11:52:57[PlayDataReportApi] 发送回传 biz={"id":"C7CB32EE64D809C70461A97FC861950D","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777463577718}
+[PlayReportService] startplay 回传发送成功: id=C7CB32EE64D809C70461A97FC861950D
+[_fetchUrl] 获取失败 B00B541A44441B7DE9416A86EB1891E8 (B00B541A44441B7DE9416A86EB1891E8): 该歌曲暂无音源或暂无播放权限
+已跳过：B00B541A44441B7DE9416A86EB1891E8（获取链接失败）
+[_fetchUrl] 获取失败 B00B541A44441B7DE9416A86EB1891E8 (B00B541A44441B7DE9416A86EB1891E8): 该歌曲暂无音源或暂无播放权限
+已跳过：B00B541A44441B7DE9416A86EB1891E8（获取链接失败）
+队列已播放完毕
+[UnifiedPlayService] 30 秒无活动，自动退出
+[UnifiedPlayService] 已启动，等待命令...
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=C7CB32EE64D809C70461A97FC861950D, startLogTime=1777463577718, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=249082, pausedMs=0, netMs=249082, netSec=249, time=249
+[PlayReportService] 准备发送 play 回传: id=C7CB32EE64D809C70461A97FC861950D, time=249, end=ui
+2026-04-29 11:57:06[PlayDataReportApi] 发送回传 biz={"id":"C7CB32EE64D809C70461A97FC861950D","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777463577718,"time":249,"end":"ui"}
+[PlayReportService] play 回传发送成功
+正在播放：罗生门（Follow） - 梨冻紧 | --:--
+[PlayReportService] session 已保存: id=19EE3C514846EA5DD58E3834ADB3661D, duration=0
+2026-04-29 11:57:07[PlayDataReportApi] 发送回传 biz={"id":"19EE3C514846EA5DD58E3834ADB3661D","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777463827346}
+[PlayReportService] startplay 回传发送成功: id=19EE3C514846EA5DD58E3834ADB3661D
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=19EE3C514846EA5DD58E3834ADB3661D, startLogTime=1777463827346, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=24832, pausedMs=0, netMs=24832, netSec=24, time=24
+[PlayReportService] 准备发送 play 回传: id=19EE3C514846EA5DD58E3834ADB3661D, time=24, end=ui
+2026-04-29 11:57:32[PlayDataReportApi] 发送回传 biz={"id":"19EE3C514846EA5DD58E3834ADB3661D","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777463827346,"time":24,"end":"ui"}
+[PlayReportService] play 回传发送成功
+正在播放：愿与愁 - 林俊杰 | --:--
+[UnifiedPlayService] 忽略切歌产生的 trackEnd stop
+[PlayReportService] session 已保存: id=C7CB32EE64D809C70461A97FC861950D, duration=0
+2026-04-29 11:57:32[PlayDataReportApi] 发送回传 biz={"id":"C7CB32EE64D809C70461A97FC861950D","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777463852270}
+[PlayReportService] startplay 回传发送成功: id=C7CB32EE64D809C70461A97FC861950D
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=C7CB32EE64D809C70461A97FC861950D, startLogTime=1777463852270, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=360346, pausedMs=0, netMs=360346, netSec=360, time=360
+[PlayReportService] 准备发送 play 回传: id=C7CB32EE64D809C70461A97FC861950D, time=360, end=ui
+2026-04-29 12:03:32[PlayDataReportApi] 发送回传 biz={"id":"C7CB32EE64D809C70461A97FC861950D","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777463852270,"time":360,"end":"ui"}
+[PlayReportService] play 回传发送成功
+正在播放：海屿你 - 马也_Crabbit | --:--
+[PlayReportService] session 已保存: id=629A46ABD7047D6250F6A69FD0ECF221, duration=0
+2026-04-29 12:03:32[PlayDataReportApi] 发送回传 biz={"id":"629A46ABD7047D6250F6A69FD0ECF221","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777464212740}
+[UnifiedPlayService] 忽略切歌产生的 trackEnd stop
+[PlayReportService] startplay 回传发送成功: id=629A46ABD7047D6250F6A69FD0ECF221
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=629A46ABD7047D6250F6A69FD0ECF221, startLogTime=1777464212740, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=410488, pausedMs=0, netMs=410488, netSec=410, time=410
+[PlayReportService] 准备发送 play 回传: id=629A46ABD7047D6250F6A69FD0ECF221, time=410, end=ui
+2026-04-29 12:10:23[PlayDataReportApi] 发送回传 biz={"id":"629A46ABD7047D6250F6A69FD0ECF221","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777464212740,"time":410,"end":"ui"}
+[PlayReportService] play 回传发送成功
+正在播放：Kamasutra（纯音乐） - ViccyC | --:--
+[UnifiedPlayService] 忽略切歌产生的 trackEnd stop
+[PlayReportService] session 已保存: id=6B1EA48F144DA501968E6AB13DCAD0E0, duration=0
+2026-04-29 12:10:23[PlayDataReportApi] 发送回传 biz={"id":"6B1EA48F144DA501968E6AB13DCAD0E0","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777464623351}
+[PlayReportService] startplay 回传发送成功: id=6B1EA48F144DA501968E6AB13DCAD0E0
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=6B1EA48F144DA501968E6AB13DCAD0E0, startLogTime=1777464623351, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=258137, pausedMs=0, netMs=258137, netSec=258, time=258
+[PlayReportService] 准备发送 play 回传: id=6B1EA48F144DA501968E6AB13DCAD0E0, time=258, end=playend
+2026-04-29 12:14:41[PlayDataReportApi] 发送回传 biz={"id":"6B1EA48F144DA501968E6AB13DCAD0E0","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777464623351,"time":258,"end":"playend"}
+[PlayReportService] play 回传发送成功
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：愿与愁 - 林俊杰 | 3:52
+[PlayReportService] session 已保存: id=C7CB32EE64D809C70461A97FC861950D, duration=232
+2026-04-29 12:14:41[PlayDataReportApi] 发送回传 biz={"id":"C7CB32EE64D809C70461A97FC861950D","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777464881622}
+[PlayReportService] startplay 回传发送成功: id=C7CB32EE64D809C70461A97FC861950D
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=C7CB32EE64D809C70461A97FC861950D, startLogTime=1777464881622, duration=232
+[PlayReportService] 计算播放时长: elapsedMs=161180, pausedMs=0, netMs=161180, netSec=161, time=161
+[PlayReportService] 准备发送 play 回传: id=C7CB32EE64D809C70461A97FC861950D, time=161, end=ui
+2026-04-29 12:17:22[PlayDataReportApi] 发送回传 biz={"id":"C7CB32EE64D809C70461A97FC861950D","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777464881622,"time":161,"end":"ui"}
+[PlayReportService] play 回传发送成功
+正在播放：经典 - Melo | --:--
+[UnifiedPlayService] 忽略切歌产生的 trackEnd stop
+[PlayReportService] session 已保存: id=52E494EDB309279DB65B15BCBBF5DC0A, duration=0
+2026-04-29 12:17:22[PlayDataReportApi] 发送回传 biz={"id":"52E494EDB309279DB65B15BCBBF5DC0A","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777465042909}
+[PlayReportService] startplay 回传发送成功: id=52E494EDB309279DB65B15BCBBF5DC0A
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=52E494EDB309279DB65B15BCBBF5DC0A, startLogTime=1777465042909, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=11601, pausedMs=0, netMs=11601, netSec=11, time=11
+[PlayReportService] 准备发送 play 回传: id=52E494EDB309279DB65B15BCBBF5DC0A, time=11, end=ui
+2026-04-29 12:17:34[PlayDataReportApi] 发送回传 biz={"id":"52E494EDB309279DB65B15BCBBF5DC0A","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777465042909,"time":11,"end":"ui"}
+[PlayReportService] play 回传发送成功
+正在播放：Back to the stree8 (回到街头) (LIVE版) - 派克特（PACT） | --:--
+[UnifiedPlayService] 忽略切歌产生的 trackEnd stop
+[PlayReportService] session 已保存: id=55FFECA315D341FCE43D229FC05CB1BE, duration=0
+2026-04-29 12:17:34[PlayDataReportApi] 发送回传 biz={"id":"55FFECA315D341FCE43D229FC05CB1BE","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777465054615}
+[PlayReportService] startplay 回传发送成功: id=55FFECA315D341FCE43D229FC05CB1BE
+[_fetchUrl] 获取失败 C694DEB782019C2287FF1E2F51F07750 (C694DEB782019C2287FF1E2F51F07750): 该歌曲暂无音源或暂无播放权限
+已跳过：C694DEB782019C2287FF1E2F51F07750（获取链接失败）
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=55FFECA315D341FCE43D229FC05CB1BE, startLogTime=1777465054615, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=237054, pausedMs=0, netMs=237054, netSec=237, time=237
+[PlayReportService] 准备发送 play 回传: id=55FFECA315D341FCE43D229FC05CB1BE, time=237, end=ui
+2026-04-29 12:21:31[PlayDataReportApi] 发送回传 biz={"id":"55FFECA315D341FCE43D229FC05CB1BE","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777465054615,"time":237,"end":"ui"}
+[PlayReportService] play 回传发送成功
+正在播放：海屿你 - 马也_Crabbit | 4:56
+[UnifiedPlayService] 忽略切歌产生的 trackEnd stop
+[PlayReportService] session 已保存: id=629A46ABD7047D6250F6A69FD0ECF221, duration=296
+2026-04-29 12:21:31[PlayDataReportApi] 发送回传 biz={"id":"629A46ABD7047D6250F6A69FD0ECF221","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777465291771}
+[PlayReportService] startplay 回传发送成功: id=629A46ABD7047D6250F6A69FD0ECF221
+[_fetchUrl] 获取失败 9012D5C54A5092B9E06E7EFE582A521B (9012D5C54A5092B9E06E7EFE582A521B): 该歌曲暂无音源或暂无播放权限
+已跳过：9012D5C54A5092B9E06E7EFE582A521B（获取链接失败）
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=629A46ABD7047D6250F6A69FD0ECF221, startLogTime=1777465291771, duration=296
+[PlayReportService] 计算播放时长: elapsedMs=30136, pausedMs=0, netMs=30136, netSec=30, time=30
+[PlayReportService] 准备发送 play 回传: id=629A46ABD7047D6250F6A69FD0ECF221, time=30, end=ui
+2026-04-29 12:22:01[PlayDataReportApi] 发送回传 biz={"id":"629A46ABD7047D6250F6A69FD0ECF221","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777465291771,"time":30,"end":"ui"}
+[PlayReportService] play 回传发送成功
+正在播放：Kamasutra（纯音乐） - ViccyC | 4:19
+[UnifiedPlayService] 忽略切歌产生的 trackEnd stop
+[PlayReportService] session 已保存: id=6B1EA48F144DA501968E6AB13DCAD0E0, duration=259
+2026-04-29 12:22:02[PlayDataReportApi] 发送回传 biz={"id":"6B1EA48F144DA501968E6AB13DCAD0E0","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777465322014}
+[PlayReportService] startplay 回传发送成功: id=6B1EA48F144DA501968E6AB13DCAD0E0
+[_fetchUrl] 获取失败 FB60F0D9DF22C8681760F27DC60E1839 (FB60F0D9DF22C8681760F27DC60E1839): 该歌曲暂无音源或暂无播放权限
+已跳过：FB60F0D9DF22C8681760F27DC60E1839（获取链接失败）
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=6B1EA48F144DA501968E6AB13DCAD0E0, startLogTime=1777465322014, duration=259
+[PlayReportService] 计算播放时长: elapsedMs=52229, pausedMs=0, netMs=52229, netSec=52, time=52
+[PlayReportService] 准备发送 play 回传: id=6B1EA48F144DA501968E6AB13DCAD0E0, time=52, end=ui
+2026-04-29 12:22:54[PlayDataReportApi] 发送回传 biz={"id":"6B1EA48F144DA501968E6AB13DCAD0E0","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777465322014,"time":52,"end":"ui"}
+[PlayReportService] play 回传发送成功
+正在播放：经典 - Melo | 3:43
+[UnifiedPlayService] 忽略切歌产生的 trackEnd stop
+[PlayReportService] session 已保存: id=52E494EDB309279DB65B15BCBBF5DC0A, duration=223
+2026-04-29 12:22:54[PlayDataReportApi] 发送回传 biz={"id":"52E494EDB309279DB65B15BCBBF5DC0A","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777465374350}
+[PlayReportService] startplay 回传发送成功: id=52E494EDB309279DB65B15BCBBF5DC0A
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=52E494EDB309279DB65B15BCBBF5DC0A, startLogTime=1777465374350, duration=223
+[PlayReportService] 计算播放时长: elapsedMs=38950, pausedMs=0, netMs=38950, netSec=38, time=38
+[PlayReportService] 准备发送 play 回传: id=52E494EDB309279DB65B15BCBBF5DC0A, time=38, end=ui
+2026-04-29 12:23:33[PlayDataReportApi] 发送回传 biz={"id":"52E494EDB309279DB65B15BCBBF5DC0A","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777465374350,"time":38,"end":"ui"}
+[PlayReportService] play 回传发送成功
+正在播放：數字正在播放 - 儿童歌曲 | --:--
+[UnifiedPlayService] 忽略切歌产生的 trackEnd stop
+[PlayReportService] session 已保存: id=9E276CAEE583BD083864B5FC51422D68, duration=0
+2026-04-29 12:23:33[PlayDataReportApi] 发送回传 biz={"id":"9E276CAEE583BD083864B5FC51422D68","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777465413396}
+[PlayReportService] startplay 回传发送成功: id=9E276CAEE583BD083864B5FC51422D68
+[_fetchUrl] 获取失败 BBB89FF15A72639523A7C3D160DF7491 (BBB89FF15A72639523A7C3D160DF7491): 该歌曲暂无音源或暂无播放权限
+已跳过：BBB89FF15A72639523A7C3D160DF7491（获取链接失败）
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=9E276CAEE583BD083864B5FC51422D68, startLogTime=1777465413396, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=64420, pausedMs=0, netMs=64420, netSec=64, time=64
+[PlayReportService] 准备发送 play 回传: id=9E276CAEE583BD083864B5FC51422D68, time=64, end=ui
+2026-04-29 12:24:37[PlayDataReportApi] 发送回传 biz={"id":"9E276CAEE583BD083864B5FC51422D68","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777465413396,"time":64,"end":"ui"}
+[PlayReportService] play 回传发送成功
+正在播放：Back to the stree8 (回到街头) (LIVE版) - 派克特（PACT） | 4:15
+[UnifiedPlayService] 忽略切歌产生的 trackEnd stop
+[PlayReportService] session 已保存: id=55FFECA315D341FCE43D229FC05CB1BE, duration=255
+2026-04-29 12:24:37[PlayDataReportApi] 发送回传 biz={"id":"55FFECA315D341FCE43D229FC05CB1BE","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777465477930}
+[PlayReportService] startplay 回传发送成功: id=55FFECA315D341FCE43D229FC05CB1BE
+[_fetchUrl] 获取失败 BBB89FF15A72639523A7C3D160DF7491 (BBB89FF15A72639523A7C3D160DF7491): 该歌曲暂无音源或暂无播放权限
+已跳过：BBB89FF15A72639523A7C3D160DF7491（获取链接失败）
+[_fetchUrl] 获取失败 C694DEB782019C2287FF1E2F51F07750 (C694DEB782019C2287FF1E2F51F07750): 该歌曲暂无音源或暂无播放权限
+已跳过：C694DEB782019C2287FF1E2F51F07750（获取链接失败）
+[_fetchUrl] 获取失败 9012D5C54A5092B9E06E7EFE582A521B (9012D5C54A5092B9E06E7EFE582A521B): 该歌曲暂无音源或暂无播放权限
+已跳过：9012D5C54A5092B9E06E7EFE582A521B（获取链接失败）
+[_fetchUrl] 获取失败 FB60F0D9DF22C8681760F27DC60E1839 (FB60F0D9DF22C8681760F27DC60E1839): 该歌曲暂无音源或暂无播放权限
+已跳过：FB60F0D9DF22C8681760F27DC60E1839（获取链接失败）
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=55FFECA315D341FCE43D229FC05CB1BE, startLogTime=1777465477930, duration=255
+[PlayReportService] 计算播放时长: elapsedMs=33787, pausedMs=0, netMs=33787, netSec=33, time=33
+[PlayReportService] 准备发送 play 回传: id=55FFECA315D341FCE43D229FC05CB1BE, time=33, end=ui
+2026-04-29 12:25:11[PlayDataReportApi] 发送回传 biz={"id":"55FFECA315D341FCE43D229FC05CB1BE","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777465477930,"time":33,"end":"ui"}
+[PlayReportService] play 回传发送成功
+正在播放：數字正在播放 - 儿童歌曲 | 3:29
+[UnifiedPlayService] 忽略切歌产生的 trackEnd stop
+[PlayReportService] session 已保存: id=9E276CAEE583BD083864B5FC51422D68, duration=209
+2026-04-29 12:25:11[PlayDataReportApi] 发送回传 biz={"id":"9E276CAEE583BD083864B5FC51422D68","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777465511814}
+[PlayReportService] startplay 回传发送成功: id=9E276CAEE583BD083864B5FC51422D68
+[_fetchUrl] 获取失败 4E5D00F2AA47A5428ED41540DA7AD549 (4E5D00F2AA47A5428ED41540DA7AD549): 该歌曲暂无音源或暂无播放权限
+已跳过：4E5D00F2AA47A5428ED41540DA7AD549（获取链接失败）
+[_fetchUrl] 获取失败 BBB89FF15A72639523A7C3D160DF7491 (BBB89FF15A72639523A7C3D160DF7491): 该歌曲暂无音源或暂无播放权限
+已跳过：BBB89FF15A72639523A7C3D160DF7491（获取链接失败）
+[_fetchUrl] 获取失败 BBB89FF15A72639523A7C3D160DF7491 (BBB89FF15A72639523A7C3D160DF7491): 该歌曲暂无音源或暂无播放权限
+已跳过：BBB89FF15A72639523A7C3D160DF7491（获取链接失败）
+[_fetchUrl] 获取失败 4E5D00F2AA47A5428ED41540DA7AD549 (4E5D00F2AA47A5428ED41540DA7AD549): 该歌曲暂无音源或暂无播放权限
+已跳过：4E5D00F2AA47A5428ED41540DA7AD549（获取链接失败）
+队列已播放完毕
+[UnifiedPlayService] 30 秒无活动，自动退出
+[UnifiedPlayService] 已启动，等待命令...
+[_fetchUrl] 获取失败 BBB89FF15A72639523A7C3D160DF7491 (BBB89FF15A72639523A7C3D160DF7491): 该歌曲暂无音源或暂无播放权限
+已跳过：BBB89FF15A72639523A7C3D160DF7491（获取链接失败）
+队列已播放完毕
+[UnifiedPlayService] 30 秒无活动，自动退出
+[UnifiedPlayService] 已启动，等待命令...
+[_fetchUrl] 获取失败 BBB89FF15A72639523A7C3D160DF7491 (BBB89FF15A72639523A7C3D160DF7491): 该歌曲暂无音源或暂无播放权限
+已跳过：BBB89FF15A72639523A7C3D160DF7491（获取链接失败）
+队列已播放完毕
+[UnifiedPlayService] 30 秒无活动，自动退出
+[UnifiedPlayService] 已启动，等待命令...
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=9E276CAEE583BD083864B5FC51422D68, startLogTime=1777465511814, duration=209
+[PlayReportService] 计算播放时长: elapsedMs=500429, pausedMs=0, netMs=500429, netSec=500, time=209
+[PlayReportService] 准备发送 play 回传: id=9E276CAEE583BD083864B5FC51422D68, time=209, end=ui
+2026-04-29 12:33:32[PlayDataReportApi] 发送回传 biz={"id":"9E276CAEE583BD083864B5FC51422D68","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777465511814,"time":209,"end":"ui"}
+[PlayReportService] play 回传发送成功
+正在播放：小半 - 陈粒 | --:--
+[PlayReportService] session 已保存: id=AC47D8E1A36229E7A94D6E3B204A4789, duration=0
+2026-04-29 12:33:33[PlayDataReportApi] 发送回传 biz={"id":"AC47D8E1A36229E7A94D6E3B204A4789","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777466013170}
+[PlayReportService] startplay 回传发送成功: id=AC47D8E1A36229E7A94D6E3B204A4789
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=AC47D8E1A36229E7A94D6E3B204A4789, startLogTime=1777466013170, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=297450, pausedMs=0, netMs=297450, netSec=297, time=297
+[PlayReportService] 准备发送 play 回传: id=AC47D8E1A36229E7A94D6E3B204A4789, time=297, end=playend
+2026-04-29 12:38:30[PlayDataReportApi] 发送回传 biz={"id":"AC47D8E1A36229E7A94D6E3B204A4789","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777466013170,"time":297,"end":"playend"}
+[PlayReportService] play 回传发送成功
+队列已播放完毕
+[UnifiedPlayService] 30 秒无活动，自动退出

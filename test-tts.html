@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>豆包语音 TTS 测试</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            background: #0a0a0f;
+            color: #fff;
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #4ade80 0%, #60a5fa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            color: #606070;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+
+        .section {
+            background: #12121a;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .section-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #a0a0b0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* 音色选择 */
+        .voice-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .voice-btn {
+            padding: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            background: transparent;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+        }
+
+        .voice-btn:hover {
+            border-color: #4ade80;
+            background: rgba(74, 222, 128, 0.1);
+        }
+
+        .voice-btn.active {
+            border-color: #4ade80;
+            background: rgba(74, 222, 128, 0.2);
+        }
+
+        .voice-btn .name {
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 2px;
+        }
+
+        .voice-btn .desc {
+            font-size: 11px;
+            color: #606070;
+        }
+
+        /* 文本输入 */
+        textarea {
+            width: 100%;
+            min-height: 120px;
+            padding: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            background: #1a1a25;
+            color: #fff;
+            font-size: 14px;
+            line-height: 1.6;
+            resize: vertical;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #4ade80;
+        }
+
+        /* 快捷话术 */
+        .quick-phrases {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .phrase-btn {
+            padding: 6px 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            background: transparent;
+            color: #a0a0b0;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .phrase-btn:hover {
+            border-color: #60a5fa;
+            color: #60a5fa;
+        }
+
+        /* 播放按钮 */
+        .play-btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #4ade80 0%, #60a5fa 100%);
+            color: #000;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .play-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(74, 222, 128, 0.3);
+        }
+
+        .play-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* 状态显示 */
+        .status {
+            margin-top: 16px;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            display: none;
+        }
+
+        .status.show {
+            display: block;
+        }
+
+        .status.success {
+            background: rgba(74, 222, 128, 0.1);
+            border: 1px solid rgba(74, 222, 128, 0.3);
+            color: #4ade80;
+        }
+
+        .status.error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+        }
+
+        .status.loading {
+            background: rgba(96, 165, 250, 0.1);
+            border: 1px solid rgba(96, 165, 250, 0.3);
+            color: #60a5fa;
+        }
+
+        /* 日志 */
+        .log {
+            margin-top: 12px;
+            padding: 12px;
+            background: #0a0a0f;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            color: #606070;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+
+        .log-line {
+            margin-bottom: 4px;
+        }
+
+        .log-time {
+            color: #4ade80;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎙️ MiniMax 语音 TTS 测试</h1>
+        <p class="subtitle">测试 DJ 话术语音合成效果</p>
+
+        <!-- 音色选择 -->
+        <div class="section">
+            <div class="section-title">选择音色 (MiniMax)</div>
+            <div class="voice-grid">
+                <button class="voice-btn" data-voice="female-yujie">
+                    <div class="name">👩 御姐</div>
+                    <div class="desc">御姐音色</div>
+                </button>
+                <button class="voice-btn" data-voice="female-shaonv">
+                    <div class="name">👩 少女</div>
+                    <div class="desc">少女音色</div>
+                </button>
+                <button class="voice-btn active" data-voice="female-chengshu">
+                    <div class="name">👩 成熟女性</div>
+                    <div class="desc">成熟女声</div>
+                </button>
+                <button class="voice-btn" data-voice="female-tianmei">
+                    <div class="name">👩 甜美女性</div>
+                    <div class="desc">甜美女声</div>
+                </button>
+                <button class="voice-btn" data-voice="presenter_female">
+                    <div class="name">👩 女性主持人</div>
+                    <div class="desc">主持人女声</div>
+                </button>
+                <button class="voice-btn" data-voice="male-qn-jingying">
+                    <div class="name">👨 精英青年</div>
+                    <div class="desc">精英男声</div>
+                </button>
+                <button class="voice-btn" data-voice="male-qn-qingse">
+                    <div class="name">👨 青涩青年</div>
+                    <div class="desc">青涩男声</div>
+                </button>
+                <button class="voice-btn" data-voice="presenter_male">
+                    <div class="name">👨 男性主持人</div>
+                    <div class="desc">主持人男声</div>
+                </button>
+            </div>
+        </div>
+
+        <!-- 文本输入 -->
+        <div class="section">
+            <div class="section-title">DJ 话术</div>
+            <textarea id="textInput" placeholder="输入要合成的文本...">欢迎来到 Hermudio，我是你的专属 DJ。接下来这段时间，让我用音乐陪伴你。今天阳光正好，这样的天气适合听些轻快的旋律。</textarea>
+            
+            <div class="quick-phrases">
+                <button class="phrase-btn" data-text="欢迎来到 Hermudio，我是你的专属 DJ。接下来这段时间，让我用音乐陪伴你。">开场白</button>
+                <button class="phrase-btn" data-text="今天阳光正好，这样的天气适合听些轻快的旋律。让音乐陪你享受这美好的一天。">天气</button>
+                <button class="phrase-btn" data-text="这首歌是周杰伦的《晴天》，希望你会喜欢。让我们一起聆听。">歌曲介绍</button>
+                <button class="phrase-btn" data-text="好了，接下来这首歌，是我为你精心挑选的。换首歌，换种心情。">过渡</button>
+                <button class="phrase-btn" data-text="感谢收听 Hermudio，我是你的 DJ。音乐时光总是短暂，期待下次与你相遇。">结束语</button>
+                <button class="phrase-btn" data-text="深夜电台，陪你度过这个夜晚。不管今天经历了什么，让音乐治愈你。">深夜</button>
+            </div>
+        </div>
+
+        <!-- 播放控制 -->
+        <div class="section">
+            <button class="play-btn" id="playBtn">
+                <span>▶</span>
+                <span>播放语音</span>
+            </button>
+            
+            <div class="status" id="status"></div>
+            
+            <div class="log" id="log">
+                <div class="log-line"><span class="log-time">[系统]</span> 准备就绪，请选择音色并点击播放</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:6588';
+        let currentVoice = 'female-chengshu';
+        let audioPlayer = null;
+
+        // 日志
+        function log(message) {
+            const logEl = document.getElementById('log');
+            const time = new Date().toLocaleTimeString();
+            const line = document.createElement('div');
+            line.className = 'log-line';
+            line.innerHTML = `<span class="log-time">[${time}]</span> ${message}`;
+            logEl.appendChild(line);
+            logEl.scrollTop = logEl.scrollHeight;
+        }
+
+        // 状态显示
+        function showStatus(message, type) {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = message;
+            statusEl.className = 'status show ' + type;
+        }
+
+        function hideStatus() {
+            document.getElementById('status').className = 'status';
+        }
+
+        // 音色选择
+        document.querySelectorAll('.voice-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.voice-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentVoice = btn.dataset.voice;
+                log(`已选择音色: ${btn.querySelector('.name').textContent}`);
+            });
+        });
+
+        // 快捷话术
+        document.querySelectorAll('.phrase-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.getElementById('textInput').value = btn.dataset.text;
+                log(`已加载话术: ${btn.textContent}`);
+            });
+        });
+
+        // 播放按钮
+        document.getElementById('playBtn').addEventListener('click', async () => {
+            const text = document.getElementById('textInput').value.trim();
+            if (!text) {
+                showStatus('请输入要合成的文本', 'error');
+                return;
+            }
+
+            const playBtn = document.getElementById('playBtn');
+            playBtn.disabled = true;
+            showStatus('正在合成语音...', 'loading');
+            log(`开始合成: ${text.substring(0, 30)}...`);
+            log(`使用音色: ${currentVoice}`);
+
+            try {
+                const response = await fetch(`${API_BASE}/api/tts/doubao`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        text: text,
+                        voice_type: currentVoice,
+                        speed: 0.9
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success && data.data.audio) {
+                    log('语音合成成功，开始播放...');
+                    showStatus('正在播放...', 'success');
+                    
+                    // 播放音频
+                    if (audioPlayer) {
+                        audioPlayer.pause();
+                    }
+                    
+                    audioPlayer = new Audio(`data:audio/mp3;base64,${data.data.audio}`);
+                    
+                    audioPlayer.onended = () => {
+                        showStatus('播放完成', 'success');
+                        playBtn.disabled = false;
+                        log('播放完成');
+                        setTimeout(hideStatus, 2000);
+                    };
+                    
+                    audioPlayer.onerror = (e) => {
+                        showStatus('播放失败', 'error');
+                        playBtn.disabled = false;
+                        log('播放失败: ' + e.message);
+                    };
+                    
+                    await audioPlayer.play();
+                } else {
+                    showStatus('合成失败: ' + (data.message || '未知错误'), 'error');
+                    playBtn.disabled = false;
+                    log('合成失败: ' + (data.message || '未知错误'));
+                    
+                    // 如果是因为未配置，提示使用浏览器语音
+                    if (data.config_required) {
+                        log('提示: API 未配置，请检查服务器配置');
+                    }
+                }
+            } catch (e) {
+                showStatus('请求失败: ' + e.message, 'error');
+                playBtn.disabled = false;
+                log('请求失败: ' + e.message);
+            }
+        });
+
+        // 页面加载时检查 API 状态
+        async function checkStatus() {
+            try {
+                const response = await fetch(`${API_BASE}/api/tts/status`);
+                const data = await response.json();
+                if (data.success) {
+                    if (data.data.configured) {
+                        log('✅ 豆包语音 API 已配置');
+                    } else {
+                        log('⚠️ 豆包语音 API 未配置');
+                    }
+                }
+            } catch (e) {
+                log('❌ 无法连接到服务器，请确保服务器已启动');
+            }
+        }
+
+        checkStatus();
+    </script>
+</body>
+</html>

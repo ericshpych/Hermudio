@@ -1,0 +1,27 @@
+0 verbose cli /opt/homebrew/Cellar/node/25.9.0_2/bin/node /opt/homebrew/lib/node_modules/npm/bin/npm-cli.js
+1 info using npm@11.12.1
+2 info using node@v25.9.0
+3 silly config load:file:/opt/homebrew/lib/node_modules/npm/npmrc
+4 silly config load:file:/Users/bytedance/claudio/.npmrc
+5 silly config load:file:/Users/bytedance/claudio/.ncm-cli-home/.npmrc
+6 silly config load:file:/opt/homebrew/etc/npmrc
+7 verbose title npm exec @music163/ncm-cli login --help
+8 verbose argv "exec" "--" "@music163/ncm-cli" "login" "--help"
+9 verbose logfile logs-max:10 dir:/Users/bytedance/claudio/.ncm-cli-home/.npm/_logs/2026-04-27T12_55_01_177Z-
+10 verbose logfile /Users/bytedance/claudio/.ncm-cli-home/.npm/_logs/2026-04-27T12_55_01_177Z-debug-0.log
+11 silly logfile done cleaning log files
+12 silly packumentCache heap:4496293888 maxSize:1124073472 maxEntrySize:562036736
+13 http fetch GET 200 https://registry.npmjs.org/@music163%2fncm-cli 551ms (cache miss)
+14 silly packumentCache heap:4496293888 maxSize:1124073472 maxEntrySize:562036736
+15 http fetch GET 200 https://registry.npmjs.org/npm 648ms
+16 verbose cwd /Users/bytedance/claudio
+17 verbose os Darwin 25.3.0
+18 verbose node v25.9.0
+19 verbose npm  v11.12.1
+20 notice
+20 notice New minor version of npm available! 11.12.1 -> 11.13.0
+20 notice Changelog: https://github.com/npm/cli/releases/tag/v11.13.0
+20 notice To update run: npm install -g npm@11.13.0
+20 notice  { force: true, Symbol(proc-log.meta): true }
+21 verbose exit 1
+22 verbose code 1

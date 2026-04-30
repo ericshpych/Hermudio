@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>任务 — 智慧门店驾驶舱</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #0d1117; color: #e6edf3; }
+
+/* ====== Sidebar ====== */
+.sidebar { position: fixed; left: 0; top: 0; width: 220px; height: 100vh; background: #161b22; border-right: 1px solid #21262d; z-index: 100; display: flex; flex-direction: column; }
+.sidebar-brand { padding: 20px 16px 16px; border-bottom: 1px solid #21262d; }
+.sidebar-brand-text { font-size: 15px; font-weight: 700; color: #58a6ff; }
+.sidebar-nav { flex: 1; padding: 12px 0; overflow-y: auto; }
+.sidebar-menu { list-style: none; }
+.sidebar-menu li a { display: flex; align-items: center; gap: 10px; padding: 12px 16px; font-size: 14px; font-weight: 500; color: #8b949e; border-left: 3px solid transparent; transition: all 0.2s; }
+.sidebar-menu li a:hover { color: #e6edf3; background: rgba(88,166,255,0.08); }
+.sidebar-menu li a.active { color: #58a6ff; border-left-color: #58a6ff; background: rgba(88,166,255,0.12); }
+.sidebar-footer { padding: 16px; border-top: 1px solid #21262d; }
+.store-select { background: #21262d; border: 1px solid #30363d; color: #e6edf3; padding: 6px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; width: 100%; margin-bottom: 8px; }
+.user-info { display: flex; align-items: center; gap: 8px; }
+.user-avatar { width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(135deg, #6e40c9, #a371f7); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #fff; }
+.user-name { font-size: 13px; font-weight: 600; color: #e6edf3; }
+.user-role { font-size: 11px; color: #8b949e; }
+
+/* ====== Container ====== */
+.container { padding: 24px 28px 24px 240px; }
+.page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+.page-title { font-size: 22px; font-weight: 700; color: #f0f6fc; }
+.breadcrumb { display: flex; align-items: center; gap: 6px; font-size: 13px; color: #484f58; margin-bottom: 16px; }
+.breadcrumb a { color: #58a6ff; }
+.breadcrumb span { color: #8b949e; }
+.header-actions { display: flex; gap: 8px; align-items: center; }
+
+/* ====== Filter Bar ====== */
+.filter-bar { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+.filter-btn { padding: 8px 16px; background: #161b22; border: 1px solid #30363d; border-radius: 6px; color: #8b949e; cursor: pointer; font-size: 13px; transition: all 0.2s; }
+.filter-btn:hover { border-color: #58a6ff; color: #58a6ff; }
+.filter-btn.active { background: rgba(88,166,255,0.12); border-color: #58a6ff; color: #58a6ff; }
+.search-box { display: flex; align-items: center; gap: 8px; background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 8px 14px; margin-left: auto; }
+.search-input { background: none; border: none; color: #e6edf3; font-size: 13px; outline: none; width: 200px; }
+.search-input::placeholder { color: #484f58; }
+
+/* ====== Task Stats ====== */
+.task-stats { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 24px; }
+.task-stat { background: #161b22; border: 1px solid #21262d; border-radius: 10px; padding: 16px; text-align: center; }
+.task-stat-num { font-size: 28px; font-weight: 700; color: #f0f6fc; }
+.task-stat-num.warning { color: #d29922; }
+.task-stat-num.danger { color: #f85149; }
+.task-stat-label { font-size: 12px; color: #484f58; margin-top: 4px; }
+
+/* ====== Task List ====== */
+.task-list { display: flex; flex-direction: column; gap: 10px; }
+.task-item { background: #161b22; border: 1px solid #21262d; border-radius: 10px; padding: 16px 20px; display: flex; align-items: center; gap: 16px; transition: border-color 0.2s; cursor: pointer; }
+.task-item:hover { border-color: rgba(88,166,255,0.4); }
+.task-item.urgent { border-left: 3px solid #f85149; }
+.task-item.pending { border-left: 3px solid #d29922; }
+.task-item.done { opacity: 0.5; }
+.task-checkbox { width: 18px; height: 18px; border-radius: 4px; border: 2px solid #30363d; cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 12px; transition: all 0.2s; }
+.task-checkbox.done { background: rgba(63,185,80,0.2); border-color: #3fb950; color: #3fb950; }
+.task-content { flex: 1; min-width: 0; }
+.task-name { font-size: 14px; font-weight: 600; color: #f0f6fc; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
+.task-meta { font-size: 12px; color: #484f58; }
+.task-tags { display: flex; gap: 6px; flex-shrink: 0; }
+.task-tag { font-size: 11px; padding: 3px 8px; border-radius: 4px; }
+.task-tag.agent { background: rgba(110,64,201,0.15); color: #a371f7; }
+.task-tag.self { background: rgba(88,166,255,0.12); color: #58a6ff; }
+.task-tag.urgent { background: rgba(248,81,73,0.12); color: #f85149; }
+.task-time { font-size: 12px; color: #484f58; white-space: nowrap; flex-shrink: 0; }
+.task-actions { display: flex; gap: 8px; flex-shrink: 0; }
+.btn { padding: 8px 14px; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; border: none; transition: all 0.2s; }
+.btn-primary { background: linear-gradient(135deg, #388bfd, #58a6ff); color: #fff; }
+.btn-secondary { background: #21262d; border: 1px solid #30363d; color: #e6edf3; }
+.btn-secondary:hover { border-color: #58a6ff; color: #58a6ff; }
+.btn-adjust { background: rgba(210,153,34,0.12); border: 1px solid rgba(210,153,34,0.25); color: #d29922; padding: 8px 14px; border-radius: 8px; font-size: 13px; cursor: pointer; }
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-brand"><div class="sidebar-brand-text">🚗 智慧门店驾驶舱</div></div>
+  <nav class="sidebar-nav">
+    <ul class="sidebar-menu">
+      <li><a href="index.html">🏠 工作台</a></li>
+      <li><a href="data.html">📊 数据</a></li>
+      <li><a href="task.html" class="active">📋 任务</a></li>
+      <li><a href="chat.html">💬 会话</a></li>
+      <li><a href="skill-store.html">🛠️ 技能商店</a></li>
+    </ul>
+  </nav>
+  <div class="sidebar-footer">
+    <select class="store-select"><option>懂车帝二手车·望京店</option></select>
+    <div class="user-info">
+      <div class="user-avatar">张</div>
+      <div class="user-name">张伟</div>
+    </div>
+  </div>
+</aside>
+
+<div class="container">
+  <div class="breadcrumb">
+    <a href="index.html">首页</a><span>›</span><span>📋 任务</span>
+  </div>
+
+  <div class="page-header">
+    <div class="page-title">📋 任务中心</div>
+    <div class="header-actions">
+      <button class="btn btn-primary" onclick="location.href='chat.html?mode=direct'">+ 委托分身</button>
+    </div>
+  </div>
+
+  <div class="task-stats">
+    <div class="task-stat"><div class="task-stat-num">8</div><div class="task-stat-label">待处理</div></div>
+    <div class="task-stat"><div class="task-stat-num warning">3</div><div class="task-stat-label">今日到期</div></div>
+    <div class="task-stat"><div class="task-stat-num danger">1</div><div class="task-stat-label">已超时</div></div>
+    <div class="task-stat"><div class="task-stat-num">12</div><div class="task-stat-label">本周完成</div></div>
+    <div class="task-stat"><div class="task-stat-num">25</div><div class="task-stat-label">全部任务</div></div>
+  </div>
+
+  <div class="filter-bar">
+    <div class="filter-btn active">全部</div>
+    <div class="filter-btn">待决策</div>
+    <div class="filter-btn">已委托分身</div>
+    <div class="filter-btn">我的任务</div>
+    <div class="filter-btn">已完成</div>
+    <div class="search-box">
+      <span>🔍</span>
+      <input class="search-input" placeholder="搜索任务...">
+    </div>
+  </div>
+
+  <div class="task-list">
+    <!-- Urgent task -->
+    <div class="task-item urgent">
+      <div class="task-checkbox" onclick="this.classList.toggle('done')">✓</div>
+      <div class="task-content">
+        <div class="task-name">
+          审核宝马320Li 2019款收车报价
+          <span class="task-tag urgent">紧急</span>
+          <span class="task-tag agent">李婷</span>
+        </div>
+        <div class="task-meta">车主报价¥165,000 · 偏离阈值¥13,000 · 溢价8.5%</div>
+      </div>
+      <div class="task-tags">
+        <button class="btn-adjust" onclick="location.href='chat.html?mode=adjust&task=bmw'">🔧 调整</button>
+        <button class="btn btn-secondary" onclick="location.href='chat.html'">💬 沟通</button>
+      </div>
+      <div class="task-time">今天 16:00</div>
+    </div>
+
+    <!-- Pending task -->
+    <div class="task-item pending">
+      <div class="task-checkbox" onclick="this.classList.toggle('done')">✓</div>
+      <div class="task-content">
+        <div class="task-name">
+          审核奥迪A4L 2021款收车报价
+          <span class="task-tag agent">李婷</span>
+        </div>
+        <div class="task-meta">车主报价¥228,000 · 溢价¥15,000 · 风控预警</div>
+      </div>
+      <div class="task-tags">
+        <button class="btn-adjust" onclick="location.href='chat.html'">🔧 调整</button>
+        <button class="btn btn-secondary" onclick="location.href='chat.html'">💬 沟通</button>
+      </div>
+      <div class="task-time">今天 14:00</div>
+    </div>
+
+    <!-- Self task -->
+    <div class="task-item">
+      <div class="task-checkbox" onclick="this.classList.toggle('done')">✓</div>
+      <div class="task-content">
+        <div class="task-name">
+          跟进客户王先生的购车意向
+          <span class="task-tag self">个人任务</span>
+        </div>
+        <div class="task-meta">王先生 · 意向车型：宝马320Li · 预算¥20-25万</div>
+      </div>
+      <div class="task-tags">
+        <button class="btn btn-secondary" onclick="location.href='chat.html'">💬 跟进</button>
+      </div>
+      <div class="task-time">今天 18:00</div>
+    </div>
+
+    <!-- Delegated task -->
+    <div class="task-item">
+      <div class="task-checkbox" onclick="this.classList.toggle('done')">✓</div>
+      <div class="task-content">
+        <div class="task-name">
+          同步竞品价格数据
+          <span class="task-tag agent">李婷</span>
+          <span class="task-tag self">已委托</span>
+        </div>
+        <div class="task-meta">同城竞品近期收车价格对比 · 每周更新</div>
+      </div>
+      <div class="task-tags">
+        <button class="btn btn-secondary" onclick="location.href='chat.html'">💬 沟通</button>
+      </div>
+      <div class="task-time">明天 09:00</div>
+    </div>
+
+    <!-- Done task -->
+    <div class="task-item done">
+      <div class="task-checkbox done">✓</div>
+      <div class="task-content">
+        <div class="task-name" style="text-decoration:line-through;color:#484f58;">
+          审核特斯拉 Model Y 报价
+        </div>
+        <div class="task-meta">已批准报价¥238,000 · 成交</div>
+      </div>
+      <div class="task-tags">
+        <span style="font-size:12px;color:#3fb950;">✓ 已完成</span>
+      </div>
+      <div class="task-time">昨天 16:30</div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
