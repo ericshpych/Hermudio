@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hermudio</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #111111;
+            --text-primary: #ffffff;
+            --text-secondary: #888888;
+            --text-muted: #555555;
+            --accent: #ff6b6b;
+            --border: rgba(255,255,255,0.06);
+        }
+
+        body {
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            font-size: 14px;
+            color: var(--text-primary);
+        }
+
+        /* 主应用容器 - 极简风格 */
+        .hermudio-app {
+            width: 100%;
+            max-width: 400px;
+            height: 100vh;
+            max-height: 800px;
+            background: var(--bg-primary);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* ===== 顶部栏 - 极简 ===== */
+        .app-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 24px;
+            flex-shrink: 0;
+        }
+
+        .app-logo {
+            font-size: 18px;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+        }
+
+        .mode-toggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .mode-toggle:hover {
+            color: var(--text-primary);
+        }
+
+        .mode-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--text-muted);
+            transition: background 0.3s;
+        }
+
+        .mode-indicator.radio {
+            background: var(--accent);
+            animation: pulse 2s infinite;
+        }
+
+        .mode-indicator.chat {
+            background: #4ade80;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* ===== 主内容区 ===== */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 0 24px;
+            overflow: hidden;
+        }
+
+        /* ===== 电台模式 - 极简 ===== */
+        .radio-mode {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .radio-mode.hidden {
+            display: none;
+        }
+
+        /* 当前播放信息 */
+        .now-playing {
+            margin-bottom: 40px;
+        }
+
+        .track-name {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            letter-spacing: -0.3px;
+        }
+
+        .track-artist {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        /* 可视化效果 */
+        .visualizer {
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            gap: 3px;
+            height: 60px;
+            margin-bottom: 40px;
+        }
+
+        .visualizer-bar {
+            width: 3px;
+            background: var(--text-primary);
+            border-radius: 1.5px;
+            transition: height 0.1s ease;
+        }
+
+        .visualizer-bar:nth-child(1) { height: 20%; animation: wave 1s ease-in-out infinite; }
+        .visualizer-bar:nth-child(2) { height: 60%; animation: wave 1s ease-in-out infinite 0.1s; }
+        .visualizer-bar:nth-child(3) { height: 40%; animation: wave 1s ease-in-out infinite 0.2s; }
+        .visualizer-bar:nth-child(4) { height: 80%; animation: wave 1s ease-in-out infinite 0.3s; }
+        .visualizer-bar:nth-child(5) { height: 50%; animation: wave 1s ease-in-out infinite 0.4s; }
+        .visualizer-bar:nth-child(6) { height: 70%; animation: wave 1s ease-in-out infinite 0.5s; }
+        .visualizer-bar:nth-child(7) { height: 30%; animation: wave 1s ease-in-out infinite 0.6s; }
+
+        @keyframes wave {
+            0%, 100% { transform: scaleY(0.5); }
+            50% { transform: scaleY(1); }
+        }
+
+        .visualizer.paused .visualizer-bar {
+            animation: none;
+            height: 10%;
+            transition: height 0.3s ease;
+        }
+
+        /* AI 推荐说明 */
+        .recommendation-reason {
+            font-size: 13px;
+            color: var(--text-secondary);
+            max-width: 280px;
+            line-height: 1.6;
+            margin-bottom: 40px;
+        }
+
+        /* 播放控制 */
+        .player-controls {
+            display: flex;
+            align-items: center;
+            gap: 32px;
+        }
+
+        .control-btn {
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: opacity 0.2s;
+            padding: 8px;
+        }
+
+        .control-btn:hover {
+            opacity: 0.7;
+        }
+
+        .control-btn.play-pause {
+            width: 64px;
+            height: 64px;
+            border: 2px solid var(--text-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .control-btn.skip {
+            font-size: 20px;
+            color: var(--text-secondary);
+        }
+
+        /* ===== 聊天模式 ===== */
+        .chat-mode {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chat-mode.hidden {
+            display: none;
+        }
+
+        /* 聊天消息区 */
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .chat-message {
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+        }
+
+        .chat-message.user {
+            flex-direction: row-reverse;
+        }
+
+        .chat-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--bg-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .chat-avatar.ai {
+            background: var(--accent);
+        }
+
+        .chat-bubble {
+            max-width: 260px;
+            padding: 12px 16px;
+            border-radius: 16px;
+            font-size: 13px;
+            line-height: 1.5;
+            background: var(--bg-secondary);
+        }
+
+        .chat-message.user .chat-bubble {
+            background: #333;
+        }
+
+        /* 正在输入指示器 */
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            padding: 12px 16px;
+        }
+
+        .typing-indicator span {
+            width: 6px;
+            height: 6px;
+            background: var(--text-secondary);
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-4px); }
+        }
+
+        /* 聊天输入区 */
+        .chat-input-area {
+            padding: 16px 0 24px;
+            border-top: 1px solid var(--border);
+        }
+
+        .chat-input-wrapper {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .chat-input {
+            flex: 1;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 12px 20px;
+            color: var(--text-primary);
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .chat-input:focus {
+            border-color: var(--text-secondary);
+        }
+
+        .chat-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .send-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--text-primary);
+            border: none;
+            color: var(--bg-primary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.2s;
+        }
+
+        .send-btn:hover {
+            opacity: 0.8;
+        }
+
+        .send-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        /* ===== 底部状态栏 ===== */
+        .status-bar {
+            padding: 16px 24px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .status-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--text-muted);
+        }
+
+        .status-dot.online {
+            background: #4ade80;
+        }
+
+        .status-dot.offline {
+            background: var(--accent);
+        }
+
+        /* 滚动条样式 */
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 2px;
+        }
+    </style>
+</head>
+<body>
+    <div class="hermudio-app">
+        <!-- 顶部栏 -->
+        <header class="app-header">
+            <div class="app-logo">Hermudio</div>
+            <div class="mode-toggle" id="modeToggle">
+                <span id="modeText">电台模式</span>
+                <div class="mode-indicator radio" id="modeIndicator"></div>
+            </div>
+        </header>
+
+        <!-- 主内容区 -->
+        <main class="main-content">
+            <!-- 电台模式 -->
+            <div class="radio-mode" id="radioMode">
+                <div class="now-playing">
+                    <div class="track-name" id="trackName">If</div>
+                    <div class="track-artist" id="trackArtist">Bread</div>
+                </div>
+
+                <div class="visualizer" id="visualizer">
+                    <div class="visualizer-bar"></div>
+                    <div class="visualizer-bar"></div>
+                    <div class="visualizer-bar"></div>
+                    <div class="visualizer-bar"></div>
+                    <div class="visualizer-bar"></div>
+                    <div class="visualizer-bar"></div>
+                    <div class="visualizer-bar"></div>
+                </div>
+
+                <div class="recommendation-reason" id="recommendationReason">
+                    深夜时分，一首温柔的民谣很适合现在的氛围
+                </div>
+
+                <div class="player-controls">
+                    <button class="control-btn skip" id="prevBtn" title="上一首">⏮</button>
+                    <button class="control-btn play-pause" id="playPauseBtn" title="播放/暂停">⏸</button>
+                    <button class="control-btn skip" id="nextBtn" title="下一首">⏭</button>
+                </div>
+            </div>
+
+            <!-- 聊天模式 -->
+            <div class="chat-mode hidden" id="chatMode">
+                <div class="chat-messages" id="chatMessages">
+                    <!-- 欢迎消息 -->
+                    <div class="chat-message ai">
+                        <div class="chat-avatar ai">🎵</div>
+                        <div class="chat-bubble">
+                            你好！我是你的 AI DJ。告诉我你想听什么，或者描述一下你现在的心情和场景，我帮你推荐音乐～
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chat-input-area">
+                    <div class="chat-input-wrapper">
+                        <input type="text" class="chat-input" id="chatInput" placeholder="描述你想听的音乐，或输入歌名、歌手...">
+                        <button class="send-btn" id="sendBtn">➤</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- 底部状态栏 -->
+        <footer class="status-bar">
+            <div class="status-left">
+                <div class="status-dot online" id="statusDot"></div>
+                <span id="statusText">AI DJ 在线</span>
+            </div>
+            <div class="status-right" id="timeDisplay">--:--</div>
+        </footer>
+    </div>
+
+    <script>
+        // ==================== 状态管理 ====================
+        const AppState = {
+            mode: 'radio', // 'radio' | 'chat'
+            isPlaying: false,
+            currentSong: null,
+            isHermesConnected: false,
+
+            setMode(mode) {
+                this.mode = mode;
+                const radioMode = document.getElementById('radioMode');
+                const chatMode = document.getElementById('chatMode');
+                const modeText = document.getElementById('modeText');
+                const modeIndicator = document.getElementById('modeIndicator');
+
+                if (mode === 'radio') {
+                    radioMode.classList.remove('hidden');
+                    chatMode.classList.add('hidden');
+                    modeText.textContent = '电台模式';
+                    modeIndicator.className = 'mode-indicator radio';
+                } else {
+                    radioMode.classList.add('hidden');
+                    chatMode.classList.remove('hidden');
+                    modeText.textContent = '聊天模式';
+                    modeIndicator.className = 'mode-indicator chat';
+                }
+            },
+
+            setPlaying(playing) {
+                this.isPlaying = playing;
+                const visualizer = document.getElementById('visualizer');
+                const playPauseBtn = document.getElementById('playPauseBtn');
+
+                if (playing) {
+                    visualizer.classList.remove('paused');
+                    playPauseBtn.textContent = '⏸';
+                } else {
+                    visualizer.classList.add('paused');
+                    playPauseBtn.textContent = '▶';
+                }
+            },
+
+            updateNowPlaying(song, reason) {
+                this.currentSong = song;
+                document.getElementById('trackName').textContent = song.name;
+                document.getElementById('trackArtist').textContent = song.artist;
+                if (reason) {
+                    document.getElementById('recommendationReason').textContent = reason;
+                }
+            },
+
+            addChatMessage(text, isUser = false) {
+                const container = document.getElementById('chatMessages');
+                const message = document.createElement('div');
+                message.className = `chat-message ${isUser ? 'user' : 'ai'}`;
+                message.innerHTML = `
+                    <div class="chat-avatar ${isUser ? '' : 'ai'}">${isUser ? '👤' : '🎵'}</div>
+                    <div class="chat-bubble">${text}</div>
+                `;
+                container.appendChild(message);
+                container.scrollTop = container.scrollHeight;
+            },
+
+            showTyping() {
+                const container = document.getElementById('chatMessages');
+                const typing = document.createElement('div');
+                typing.className = 'chat-message ai typing';
+                typing.id = 'typingIndicator';
+                typing.innerHTML = `
+                    <div class="chat-avatar ai">🎵</div>
+                    <div class="chat-bubble typing-indicator">
+                        <span></span><span></span><span></span>
+                    </div>
+                `;
+                container.appendChild(typing);
+                container.scrollTop = container.scrollHeight;
+            },
+
+            hideTyping() {
+                const typing = document.getElementById('typingIndicator');
+                if (typing) typing.remove();
+            }
+        };
+
+        // ==================== 事件绑定 ====================
+        document.addEventListener('DOMContentLoaded', () => {
+            // 模式切换
+            document.getElementById('modeToggle').addEventListener('click', () => {
+                const newMode = AppState.mode === 'radio' ? 'chat' : 'radio';
+                AppState.setMode(newMode);
+            });
+
+            // 播放控制
+            document.getElementById('playPauseBtn').addEventListener('click', () => {
+                AppState.setPlaying(!AppState.isPlaying);
+            });
+
+            document.getElementById('nextBtn').addEventListener('click', () => {
+                console.log('下一首');
+                // TODO: 实现下一首逻辑
+            });
+
+            document.getElementById('prevBtn').addEventListener('click', () => {
+                console.log('上一首');
+                // TODO: 实现上一首逻辑
+            });
+
+            // 聊天发送
+            const sendMessage = () => {
+                const input = document.getElementById('chatInput');
+                const text = input.value.trim();
+                if (!text) return;
+
+                AppState.addChatMessage(text, true);
+                input.value = '';
+
+                // TODO: 调用 Hermes 获取回复
+                AppState.showTyping();
+                setTimeout(() => {
+                    AppState.hideTyping();
+                    AppState.addChatMessage('收到你的消息！我正在为你推荐音乐...');
+                }, 1500);
+            };
+
+            document.getElementById('sendBtn').addEventListener('click', sendMessage);
+            document.getElementById('chatInput').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') sendMessage();
+            });
+
+            // 更新时间
+            const updateTime = () => {
+                const now = new Date();
+                document.getElementById('timeDisplay').textContent = 
+                    now.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+            };
+            updateTime();
+            setInterval(updateTime, 1000);
+
+            // 初始化
+            AppState.setPlaying(true);
+        });
+    </script>
+</body>
+</html>
+</invoke>

@@ -1,0 +1,23 @@
+{
+  "name": "hermudio",
+  "version": "1.0.0",
+  "description": "AI Personalized Music Radio - Hermudio",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "music",
+    "radio",
+    "ai",
+    "personalized"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2",
+    "node-fetch": "^2.7.0",
+    "sqlite3": "^5.1.6"
+  }
+}

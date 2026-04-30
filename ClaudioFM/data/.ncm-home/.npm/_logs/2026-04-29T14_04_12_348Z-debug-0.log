@@ -1,0 +1,22 @@
+0 verbose cli /opt/homebrew/Cellar/node/25.9.0_2/bin/node /opt/homebrew/lib/node_modules/npm/bin/npm-cli.js
+1 info using npm@11.12.1
+2 info using node@v25.9.0
+3 silly config load:file:/opt/homebrew/lib/node_modules/npm/npmrc
+4 silly config load:file:/Users/bytedance/claudio/ClaudioFM/.npmrc
+5 silly config load:file:/Users/bytedance/claudio/ClaudioFM/data/.ncm-home/.npmrc
+6 silly config load:file:/opt/homebrew/etc/npmrc
+7 verbose title npm exec @music163/ncm-cli state --json
+8 verbose argv "exec" "--" "@music163/ncm-cli" "state" "--json"
+9 verbose logfile logs-max:10 dir:/Users/bytedance/claudio/ClaudioFM/data/.ncm-home/.npm/_logs/2026-04-29T14_04_12_348Z-
+10 verbose logfile /Users/bytedance/claudio/ClaudioFM/data/.ncm-home/.npm/_logs/2026-04-29T14_04_12_348Z-debug-0.log
+11 silly logfile start cleaning logs, removing 2 files
+12 silly logfile done cleaning log files
+13 silly packumentCache heap:4496293888 maxSize:1124073472 maxEntrySize:562036736
+14 http fetch GET 200 https://registry.npmjs.org/@music163%2fncm-cli 375ms (cache revalidated)
+15 silly packumentCache heap:4496293888 maxSize:1124073472 maxEntrySize:562036736
+16 verbose cwd /Users/bytedance/claudio/ClaudioFM
+17 verbose os Darwin 25.3.0
+18 verbose node v25.9.0
+19 verbose npm  v11.12.1
+20 verbose exit 1
+21 verbose code 1

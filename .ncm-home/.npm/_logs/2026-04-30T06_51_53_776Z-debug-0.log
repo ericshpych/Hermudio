@@ -1,0 +1,25 @@
+0 verbose cli /opt/homebrew/Cellar/node/25.9.0_2/bin/node /opt/homebrew/lib/node_modules/npm/bin/npm-cli.js
+1 info using npm@11.12.1
+2 info using node@v25.9.0
+3 silly config load:file:/opt/homebrew/lib/node_modules/npm/npmrc
+4 silly config load:file:/Users/bytedance/claudio/ClaudioFM/.npmrc
+5 silly config load:file:/Users/bytedance/claudio/.ncm-home/.npmrc
+6 silly config load:file:/Users/bytedance/Library/Preferences/pnpm/rc
+7 verbose title npm exec @music163/ncm-cli state
+8 verbose argv "exec" "--" "@music163/ncm-cli" "state"
+9 verbose logfile logs-max:10 dir:/Users/bytedance/claudio/.ncm-home/.npm/_logs/2026-04-30T06_51_53_776Z-
+10 verbose logfile /Users/bytedance/claudio/.ncm-home/.npm/_logs/2026-04-30T06_51_53_776Z-debug-0.log
+11 warn Unknown env config "npm-globalconfig". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+12 warn Unknown env config "verify-deps-before-run". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+13 warn Unknown env config "_jsr-registry". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+14 silly logfile start cleaning logs, removing 1 files
+15 silly logfile done cleaning log files
+16 silly packumentCache heap:4496293888 maxSize:1124073472 maxEntrySize:562036736
+17 http fetch GET 200 https://registry.npmmirror.com/@music163%2fncm-cli 44ms (cache revalidated)
+18 silly packumentCache heap:4496293888 maxSize:1124073472 maxEntrySize:562036736
+19 verbose cwd /Users/bytedance/claudio/ClaudioFM
+20 verbose os Darwin 25.3.0
+21 verbose node v25.9.0
+22 verbose npm  v11.12.1
+23 verbose exit 0
+24 info ok
