@@ -3,6 +3,7 @@
  * 
  * Generates AI-powered radio host narration scripts
  * Manages the flow: Welcome -> Song Intro -> Song Play -> Outro
+ * Enhanced with more emotional and scenario-specific expressions
  */
 
 const { getCurrentScene, getSceneDescription } = require('./scene-analyzer');
@@ -14,6 +15,101 @@ class RadioHostService {
     this.currentPlaylist = [];
     this.currentSongIndex = 0;
     this.isPlaying = false;
+    
+    // Emotional expression templates
+    this.emotionalExpressions = {
+      warm: ['温暖的', '温馨的', '亲切的', '柔和的'],
+      excited: ['欢快的', '热情的', '活力的', '激情的'],
+      calm: ['安静的', '宁静的', '舒缓的', '平静的'],
+      melancholic: ['温柔的', '略带忧伤的', '深沉的', '内敛的']
+    };
+    
+    // Time-specific greetings
+    this.timeGreetings = {
+      dawn: '凌晨好',
+      earlyMorning: '清晨好',
+      morning: '早上好',
+      lateMorning: '上午好',
+      midday: '中午好',
+      afternoon: '下午好',
+      lateAfternoon: '傍晚好',
+      evening: '傍晚好',
+      night: '晚上好',
+      lateNight: '深夜好'
+    };
+    
+    // Season and event-based themes
+    this.seasonalThemes = this.getSeasonalThemes();
+  }
+
+  /**
+   * Get current season and relevant themes
+   */
+  getSeasonalThemes() {
+    const month = new Date().getMonth() + 1;
+    
+    if (month >= 3 && month <= 5) {
+      return {
+        season: 'spring',
+        theme: '春天',
+        keywords: ['春暖花开', '万物复苏', '新生的', '希望的'],
+        colors: ['粉色', '绿色', '浅色']
+      };
+    } else if (month >= 6 && month <= 8) {
+      return {
+        season: 'summer',
+        theme: '夏天',
+        keywords: ['阳光', '热情', '活力', '清凉'],
+        colors: ['蓝色', '黄色', '明亮']
+      };
+    } else if (month >= 9 && month <= 11) {
+      return {
+        season: 'autumn',
+        theme: '秋天',
+        keywords: ['秋意', '收获', '金黄', '沉静'],
+        colors: ['橙色', '棕色', '暖色']
+      };
+    } else {
+      return {
+        season: 'winter',
+        theme: '冬天',
+        keywords: ['温暖', '宁静', '沉淀', '希望'],
+        colors: ['白色', '暖色', '柔和']
+      };
+    }
+  }
+
+  /**
+   * Get time-specific greeting based on hour
+   */
+  getTimeGreeting() {
+    const hour = new Date().getHours();
+    
+    if (hour >= 4 && hour < 6) return this.timeGreetings.dawn;
+    if (hour >= 6 && hour < 8) return this.timeGreetings.earlyMorning;
+    if (hour >= 8 && hour < 10) return this.timeGreetings.morning;
+    if (hour >= 10 && hour < 12) return this.timeGreetings.lateMorning;
+    if (hour >= 12 && hour < 14) return this.timeGreetings.midday;
+    if (hour >= 14 && hour < 17) return this.timeGreetings.afternoon;
+    if (hour >= 17 && hour < 19) return this.timeGreetings.lateAfternoon;
+    if (hour >= 19 && hour < 21) return this.timeGreetings.evening;
+    if (hour >= 21 && hour < 24) return this.timeGreetings.night;
+    return this.timeGreetings.lateNight;
+  }
+
+  /**
+   * Pick random item from array
+   */
+  pickRandom(arr) {
+    return arr[Math.floor(Math.random() * arr.length)];
+  }
+
+  /**
+   * Generate emotional expression based on context
+   */
+  generateEmotionalExpression(emotion = 'warm') {
+    const expressions = this.emotionalExpressions[emotion] || this.emotionalExpressions.warm;
+    return this.pickRandom(expressions);
   }
 
   /**

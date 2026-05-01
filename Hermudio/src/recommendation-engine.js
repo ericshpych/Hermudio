@@ -6,6 +6,7 @@
  * 2. User preference learning and matching
  * 3. Multi-strategy song matching
  * 4. Fallback recommendation chains
+ * 5. Diversity and novelty scoring
  */
 
 const { getCurrentScene } = require('./scene-analyzer');
@@ -18,7 +19,13 @@ class RecommendationEngine {
     this.recommendationCache = new Map();
     this.lastRecommendation = null;
     this.musicService = new MusicService(db);
-    this.playedSongs = new Set(); // Track played song IDs to avoid repeats
+    this.playedSongs = new Set();
+    this.recentRecommendations = []; // Track recent recs for diversity
+    this.maxRecentRecs = 20;
+    
+    // Recommendation diversity settings
+    this.diversityThreshold = 3; // Max similar songs in recent recs
+    this.noveltyBoost = 0.3; // Boost for new/unplayed songs
   }
 
   /**
@@ -44,7 +51,181 @@ class RecommendationEngine {
    */
   clearPlayedSongs() {
     this.playedSongs.clear();
+    this.recentRecommendations = [];
     console.log('[Recommendation] Cleared played songs history');
+  }
+
+  /**
+   * Add to recent recommendations for diversity tracking
+   */
+  addToRecentRecs(song, score = 1) {
+    this.recentRecommendations.push({
+      id: song.id,
+      artist: song.artist,
+      name: song.name,
+      score,
+      timestamp: Date.now()
+    });
+    
+    // Keep only recent recs
+    if (this.recentRecommendations.length > this.maxRecentRecs) {
+      this.recentRecommendations.shift();
+    }
+  }
+
+  /**
+   * Calculate diversity score for a song
+   * Higher score = more diverse from recent recommendations
+   */
+  calculateDiversityScore(song) {
+    if (this.recentRecommendations.length === 0) {
+      return 1.0; // No history, give max diversity
+    }
+
+    // Count similar songs in recent recommendations
+    let similarCount = 0;
+    
+    for (const recent of this.recentRecommendations) {
+      // Same artist counts as similar
+      if (recent.artist === song.artist) {
+        similarCount += 2; // Weight artist similarity higher
+      }
+      // Same song counts as very similar
+      if (recent.id === song.id) {
+        similarCount += 5;
+      }
+    }
+
+    // Calculate diversity score (0-1, higher = more diverse)
+    const maxSimilar = this.recentRecommendations.length * 2;
+    const diversityScore = 1 - Math.min(similarCount / maxSimilar, 1);
+    
+    return diversityScore;
+  }
+
+  /**
+   * Calculate novelty score (new/unplayed songs get boost)
+   */
+  calculateNoveltyScore(song) {
+    // Check if song was recently played
+    const wasRecentlyPlayed = this.playedSongs.has(song.id);
+    
+    // Check if song is in recent recommendations
+    const inRecentRecs = this.recentRecommendations.some(r => r.id === song.id);
+    
+    if (!wasRecentlyPlayed && !inRecentRecs) {
+      return 1 + this.noveltyBoost; // New song gets novelty boost
+    }
+    
+    return 1.0; // Existing song gets normal score
+  }
+
+  /**
+   * Calculate combined recommendation score
+   */
+  calculateRecScore(song, scene, userPrefs) {
+    let score = 100;
+    
+    // Diversity boost
+    score += this.calculateDiversityScore(song) * 30;
+    
+    // Novelty boost
+    score *= this.calculateNoveltyScore(song);
+    
+    // Scene matching bonus
+    const sceneMatchBonus = this.calculateSceneMatchBonus(song, scene);
+    score += sceneMatchBonus;
+    
+    // User preference match bonus
+    const prefMatchBonus = this.calculatePreferenceMatchBonus(song, userPrefs);
+    score += prefMatchBonus;
+    
+    return score;
+  }
+
+  /**
+   * Calculate how well a song matches the current scene
+   */
+  calculateSceneMatchBonus(song, scene) {
+    let bonus = 0;
+    const { timeOfDay, weather, mood } = scene;
+    
+    // Time-based matching
+    const isNight = timeOfDay === 'night';
+    const songText = `${song.name} ${song.artist} ${song.album || ''}`.toLowerCase();
+    
+    // Night time prefers calm music
+    if (isNight) {
+      if (/爵士|jazz|古典|钢琴|piano|轻音乐|纯音乐|安静|舒缓/.test(songText)) {
+        bonus += 20;
+      }
+      if (/摇滚|rock|电子|hiphop|hip-hop/.test(songText)) {
+        bonus -= 10;
+      }
+    }
+    
+    // Daytime prefers energetic music
+    if (!isNight) {
+      if (/流行|pop|摇滚|rock|轻快|欢快|happy/.test(songText)) {
+        bonus += 15;
+      }
+    }
+    
+    // Weather-based matching
+    if (weather === 'rainy') {
+      if (/雨天|雨|钢琴|爵士|治愈|安静/.test(songText)) {
+        bonus += 15;
+      }
+    }
+    
+    if (weather === 'sunny') {
+      if (/阳光|晴天|欢快|happy|流行|pop/.test(songText)) {
+        bonus += 10;
+      }
+    }
+    
+    return bonus;
+  }
+
+  /**
+   * Calculate user preference match bonus
+   */
+  calculatePreferenceMatchBonus(song, userPrefs) {
+    let bonus = 0;
+    
+    if (!userPrefs) return bonus;
+    
+    const songText = `${song.name} ${song.artist} ${song.album || ''}`.toLowerCase();
+    
+    // Preferred artists bonus
+    if (userPrefs.preferredArtists && userPrefs.preferredArtists.length > 0) {
+      for (const artist of userPrefs.preferredArtists) {
+        if (song.artist && song.artist.includes(artist)) {
+          bonus += 25;
+          break;
+        }
+      }
+    }
+    
+    // Preferred styles bonus
+    if (userPrefs.preferredStyles && userPrefs.preferredStyles.length > 0) {
+      for (const style of userPrefs.preferredStyles) {
+        if (songText.includes(style.toLowerCase())) {
+          bonus += 15;
+        }
+      }
+    }
+    
+    // Disliked styles penalty
+    if (userPrefs.dislikedStyles && userPrefs.dislikedStyles.length > 0) {
+      for (const style of userPrefs.dislikedStyles) {
+        if (songText.includes(style.toLowerCase())) {
+          bonus -= 30;
+        }
+      }
+    }
+    
+    return bonus;
   }
 
   /**
@@ -52,24 +233,30 @@ class RecommendationEngine {
    */
   async getRecommendations(count = 5, context = {}) {
     const recommendations = [];
-    const maxAttempts = count * 5; // Allow extra attempts to find unique songs
+    const maxAttempts = count * 5;
     let attempts = 0;
-    let allowPlayedSongs = false; // After many attempts, allow played songs
+    let allowPlayedSongs = false;
+    
+    const scene = await getCurrentScene();
+    const userPrefs = await this.userProfile.getPreferences();
 
     while (recommendations.length < count && attempts < maxAttempts) {
       attempts++;
       const rec = await this.getRecommendation(context);
       
       if (rec && rec.song) {
-        // Check if this song is already in the current playlist
         const isInCurrentPlaylist = recommendations.some(r => r.song.id === rec.song.id);
-        
-        // Check if this song has been played (only if we haven't exhausted options)
         const isPlayed = !allowPlayedSongs && this.playedSongs.has(rec.song.id);
         
         if (!isInCurrentPlaylist && !isPlayed) {
+          // Calculate and add diversity score
+          rec.diversityScore = this.calculateDiversityScore(rec.song);
+          rec.noveltyScore = this.calculateNoveltyScore(rec.song);
+          rec.totalScore = this.calculateRecScore(rec.song, scene, userPrefs);
+          
           recommendations.push(rec);
-          console.log('[Recommendation] Added unique song:', rec.song.name, '-', rec.song.artist);
+          this.addToRecentRecs(rec.song, rec.totalScore);
+          console.log('[Recommendation] Added unique song:', rec.song.name, '-', rec.song.artist, 'Score:', rec.totalScore.toFixed(1));
         } else {
           if (isInCurrentPlaylist) {
             console.log('[Recommendation] Skipped duplicate in playlist:', rec.song.name);
@@ -78,7 +265,6 @@ class RecommendationEngine {
           }
         }
         
-        // If we've tried many times and still don't have enough songs, allow played songs
         if (attempts > count * 3 && recommendations.length < count) {
           if (!allowPlayedSongs) {
             allowPlayedSongs = true;
@@ -88,6 +274,9 @@ class RecommendationEngine {
       }
     }
 
+    // Sort by total score (highest first)
+    recommendations.sort((a, b) => b.totalScore - a.totalScore);
+    
     console.log('[Recommendation] Generated', recommendations.length, 'unique recommendations after', attempts, 'attempts');
     return recommendations;
   }
@@ -734,6 +923,189 @@ class RecommendationEngine {
     }
 
     return null;
+  }
+
+  /**
+   * Exploration mode: Recommend songs from new/unexplored styles
+   * Helps users discover new music types
+   */
+  async recommendExploration(context = {}) {
+    const userPrefs = await this.userProfile.getPreferences();
+    
+    // Define style categories for exploration
+    const allStyles = [
+      '爵士', '古典', '钢琴', '轻音乐', '民谣', '摇滚', '流行', '电子'
+    ];
+    
+    // Filter out styles user already prefers (to encourage exploration)
+    const unexploredStyles = allStyles.filter(style => 
+      !userPrefs.preferredStyles?.includes(style)
+    );
+    
+    // If all styles explored, pick a random one
+    const targetStyles = unexploredStyles.length > 0 
+      ? unexploredStyles 
+      : allStyles;
+    
+    const targetStyle = targetStyles[Math.floor(Math.random() * targetStyles.length)];
+    
+    // Try to find songs from this style
+    try {
+      const songs = await this.searchAndFilter(`${targetStyle} 中文`, 5);
+      if (songs.length > 0) {
+        const song = songs[0];
+        return {
+          song,
+          reason: `探索一下${targetStyle}音乐，发现新的音乐世界`,
+          source: 'exploration',
+          styleExplored: targetStyle
+        };
+      }
+    } catch (error) {
+      console.error('[Recommendation] Exploration search failed:', error);
+    }
+    
+    return null;
+  }
+
+  /**
+   * Similar songs recommendation based on a seed song
+   */
+  async recommendSimilarTo(seedSong, count = 3) {
+    const songs = [];
+    
+    // Try to find songs by the same artist
+    if (seedSong.artist) {
+      try {
+        const artistSongs = await this.searchAndFilter(seedSong.artist, count + 1);
+        const filtered = artistSongs.filter(s => s.id !== seedSong.id);
+        songs.push(...filtered.slice(0, count));
+      } catch (error) {
+        console.error('[Recommendation] Artist search failed:', error);
+      }
+    }
+    
+    // Try to find songs from the same style/album
+    if (seedSong.album && songs.length < count) {
+      try {
+        const albumSongs = await this.searchAndFilter(seedSong.album, count);
+        albumSongs
+          .filter(s => s.id !== seedSong.id && !songs.some(existing => existing.id === s.id))
+          .slice(0, count - songs.length)
+          .forEach(s => songs.push(s));
+      } catch (error) {
+        console.error('[Recommendation] Album search failed:', error);
+      }
+    }
+    
+    if (songs.length > 0) {
+      return songs.map(song => ({
+        song,
+        reason: `和${seedSong.name}风格相似的歌曲`,
+        source: 'similar'
+      }));
+    }
+    
+    return [];
+  }
+
+  /**
+   * Time-based contextual recommendation
+   * Special recommendations for different time contexts (work breaks, meals, commute, etc.)
+   */
+  async recommendByTimeContext(context = {}) {
+    const hour = new Date().getHours();
+    const dayOfWeek = new Date().getDay();
+    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+    
+    // Define time contexts
+    const timeContexts = {
+      earlyMorning: { start: 5, end: 7, keywords: ['清晨', '轻快', '提神'], description: '清晨' },
+      morning: { start: 7, end: 10, keywords: ['上班', '工作', '专注'], description: '上午' },
+      midday: { start: 11, end: 13, keywords: ['午餐', '休息', '轻松'], description: '中午' },
+      afternoon: { start: 13, end: 17, keywords: ['下午', '工作', '专注'], description: '下午' },
+      lateAfternoon: { start: 17, end: 19, keywords: ['傍晚', '放松', '轻音乐'], description: '傍晚' },
+      evening: { start: 19, end: 21, keywords: ['晚餐', '放松', '爵士'], description: '晚上' },
+      night: { start: 21, end: 23, keywords: ['深夜', '安静', '钢琴'], description: '深夜' },
+      lateNight: { start: 23, end: 5, keywords: ['深夜', '轻音乐', '助眠'], description: '深夜' }
+    };
+    
+    // Find current time context
+    let currentContext = null;
+    for (const [name, ctx] of Object.entries(timeContexts)) {
+      if (hour >= ctx.start && hour < ctx.end) {
+        currentContext = ctx;
+        break;
+      }
+    }
+    
+    if (!currentContext) {
+      currentContext = timeContexts.evening;
+    }
+    
+    // Weekend vs weekday adjustments
+    const weekendBoost = isWeekend ? ['轻松', '度假', '旅行'] : [];
+    const allKeywords = [...currentContext.keywords, ...weekendBoost];
+    
+    // Try each keyword
+    for (const keyword of allKeywords) {
+      try {
+        const songs = await this.searchAndFilter(`${keyword} 中文`, 3);
+        if (songs.length > 0) {
+          return {
+            song: songs[0],
+            reason: `${currentContext.description}时分，一首${keyword}的音乐很适合`,
+            source: 'time_context',
+            context: currentContext.description
+          };
+        }
+      } catch (error) {
+        console.error('[Recommendation] Time context search failed:', error);
+      }
+    }
+    
+    return null;
+  }
+
+  /**
+   * Get personalized daily mix recommendation
+   * Creates a balanced playlist with variety
+   */
+  async getDailyMix(count = 5, context = {}) {
+    const recommendations = [];
+    
+    // Define mix structure: [time_context, style_variety, exploration]
+    const mixStructure = [
+      { type: 'time_context', weight: 0.3 },
+      { type: 'scene', weight: 0.4 },
+      { type: 'exploration', weight: 0.3 }
+    ];
+    
+    for (let i = 0; i < count; i++) {
+      // Determine recommendation type based on position in mix
+      const structureIndex = Math.min(i, mixStructure.length - 1);
+      const recType = mixStructure[structureIndex].type;
+      
+      let rec = null;
+      
+      switch (recType) {
+        case 'time_context':
+          rec = await this.recommendByTimeContext(context);
+          break;
+        case 'exploration':
+          rec = await this.recommendExploration(context);
+          break;
+        default:
+          rec = await this.getRecommendation(context);
+      }
+      
+      if (rec && rec.song) {
+        recommendations.push(rec);
+        this.addToRecentRecs(rec.song);
+      }
+    }
+    
+    return recommendations;
   }
 }
 
