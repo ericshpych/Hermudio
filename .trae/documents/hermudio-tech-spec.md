@@ -4,13 +4,12 @@
 
 ```mermaid
 graph TD
-    A[User Browser] --> B[Frontend HTML/JS/CSS]
+    A[User Browser] --> B[Frontend Application]
     B --> C[Express Backend Server]
-    C --> D[Netease Cloud Music CLI]
+    C --> D[Netease Cloud Music API]
     C --> E[MiniMax TTS API]
     C --> F[Open-Meteo Weather API]
-    B --> G[Hermes AI Local Service]
-    D --> H[Netease Music Service]
+    D --> G[Netease Music Service]
 
     subgraph "Frontend Layer"
         B
@@ -24,22 +23,17 @@ graph TD
         D
         E
         F
-        H
-    end
-
-    subgraph "Local AI Service"
         G
     end
 ```
 
 ## 2. 技术描述
 
-- **Frontend**: Vanilla JavaScript + HTML5 + CSS3（无框架）
+- **Frontend**: Vanilla JavaScript + HTML5 + CSS3
 - **Backend**: Node.js@20 + Express@4
 - **Music Source**: Netease Cloud Music CLI (@music163/ncm-cli)
-- **TTS Service**: MiniMax TTS API (speech-2.8-hd) + 浏览器Web Speech API
+- **TTS Service**: MiniMax TTS API (speech-2.8-hd)
 - **Weather API**: Open-Meteo (Free, no API key required)
-- **AI Service**: Hermes Local AI (localhost:8642)
 - **Initialization Tool**: npm init
 
 ### 核心依赖
@@ -49,7 +43,10 @@ graph TD
   "dependencies": {
     "axios": "^1.8.4",
     "cors": "^2.8.6",
-    "express": "^4.22.1"
+    "express": "^4.22.1",
+    "node-fetch": "^3.3.2",
+    "uuid": "^9.0.0",
+    "ws": "^8.20.0"
   }
 }
 ```
@@ -58,8 +55,11 @@ graph TD
 
 | Route | Purpose |
 |-------|---------|
-| / | 主页面，包含电台模式和聊天模式 |
-| /test-tts.html | TTS测试页面 |
+| / | 主页面，电台播放界面 |
+| /chat | 聊天模式页面 |
+| /import | 歌单导入页面 |
+| /profile | 用户偏好页面 |
+| /settings | 设置页面 |
 
 ## 4. API 定义
 
@@ -73,7 +73,6 @@ POST /api/cli/login
 Response:
 | Param Name | Param Type | Description |
 |------------|------------|-------------|
-| code | number | 200成功 |
 | success | boolean | 登录状态 |
 | loginUrl | string | 扫码登录链接 |
 | message | string | 提示信息 |
@@ -86,7 +85,7 @@ Response:
 | Param Name | Param Type | Description |
 |------------|------------|-------------|
 | isLoggedIn | boolean | 是否已登录 |
-| loginSession | object | 登录会话状态 |
+| output | string | CLI原始输出 |
 
 #### 歌曲搜索与播放
 ```
@@ -153,36 +152,6 @@ Response:
 | data | Song[] | 推荐歌曲列表 |
 | message | string | 提示信息 |
 
-#### 音量与模式
-```
-POST /api/cli/volume
-```
-
-Request:
-| Param Name | Param Type | Description |
-|------------|------------|-------------|
-| volume | number | 音量值 0-100 |
-
-```
-POST /api/cli/mode
-```
-
-Request:
-| Param Name | Param Type | Description |
-|------------|------------|-------------|
-| mode | string | sequence/random/loop |
-
-#### 日志与调试
-```
-GET /api/cli/logs?lines={lines}
-```
-
-Response:
-| Param Name | Param Type | Description |
-|------------|------------|-------------|
-| logs | string | ncm-cli日志 |
-| errors | array | 分析后的错误列表 |
-
 ### 4.2 TTS API
 
 #### 获取音色列表
@@ -214,17 +183,6 @@ Response:
 |------------|------------|-------------|
 | data.audio | string | Base64编码的音频 |
 | data.format | string | 音频格式 |
-
-#### TTS状态检查
-```
-GET /api/tts/status
-```
-
-Response:
-| Param Name | Param Type | Description |
-|------------|------------|-------------|
-| configured | boolean | 是否已配置 |
-| has_api_key | boolean | 是否有API Key |
 
 ### 4.3 TypeScript 类型定义
 
@@ -334,8 +292,10 @@ graph TD
 ```typescript
 // localStorage Keys
 const STORAGE_KEYS = {
-  HERMUDIO_USER_PREFERENCES: 'hermudio_user_preferences',
-  HERMUDIO_USER_PROFILE: 'hermudio_user_profile'
+  USER_PREFERENCES: 'claudio_user_preferences',
+  USER_PROFILE: 'claudio_user_profile',
+  PLAYLIST_IMPORTER: 'claudio_playlist_importer',
+  SETTINGS: 'claudio_settings'
 };
 
 // 用户偏好存储结构
@@ -352,7 +312,7 @@ interface StoredPreferences {
 
 ### 6.2 核心类设计
 
-#### DJController (dj-controller.js)
+#### DJController
 ```javascript
 class DJController {
   mode: 'music' | 'dj';
@@ -363,9 +323,6 @@ class DJController {
   playHistory: PlayRecord[];
   djState: DJState;
   ttsConfig: TTSConfig;
-  artistRelations: object;
-  styleKeywords: object;
-  scripts: object;
   
   // 核心方法
   async startDJMode(): Promise<DJResult>;
@@ -374,80 +331,21 @@ class DJController {
   async playSong(song: Song): Promise<PlayResult>;
   recordPlayBehavior(song: Song, behavior: string): void;
   calculatePreferenceScore(song: Song): number;
-  async getRealWeather(): Promise<WeatherResult>;
-  generateDynamicIntro(): Promise<IntroResult>;
-  generateSmartSongIntro(songName: string, artistName: string): string;
 }
 ```
 
-#### DJView (dj-view.js)
-```javascript
-class DJView {
-  isActive: boolean;
-  canvas: HTMLCanvasElement;
-  ctx: CanvasRenderingContext2D;
-  audioData: number[];
-  waveOffset: number;
-  currentTranscript: string;
-  isSpeaking: boolean;
-  currentSong: Song | null;
-  progress: number;
-  volume: number;
-  isPlaying: boolean;
-  
-  // 核心方法
-  create(): void;
-  show(): void;
-  hide(): void;
-  initVisualizer(): void;
-  drawVisualizer(): void;
-  updateTranscript(text: string, speaking: boolean): void;
-  updateSongInfo(song: Song): void;
-  updatePlayState(isPlaying: boolean): void;
-  updateProgress(current: number, total: number): void;
-  updateVolume(volume: number): void;
-  updateWeather(weather: string, icon: string): void;
-}
-```
-
-#### HermesBridge (hermes-bridge.js)
-```javascript
-class HermesBridge {
-  config: HermesConfig;
-  conversationHistory: Message[];
-  conversationId: string | null;
-  systemPrompt: string;
-  currentRequestController: AbortController | null;
-  
-  // 核心方法
-  async checkAvailability(): Promise<AvailabilityResult>;
-  async sendMessage(userMessage: string, context: object): Promise<MessageResult>;
-  async sendMessageStream(userMessage: string, context: object, onChunk: Function): Promise<MessageResult>;
-  buildContextualPrompt(userMessage: string, context: object): string;
-  updateHistory(userMessage: string, assistantMessage: string): void;
-  clearHistory(): void;
-  cancelCurrentRequest(): void;
-}
-```
-
-#### PlaylistImporter (playlist-importer.js)
+#### PlaylistImporter
 ```javascript
 class PlaylistImporter {
-  API_BASE: string;
   userProfile: UserProfile;
   recommendConfig: RecommendConfig;
   
   // 核心方法
   async importNeteasePlaylist(url: string): Promise<ImportResult>;
-  async importFromText(text: string, source: string): Promise<ImportResult>;
-  parseSongLine(line: string): ParsedSong | null;
-  async enrichSongs(songs: Song[]): Promise<Song[]>;
+  async importFromText(text: string): Promise<ImportResult>;
+  async getPersonalizedRecommendations(options: RecommendOptions): Promise<RecommendResult>;
   updateProfileFromSongs(songs: Song[], source: string): void;
   recordPlayBehavior(song: Song, behavior: string): void;
-  async getPersonalizedRecommendations(options: object): Promise<RecommendResult>;
-  calculateRecommendationScore(song: Song, mood: string | null, timeOfDay: string | null): number;
-  getTopArtists(count: number): string[];
-  getUserProfileSummary(): ProfileSummary;
 }
 ```
 
@@ -457,11 +355,10 @@ class PlaylistImporter {
 
 | 组件名 | 用途 | 文件位置 |
 |--------|------|----------|
-| AppState | 全局状态管理 | index.html (inline) |
+| Player | 播放器主组件 | dj-view.js |
 | DJController | DJ逻辑控制器 | dj-controller.js |
-| DJView | DJ全屏视图 | dj-view.js |
-| HermesBridge | AI聊天桥接 | hermes-bridge.js |
-| PlaylistImporter | 歌单导入与推荐 | playlist-importer.js |
+| PlaylistImporter | 歌单导入器 | playlist-importer.js |
+| ChatInterface | 聊天界面 | app.js (chat page) |
 
 ### 7.2 后端模块
 
@@ -470,24 +367,25 @@ class PlaylistImporter {
 | Server | Express服务器主入口 | server.js |
 | CLI API | 网易云CLI接口封装 | server.js (CLI routes) |
 | TTS API | 语音合成接口 | server.js (TTS routes) |
+| Hermes Bridge | 桥接服务 | hermes-bridge.js |
 
 ## 8. 项目结构
 
 ```
-Hermudio/
+claudio-fm/
 ├── server.js                 # Express服务器主文件
 ├── dj-controller.js          # AI DJ控制器
-├── dj-view.js               # DJ全屏视图组件
-├── hermes-bridge.js          # Hermes AI桥接服务
 ├── playlist-importer.js      # 歌单导入与推荐系统
-├── index.html               # 主页面（含电台和聊天模式）
-├── test-tts.html            # TTS测试页面
+├── hermes-bridge.js          # 桥接服务
+├── dj-view.js               # DJ视图组件
+├── mvp-dashboard/           # 前端界面
+│   └── app.js               # 主应用逻辑
 ├── .ncm-home/               # 网易云CLI配置目录
 │   └── .config/ncm-cli/
 ├── package.json             # 项目依赖
 └── .trae/documents/         # 文档目录
-    ├── hermudio-prd.md      # PRD文档
-    └── hermudio-tech-spec.md  # 技术文档
+    ├── claudio-fm-prd.md    # PRD文档
+    └── claudio-fm-tech-spec.md  # 技术文档
 ```
 
 ## 9. 开发规范
@@ -508,7 +406,7 @@ Hermudio/
 ### 9.3 API设计规范
 
 - RESTful API设计
-- 统一返回格式：`{ success: boolean, data?: any, message?: string, error?: string }`
+- 统一返回格式：{ success: boolean, data?: any, message?: string, error?: string }
 - 错误处理：HTTP状态码 + 错误信息
 
 ## 10. 部署说明
@@ -518,7 +416,6 @@ Hermudio/
 - Node.js >= 18.0.0
 - npm >= 9.0.0
 - macOS / Linux / Windows
-- Hermes AI服务（本地运行，端口8642）
 
 ### 10.2 启动步骤
 
@@ -535,7 +432,7 @@ npm start
 ### 10.3 环境变量
 
 ```bash
-# MiniMax TTS API配置（可选，有默认值）
+# MiniMax TTS API配置（可选）
 MINIMAX_API_KEY=your_api_key
 MINIMAX_GROUP_ID=your_group_id
 ```
@@ -559,9 +456,3 @@ MINIMAX_GROUP_ID=your_group_id
 - 免费天气API
 - 无需API Key
 - 支持全球位置天气查询
-
-### 11.4 Hermes AI
-
-- 本地AI服务
-- API端口：8642
-- 功能：自然语言理解、对话生成、歌曲推荐

@@ -59,6 +59,41 @@ class HermesService {
 - 简洁明了，避免过长回复
 - 适当使用emoji增加亲和力
 - 直接开始回复，不要有任何前缀或说明`;
+
+    // System prompt for Radio Host - 更创意、更自然的电台主持人
+    this.radioHostSystemPrompt = `你是Hermes，Hermudio电台的AI主持人。你是一位经验丰富、风格独特的电台DJ，擅长用温暖、自然、有感染力的语言与听众交流。
+
+你的主持风格：
+1. 像老朋友一样亲切自然，不说教、不机械
+2. 善于观察时间和氛围，用细腻的感受力描述当下
+3. 对音乐有独到见解，能挖掘歌曲背后的故事和情感
+4. 语言有画面感，能让听众产生共鸣和想象
+5. 每句话都有温度，不重复、不套路
+
+【极其重要 - 必须遵守】
+1. 你只允许输出电台口播文案，直接开始说，不要任何前缀
+2. 严禁输出"大家好"、"我是Hermes"等自我介绍（除非特别要求）
+3. 严禁输出思考过程、分析步骤、内心独白
+4. 严禁使用"根据系统提示"、"作为AI"等自我指涉语句
+5. 严禁罗列要点、使用编号或项目符号
+6. 语言要像真实的人类电台DJ一样流畅自然
+7. 每次输出都要有所不同，避免重复相同的表达方式
+
+文案要求：
+- 口语化、有节奏感，适合朗读
+- 结合具体时间、天气、氛围，让听众感到"这就是为我说的"
+- 可以引用歌词、分享感受、讲述故事，但不要堆砌信息
+- 适当使用修辞：比喻、拟人、排比等，但不要过度
+- 保持真诚，不说套话`;
+
+    // Radio script generation config - 更高temperature，更长的输出
+    this.radioConfig = {
+      temperature: 0.95,  // 更高的创造性
+      maxTokens: 1000,    // 更长的输出
+      topP: 0.9,          // 更多样化的选择
+      frequencyPenalty: 0.3,  // 减少重复
+      presencePenalty: 0.3    // 鼓励新话题
+    };
   }
   
   /**
@@ -163,44 +198,14 @@ class HermesService {
       case 'pause_request':
         response = await this.handlePauseRequest(userId);
         break;
-      case 'resume_request':
-        response = await this.handleResumeRequest(userId);
-        break;
       case 'skip_request':
         response = await this.handleSkipRequest(userId, context);
-        break;
-      case 'previous_request':
-        response = await this.handlePreviousRequest(userId);
-        break;
-      case 'volume_request':
-        response = await this.handleVolumeRequest(userId, intent);
         break;
       case 'style_request':
         response = await this.handleStyleRequest(userId, intent, context);
         break;
       case 'mood_request':
         response = await this.handleMoodRequest(userId, intent, context);
-        break;
-      case 'weather_request':
-        response = await this.handleWeatherRequest(userId, context);
-        break;
-      case 'artist_request':
-        response = await this.handleArtistRequest(userId, intent, context);
-        break;
-      case 'album_request':
-        response = await this.handleAlbumRequest(userId, intent, context);
-        break;
-      case 'search_request':
-        response = await this.handleSearchRequest(userId, intent, context);
-        break;
-      case 'playlist_request':
-        response = await this.handlePlaylistRequest(userId, context);
-        break;
-      case 'favorites_request':
-        response = await this.handleFavoritesRequest(userId);
-        break;
-      case 'history_request':
-        response = await this.handleHistoryRequest(userId);
         break;
       case 'multi_recommend_request':
         response = await this.handleMultiRecommendRequest(userId, intent, context);
@@ -213,15 +218,6 @@ class HermesService {
         break;
       case 'dislike_request':
         response = await this.handleFeedback(userId, 'dislike', context);
-        break;
-      case 'help_request':
-        response = this.handleHelpRequest();
-        break;
-      case 'thanks':
-        response = this.handleThanks();
-        break;
-      case 'bye':
-        response = this.handleBye();
         break;
       case 'greeting':
         response = this.handleGreeting(userId);
@@ -240,101 +236,35 @@ class HermesService {
   }
 
   /**
-   * Handle previous song request
-   */
-  async handlePreviousRequest(userId) {
-    const status = this.musicService.getStatus();
-    if (status.previousSong) {
-      await this.musicService.playSong(status.previousSong.id);
-      return {
-        message: `回到上一首：${status.previousSong.name} - ${status.previousSong.artist}`,
-        action: 'play',
-        song: status.previousSong
-      };
-    }
-    return {
-      message: '没有上一首的播放记录哦~',
-      action: 'none'
-    };
-  }
-
-  /**
    * Parse user intent from message
    */
   parseIntent(message) {
-    // Multi-recommend requests (e.g., "推荐3首", "推荐几首")
+    // Multi-recommend requests (e.g., "推荐3首", "推荐几首", "推荐一首歌")
     const multiRecommendPatterns = [
       /推荐\s*(\d+)\s*首/,
       /推荐几首/,
       /来\s*(\d+)\s*首/,
       /给?我\s*推荐/,
-      /想\s*听.*歌/
+      /^推荐(一首|个)?歌/  // 匹配 "推荐一首歌"、"推荐歌"、"推荐"
     ];
     for (const pattern of multiRecommendPatterns) {
       const match = message.match(pattern);
       if (match) {
-        const countMatch = message.match(/(\d+)\s*首/);
         return {
           type: 'multi_recommend_request',
-          count: countMatch ? parseInt(countMatch[1]) : 3
+          count: match[1] ? parseInt(match[1]) : 3
         };
       }
     }
 
     // Pause/Stop requests
-    if (/^(暂停|停止|stop|pause|关掉)/.test(message)) {
+    if (/^(暂停|停止|stop|pause)/.test(message)) {
       return { type: 'pause_request' };
     }
 
-    // Resume/Play requests
-    if (/^(继续|播放|开始|resume|play)/.test(message)) {
-      return { type: 'resume_request' };
-    }
-
     // Skip requests
-    if (/^(下一首|跳过|skip|next|换一首|换首歌|切歌)/.test(message)) {
+    if (/^(下一首|跳过|skip|next|换一首|换首歌)/.test(message)) {
       return { type: 'skip_request' };
-    }
-
-    // Previous song requests
-    if (/^(上一首|上一曲|上一首|previous|back)/.test(message)) {
-      return { type: 'previous_request' };
-    }
-
-    // Volume control
-    if (/^(音量|声音)[+\-＋－]/.test(message) || /^(大声点|小声点|大声一点|小点声)/.test(message)) {
-      const isLouder = /[＋+大声]/.test(message);
-      return { type: 'volume_request', direction: isLouder ? 'up' : 'down' };
-    }
-
-    // Weather-based recommendations
-    if (/^(今天|现在|外面).*(天气|下雨|晴天|下雨|下雪)/.test(message) || /天气/.test(message)) {
-      return { type: 'weather_request' };
-    }
-
-    // Artist-based recommendations
-    const artistPatterns = [
-      /(?:想听|放|播|点).*?([\u4e00-\u9fa5a-zA-Z0-9]{2,15})(?:的|的歌)/,
-      /(?:歌手|艺人)[:：]?\s*([\u4e00-\u9fa5a-zA-Z0-9]{2,15})/,
-      /([\u4e00-\u9fa5a-zA-Z0-9]{2,15})(?:的歌|的歌曲|的歌单)/
-    ];
-    for (const pattern of artistPatterns) {
-      const match = message.match(pattern);
-      if (match) {
-        return { type: 'artist_request', artist: match[1] };
-      }
-    }
-
-    // Album-based recommendations
-    const albumPatterns = [
-      /(?:专辑|专辑名)[:：]?\s*([\u4e00-\u9fa5a-zA-Z0-9]{2,30})/,
-      /(?:这张|那张).*专辑/
-    ];
-    for (const pattern of albumPatterns) {
-      const match = message.match(pattern);
-      if (match) {
-        return { type: 'album_request', album: match[1] };
-      }
     }
 
     // Style requests
@@ -346,14 +276,7 @@ class HermesService {
       '摇滚': 'rock', 'rock': 'rock',
       '古典': 'classical', 'classical': 'classical',
       '电子': 'electronic', 'electronic': 'electronic',
-      '民谣': 'folk', 'folk': 'folk',
-      '说唱': 'rap', 'rap': 'rap', 'hiphop': 'hiphop',
-      'R&B': 'rnb', 'rnb': 'rnb',
-      '蓝调': 'blues', 'blues': 'blues',
-      '古典': 'classical', '交响': 'symphony',
-      '动漫': 'anime', '二次元': 'anime',
-      '电影': 'soundtrack', 'ost': 'soundtrack',
-      '游戏': 'game', 'bgm': 'game'
+      '民谣': 'folk', 'folk': 'folk'
     };
 
     for (const [keyword, style] of Object.entries(styleKeywords)) {
@@ -364,16 +287,11 @@ class HermesService {
 
     // Mood requests
     const moodKeywords = {
-      '开心': 'happy', '快乐': 'happy', '高兴': 'happy', '愉快': 'happy',
-      '难过': 'sad', '伤心': 'sad', '悲伤': 'sad', '忧郁': 'sad',
-      '放松': 'relaxed', '轻松': 'relaxed', '舒缓': 'relaxed', '休闲': 'relaxed',
-      '专注': 'focused', '工作': 'focused', '学习': 'focused', '办公': 'focused',
-      '安静': 'quiet', '睡觉': 'sleep', '睡眠': 'sleep', '困了': 'sleep',
-      '浪漫': 'romantic', '约会': 'romantic', '情人节': 'romantic',
-      '励志': 'motivational', '加油': 'motivational', '燃': 'motivational',
-      '怀旧': 'nostalgic', '回忆': 'nostalgic', '经典': 'nostalgic',
-      '跑步': 'workout', '运动': 'workout', '健身': 'workout',
-      '开车': 'driving', '车载': 'driving'
+      '开心': 'happy', '快乐': 'happy', '高兴': 'happy',
+      '难过': 'sad', '伤心': 'sad', '悲伤': 'sad',
+      '放松': 'relaxed', '轻松': 'relaxed',
+      '专注': 'focused', '工作': 'focused', '学习': 'focused',
+      '安静': 'quiet', '睡眠': 'sleep', '睡觉': 'sleep'
     };
 
     for (const [keyword, mood] of Object.entries(moodKeywords)) {
@@ -382,58 +300,22 @@ class HermesService {
       }
     }
 
-    // Info requests
-    if (/^(现在|当前|这).*(播放|歌|曲|什么)/.test(message) || /^(what|which).*playing/.test(message)) {
+    // Info requests - 查询当前播放什么歌（排除推荐相关的请求）
+    if (/^(现在|当前)?(播放|什么)/.test(message) || /^(what|which).*playing/.test(message)) {
       return { type: 'info_request' };
     }
 
-    // Search requests
-    if (/^(搜索|找|查).*/.test(message) || /^search\s*/.test(message)) {
-      const searchTerm = message.replace(/^(搜索|找|查)\s*/, '').trim();
-      return { type: 'search_request', query: searchTerm };
-    }
-
-    // Playlist requests
-    if (/^(歌单|播放列表|playlist|歌列表)/.test(message)) {
-      return { type: 'playlist_request' };
-    }
-
-    // Favorite requests
-    if (/^(收藏|喜欢|我.*的.*歌|我的收藏)/.test(message)) {
-      return { type: 'favorites_request' };
-    }
-
-    // History requests
-    if (/^(播放记录|历史|最近.*听)/.test(message)) {
-      return { type: 'history_request' };
-    }
-
     // Like/Dislike
-    if (/^(喜欢|好听|赞|love|like|good|不错|棒)/.test(message)) {
+    if (/^(喜欢|好听|赞|love|like|good)/.test(message)) {
       return { type: 'like_request' };
     }
-    if (/^(不喜欢|难听|跳过|bad|hate|dislike|无聊|一般)/.test(message)) {
+    if (/^(不喜欢|难听|跳过|bad|hate|dislike)/.test(message)) {
       return { type: 'dislike_request' };
     }
 
-    // Help requests
-    if (/^(帮助|help|怎么|使用|命令|功能)/.test(message)) {
-      return { type: 'help_request' };
-    }
-
     // Greeting
-    if (/^(你好|您好|嗨|hello|hi|hey|在|在吗|在嘛)/.test(message)) {
+    if (/^(你好|您好|嗨|hello|hi|hey)/.test(message)) {
       return { type: 'greeting' };
-    }
-
-    // Thanks
-    if (/^(谢谢|感谢|谢了|thanks)/.test(message)) {
-      return { type: 'thanks' };
-    }
-
-    // Bye
-    if (/^(再见|拜拜|bye|下次见|回头见)/.test(message)) {
-      return { type: 'bye' };
     }
 
     return { type: 'chat' };
@@ -447,278 +329,6 @@ class HermesService {
     return {
       message: '已暂停播放。想继续听的时候随时告诉我！',
       action: 'pause'
-    };
-  }
-
-  /**
-   * Handle resume request
-   */
-  async handleResumeRequest(userId) {
-    const status = this.musicService.getStatus();
-    if (status.currentSong) {
-      await this.musicService.playSong(status.currentSong.id);
-      return {
-        message: `继续播放：${status.currentSong.name} - ${status.currentSong.artist}`,
-        action: 'resume'
-      };
-    }
-    return {
-      message: '没有正在播放的歌曲。让我为你推荐一首？',
-      action: 'recommend'
-    };
-  }
-
-  /**
-   * Handle volume request
-   */
-  async handleVolumeRequest(userId, intent) {
-    const direction = intent.direction === 'up' ? 'up' : 'down';
-    return {
-      message: direction === 'up' ? '音量已调大 🔊' : '音量已调小 🔉',
-      action: 'volume',
-      direction
-    };
-  }
-
-  /**
-   * Handle weather request
-   */
-  async handleWeatherRequest(userId, context) {
-    const { getCurrentScene } = require('./scene-analyzer');
-    const scene = await getCurrentScene();
-    
-    const weatherMessages = {
-      rainy: '今天外面在下雨呢，很适合听一些安静、治愈的音乐。让我为你选一首...',
-      sunny: '阳光明媚的好天气！来首轻快的音乐配合好心情吧~',
-      cloudy: '多云的天气，让音乐为你点亮心情~',
-      snowy: '下雪了呢，这种浪漫的氛围最适合听歌了~'
-    };
-
-    const baseMessage = weatherMessages[scene.weather] || '根据天气为你推荐音乐~';
-    
-    // Get a weather-appropriate recommendation
-    const recommendation = await this.recommendationEngine.getRecommendation({
-      ...context,
-      weatherContext: scene.weather
-    });
-
-    if (recommendation && recommendation.song) {
-      await this.musicService.playSong(recommendation.song.id);
-      await this.userProfile.recordPlay(userId, recommendation.song.id, recommendation.song);
-      return {
-        message: `${baseMessage}\n\n🎵 ${recommendation.song.name} - ${recommendation.song.artist}`,
-        action: 'play',
-        song: recommendation.song
-      };
-    }
-
-    return {
-      message: baseMessage,
-      action: 'weather_context'
-    };
-  }
-
-  /**
-   * Handle artist request
-   */
-  async handleArtistRequest(userId, intent, context) {
-    const songs = await this.musicService.searchSongs(intent.artist, 5);
-    
-    if (songs.length === 0) {
-      return {
-        message: `抱歉，没有找到 ${intent.artist} 的歌曲。可能需要登录才能播放完整功能。`,
-        action: 'none'
-      };
-    }
-
-    const song = songs[0];
-    await this.musicService.playSong(song.id, song.encryptedId);
-    await this.userProfile.recordPlay(userId, song.id, song);
-
-    return {
-      message: `为你播放 ${intent.artist} 的歌曲：\n🎵 ${song.name} - ${song.artist}`,
-      action: 'play',
-      song
-    };
-  }
-
-  /**
-   * Handle album request
-   */
-  async handleAlbumRequest(userId, intent, context) {
-    const songs = await this.musicService.searchSongs(intent.album, 5);
-    
-    if (songs.length === 0) {
-      return {
-        message: `抱歉，没有找到专辑 "${intent.album}" 的歌曲。`,
-        action: 'none'
-      };
-    }
-
-    const song = songs[0];
-    await this.musicService.playSong(song.id, song.encryptedId);
-    await this.userProfile.recordPlay(userId, song.id, song);
-
-    return {
-      message: `为你播放专辑 "${intent.album}" 中的歌曲：\n🎵 ${song.name} - ${song.artist}`,
-      action: 'play',
-      song
-    };
-  }
-
-  /**
-   * Handle search request
-   */
-  async handleSearchRequest(userId, intent, context) {
-    const songs = await this.musicService.searchSongs(intent.query, 5);
-    
-    if (songs.length === 0) {
-      return {
-        message: `没有找到 "${intent.query}" 相关的歌曲，试试其他关键词？`,
-        action: 'none'
-      };
-    }
-
-    return {
-      message: `找到 "${intent.query}" 相关歌曲 ${songs.length} 首，点击选择：`,
-      action: 'recommend',
-      recommendedSongs: songs,
-      autoPlayTimeout: 30000
-    };
-  }
-
-  /**
-   * Handle playlist request
-   */
-  async handlePlaylistRequest(userId, context) {
-    const songs = await this.recommendationEngine.getRecommendations(5, context);
-    
-    if (songs.length === 0) {
-      return {
-        message: '暂时无法获取歌单，试试其他风格？',
-        action: 'none'
-      };
-    }
-
-    const songList = songs.map((r, i) => `${i + 1}. ${r.song.name} - ${r.song.artist}`).join('\n');
-    return {
-      message: `为你准备了歌单 🎵\n\n${songList}\n\n点击播放~`,
-      action: 'recommend',
-      recommendedSongs: songs.map(r => r.song),
-      autoPlayTimeout: 30000
-    };
-  }
-
-  /**
-   * Handle favorites request
-   */
-  async handleFavoritesRequest(userId) {
-    const favorites = await this.userProfile.getFavoriteArtists(userId, 5);
-    
-    if (favorites.length === 0) {
-      return {
-        message: '你还没有收藏任何歌曲。听到喜欢的歌时告诉我"喜欢"，我会记住它~',
-        action: 'none'
-      };
-    }
-
-    const favoriteList = favorites.slice(0, 5).join('、');
-    return {
-      message: `你喜欢的歌手有：${favoriteList}。想听哪位歌手的歌？`,
-      action: 'favorites',
-      favorites
-    };
-  }
-
-  /**
-   * Handle history request
-   */
-  async handleHistoryRequest(userId) {
-    const prefs = await this.userProfile.getPreferences(userId);
-    const history = prefs.playHistory || [];
-    
-    if (history.length === 0) {
-      return {
-        message: '还没有播放记录。开始听歌吧！',
-        action: 'none'
-      };
-    }
-
-    const recentSongs = history.slice(0, 5);
-    const songList = recentSongs.map((h, i) => `${i + 1}. 歌曲 ${h.songId.substring(0, 8)}...`).join('\n');
-    return {
-      message: `最近听了 ${history.length} 首歌\n\n最近的播放：\n${songList}`,
-      action: 'history'
-    };
-  }
-
-  /**
-   * Handle help request
-   */
-  handleHelpRequest() {
-    const helpMessage = `🎵 **Hermudio 音乐助手使用指南**
-
-**点歌方式：**
-• "播放周杰伦的歌"
-• "来首爵士乐"
-• "播放钢琴曲"
-
-**心情推荐：**
-• "我想听开心的歌"
-• "播放放松的音乐"
-• "来首跑步时的歌"
-
-**控制指令：**
-• "暂停" / "继续播放"
-• "下一首" / "上一首"
-• "大声点" / "小声点"
-
-**查询功能：**
-• "现在播放什么"
-• "我的收藏"
-• "搜索：xxx"
-
-**其他：**
-• "今天天气" - 根据天气推荐
-• "谢谢" - 感谢回复
-
-试试说点什么？`;
-
-    return {
-      message: helpMessage,
-      action: 'help'
-    };
-  }
-
-  /**
-   * Handle thanks
-   */
-  handleThanks() {
-    const responses = [
-      '不客气！有需要随时叫我 😊',
-      '很高兴能帮到你！',
-      '有什么想听的尽管说~',
-      '随时为你服务！'
-    ];
-    return {
-      message: responses[Math.floor(Math.random() * responses.length)],
-      action: 'chat'
-    };
-  }
-
-  /**
-   * Handle bye
-   */
-  handleBye() {
-    const responses = [
-      '再见！有需要随时回来 🎵',
-      '拜拜，下次见~',
-      '祝你有美好的一天！',
-      '再见，随时欢迎回来听歌~'
-    ];
-    return {
-      message: responses[Math.floor(Math.random() * responses.length)],
-      action: 'bye'
     };
   }
 
@@ -1183,6 +793,235 @@ class HermesService {
    */
   clearHistory(userId) {
     this.conversationHistory.delete(userId);
+  }
+
+  /**
+   * Generate radio script using Hermes AI with enhanced creativity settings
+   * 专门用于电台文案生成，使用更高的temperature和更长的max_tokens
+   * 
+   * @param {string} prompt - 文案生成提示
+   * @param {Object} options - 可选配置
+   * @param {string} options.type - 文案类型: 'welcome' | 'intro' | 'outro' | 'transition' | 'closing'
+   * @param {Object} options.context - 上下文信息
+   * @returns {Promise<{success: boolean, script: string, error?: string}>}
+   */
+  async generateRadioScript(prompt, options = {}) {
+    // First check if Hermes AI is available
+    const isAvailable = await this.checkHermesAvailability();
+    if (!isAvailable) {
+      console.log('[Hermes] AI service not available at', this.hermesConfig.baseUrl);
+      return {
+        success: false,
+        script: '',
+        error: 'Hermes AI service not available'
+      };
+    }
+
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30秒超时
+
+      const messages = [
+        { role: 'system', content: this.radioHostSystemPrompt },
+        { role: 'user', content: prompt }
+      ];
+
+      console.log('[Hermes] Generating radio script with enhanced settings:', {
+        type: options.type || 'general',
+        temperature: this.radioConfig.temperature,
+        maxTokens: this.radioConfig.maxTokens,
+        baseUrl: this.hermesConfig.baseUrl
+      });
+
+      const response = await fetch(`${this.hermesConfig.baseUrl}/chat/completions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: this.hermesConfig.model,
+          messages: messages,
+          stream: false,
+          temperature: this.radioConfig.temperature,
+          max_tokens: this.radioConfig.maxTokens,
+          top_p: this.radioConfig.topP,
+          frequency_penalty: this.radioConfig.frequencyPenalty,
+          presence_penalty: this.radioConfig.presencePenalty,
+          stop: ["<think>", "</think>"]
+        }),
+        signal: controller.signal
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      const script = data.choices[0]?.message?.content || '';
+
+      // 清理生成的文案
+      const cleanedScript = this.cleanRadioScript(script);
+
+      console.log('[Hermes] Radio script generated successfully, length:', cleanedScript.length);
+
+      return {
+        success: true,
+        script: cleanedScript,
+        raw: script
+      };
+    } catch (error) {
+      console.error('[Hermes] Failed to generate radio script:', error);
+      return {
+        success: false,
+        script: '',
+        error: error.message
+      };
+    }
+  }
+
+  /**
+   * Clean radio script - remove unwanted prefixes and formatting
+   */
+  cleanRadioScript(text) {
+    return text
+      // 移除常见的自我介绍前缀
+      .replace(/^(大家好[，！]|我是[Hh]ermes[，。]|各位听众[，]|欢迎来到[Hh]ermudio[，。])/g, '')
+      // 移除"主持人:"、"DJ:"等前缀
+      .replace(/^(主持人|DJ|电台主持人|主播)[：:]/g, '')
+      // 移除引号包裹
+      .replace(/^[""'](.*)[""']$/g, '$1')
+      // 移除方括号和圆括号内的内容（通常是动作描述）
+      .replace(/\[.*?\]/g, '')
+      .replace(/\(.*?\)/g, '')
+      // 移除markdown格式
+      .replace(/\*\*/g, '')
+      .replace(/__/g, '')
+      // 合并多余换行
+      .replace(/\n+/g, ' ')
+      // 移除多余空格
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  /**
+   * Generate chat welcome message using Hermes AI
+   * 生成聊天模式的欢迎语，更加自然、多样化
+   * 
+   * @param {Object} options - 可选配置
+   * @param {string} options.timeOfDay - 时间段: 'morning' | 'afternoon' | 'evening' | 'night'
+   * @returns {Promise<{success: boolean, message: string, error?: string}>}
+   */
+  async generateChatWelcome(options = {}) {
+    const hour = new Date().getHours();
+    let timeOfDay = options.timeOfDay;
+    if (!timeOfDay) {
+      if (hour < 6) timeOfDay = 'night';
+      else if (hour < 12) timeOfDay = 'morning';
+      else if (hour < 18) timeOfDay = 'afternoon';
+      else timeOfDay = 'evening';
+    }
+
+    const timeGreeting = {
+      'night': '凌晨好',
+      'morning': '早上好',
+      'afternoon': '下午好',
+      'evening': '晚上好'
+    }[timeOfDay];
+
+    // 首先尝试使用 Hermes AI 生成
+    const isAvailable = await this.checkHermesAvailability();
+    if (isAvailable) {
+      try {
+        const prompts = [
+          `你是 Hermes，一个温暖、专业的音乐助手。${timeGreeting}，用自然、亲切的语气向用户打招呼，并邀请他们分享心情或音乐喜好。要求：简短（30字以内）、像朋友一样、不要生硬。`,
+          `作为 Hermes 音乐助手，${timeGreeting}！用轻松随意的方式开场，让用户愿意和你聊天。要求：自然、友好、不超过30字。`,
+          `想象你是一个懂音乐的好朋友，${timeGreeting}！用口语化的方式打招呼，并询问用户想听什么。要求：简短、亲切、有温度。`,
+          `${timeGreeting}！用一句温暖的话开场，让用户感受到你的热情。然后自然地邀请他们分享音乐需求。要求：30字左右、真诚、不套路。`
+        ];
+
+        const prompt = prompts[Math.floor(Math.random() * prompts.length)];
+
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10秒超时
+
+        const messages = [
+          { role: 'system', content: this.systemPrompt },
+          { role: 'user', content: prompt }
+        ];
+
+        console.log('[Hermes] Generating chat welcome message...');
+
+        const response = await fetch(`${this.hermesConfig.baseUrl}/chat/completions`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            model: this.hermesConfig.model,
+            messages: messages,
+            stream: false,
+            temperature: 0.9,
+            max_tokens: 100,
+            top_p: 0.95,
+            stop: ["<think>", "</think>"]
+          }),
+          signal: controller.signal
+        });
+
+        clearTimeout(timeoutId);
+
+        if (response.ok) {
+          const data = await response.json();
+          let message = data.choices[0]?.message?.content || '';
+          
+          // 清理生成的文案
+          message = this.cleanRadioScript(message);
+          
+          if (message.length > 10 && message.length < 100) {
+            console.log('[Hermes] Chat welcome generated:', message);
+            return { success: true, message };
+          }
+        }
+      } catch (error) {
+        console.error('[Hermes] Failed to generate chat welcome:', error);
+      }
+    }
+
+    // Fallback: 使用本地兜底文案
+    console.log('[Hermes] Using fallback chat welcome');
+    const fallbacks = {
+      'night': [
+        `${timeGreeting}，夜深了，让音乐陪你吧。想听点什么？`,
+        `${timeGreeting}，我是 Hermes。这个时刻，需要什么样的音乐？`,
+        `${timeGreeting}！深夜的音乐总有特别的味道，告诉我你的心情。`,
+        `${timeGreeting}，我是你的音乐伙伴。想听点舒缓的还是节奏感强的？`
+      ],
+      'morning': [
+        `${timeGreeting}！新的一天，用音乐开启吧。今天想听什么？`,
+        `${timeGreeting}，我是 Hermes。早晨的心情，需要什么样的旋律？`,
+        `${timeGreeting}！阳光正好，来点什么音乐配合这美好早晨？`,
+        `${timeGreeting}，我是你的音乐伙伴。今天的音乐之旅，从哪里开始？`
+      ],
+      'afternoon': [
+        `${timeGreeting}！午后时光，需要点音乐调剂吗？`,
+        `${timeGreeting}，我是 Hermes。下午的心情，想听点什么？`,
+        `${timeGreeting}！工作学习累了？来首歌放松一下。`,
+        `${timeGreeting}，我是你的音乐伙伴。这个下午，想听什么风格？`
+      ],
+      'evening': [
+        `${timeGreeting}！夜幕降临，用音乐结束这一天吧。`,
+        `${timeGreeting}，我是 Hermes。晚上的时光，想听点什么？`,
+        `${timeGreeting}！忙碌了一天，来首喜欢的歌放松一下。`,
+        `${timeGreeting}，我是你的音乐伙伴。今晚的音乐，由你来定。`
+      ]
+    };
+
+    const messages = fallbacks[timeOfDay] || fallbacks['morning'];
+    const message = messages[Math.floor(Math.random() * messages.length)];
+    
+    return { success: true, message };
   }
 }
 

@@ -106,94 +106,99 @@ const db = new sqlite3.Database('./data/hermudio.db', (err) => {
   }
 });
 
+// Service instances (initialized after database)
+let musicService, userProfile, recommendationEngine, hermesService, radioHostService;
+
 function initDatabase() {
-  // User Profile Table
-  db.run(`
-    CREATE TABLE IF NOT EXISTS user_profiles (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      user_id TEXT UNIQUE NOT NULL,
-      preferred_styles TEXT DEFAULT '[]',
-      preferred_artists TEXT DEFAULT '[]',
-      disliked_styles TEXT DEFAULT '[]',
-      play_history TEXT DEFAULT '[]',
-      skip_patterns TEXT DEFAULT '{}',
-      favorite_times TEXT DEFAULT '{}',
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-  `);
+  // Use serialize to ensure tables are created in order
+  db.serialize(() => {
+    // User Profile Table
+    db.run(`
+      CREATE TABLE IF NOT EXISTS user_profiles (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id TEXT UNIQUE NOT NULL,
+        preferred_styles TEXT DEFAULT '[]',
+        preferred_artists TEXT DEFAULT '[]',
+        disliked_styles TEXT DEFAULT '[]',
+        play_history TEXT DEFAULT '[]',
+        skip_patterns TEXT DEFAULT '{}',
+        favorite_times TEXT DEFAULT '{}',
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
 
-  // Play History Table
-  db.run(`
-    CREATE TABLE IF NOT EXISTS play_history (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      song_id TEXT NOT NULL,
-      played_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-  `);
+    // Play History Table
+    db.run(`
+      CREATE TABLE IF NOT EXISTS play_history (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        song_id TEXT NOT NULL,
+        played_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
 
-  // Local Music Library (songs with play permission)
-  db.run(`
-    CREATE TABLE IF NOT EXISTS local_library (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      song_id TEXT UNIQUE NOT NULL,
-      song_name TEXT,
-      artist TEXT,
-      album TEXT,
-      styles TEXT DEFAULT '[]',
-      can_play BOOLEAN DEFAULT 1,
-      play_count INTEGER DEFAULT 0,
-      added_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-  `);
+    // Local Music Library (songs with play permission)
+    db.run(`
+      CREATE TABLE IF NOT EXISTS local_library (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        song_id TEXT UNIQUE NOT NULL,
+        song_name TEXT,
+        artist TEXT,
+        album TEXT,
+        styles TEXT DEFAULT '[]',
+        can_play BOOLEAN DEFAULT 1,
+        play_count INTEGER DEFAULT 0,
+        added_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
 
-  // User Feedback Table
-  db.run(`
-    CREATE TABLE IF NOT EXISTS user_feedback (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      user_id TEXT NOT NULL,
-      song_id TEXT NOT NULL,
-      song_name TEXT,
-      artist TEXT,
-      action TEXT,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-  `);
+    // User Feedback Table
+    db.run(`
+      CREATE TABLE IF NOT EXISTS user_feedback (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id TEXT NOT NULL,
+        song_id TEXT NOT NULL,
+        song_name TEXT,
+        artist TEXT,
+        action TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
 
-  // User Playlists Table
-  db.run(`
-    CREATE TABLE IF NOT EXISTS playlists (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      user_id TEXT NOT NULL,
-      name TEXT NOT NULL,
-      description TEXT,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-  `);
+    // Daily Play Records (to avoid recommending same songs on the same day)
+    db.run(`
+      CREATE TABLE IF NOT EXISTS daily_plays (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        song_id TEXT NOT NULL,
+        play_date TEXT NOT NULL,
+        play_count INTEGER DEFAULT 1,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(song_id, play_date)
+      )
+    `);
 
-  // Playlist Songs Table (many-to-many relationship)
-  db.run(`
-    CREATE TABLE IF NOT EXISTS playlist_songs (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      playlist_id INTEGER NOT NULL,
-      song_id TEXT NOT NULL,
-      position INTEGER DEFAULT 0,
-      added_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (playlist_id) REFERENCES playlists(id) ON DELETE CASCADE,
-      UNIQUE(playlist_id, song_id)
-    )
-  `);
+    // Create index for faster queries
+    db.run(`
+      CREATE INDEX IF NOT EXISTS idx_daily_plays_date ON daily_plays(play_date)
+    `);
 
-  console.log('Database tables initialized');
+    console.log('Database tables initialized');
+    
+    // Initialize services after all tables are created
+    initializeServices();
+  });
 }
 
-// ==================== Initialize Services ====================
-const musicService = new MusicService(db);
-const userProfile = new UserProfile(db);
-const recommendationEngine = new RecommendationEngine(db, userProfile);
-const hermesService = new HermesService(recommendationEngine, musicService, userProfile);
-const radioHostService = new RadioHostService(db, hermesService);
+function initializeServices() {
+  console.log('Initializing services...');
+  musicService = new MusicService(db);
+  userProfile = new UserProfile(db);
+  recommendationEngine = new RecommendationEngine(db, userProfile);
+  hermesService = new HermesService(recommendationEngine, musicService, userProfile);
+  radioHostService = new RadioHostService(db, hermesService);
+  console.log('Services initialized successfully');
+}
 
 // ==================== API Routes ====================
 
@@ -395,6 +400,26 @@ app.get('/api/status', async (req, res) => {
   }
 });
 
+// Get Hermes AI Service Status
+app.get('/api/hermes/status', async (req, res) => {
+  try {
+    const isAvailable = await hermesService.checkHermesAvailability();
+    res.json({
+      success: true,
+      available: isAvailable,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Hermes status check error:', error);
+    res.json({
+      success: true,
+      available: false,
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
 // Get Song Details
 app.get('/api/song/:songId', async (req, res) => {
   const { songId } = req.params;
@@ -473,170 +498,6 @@ app.post('/api/feedback', async (req, res) => {
   }
 });
 
-// Get User's Favorite Songs (Liked Songs)
-app.get('/api/favorites', async (req, res) => {
-  const userId = req.query.userId || 'default';
-  
-  try {
-    const favorites = await new Promise((resolve, reject) => {
-      db.all(
-        `SELECT song_id, song_name, artist, created_at 
-         FROM user_feedback 
-         WHERE user_id = ? AND action = 'like'
-         ORDER BY created_at DESC
-         LIMIT 100`,
-        [userId],
-        (err, rows) => {
-          if (err) reject(err);
-          else resolve(rows);
-        }
-      );
-    });
-    
-    res.json({ success: true, favorites });
-  } catch (error) {
-    console.error('Favorites error:', error);
-    res.status(500).json({ error: 'Failed to get favorites' });
-  }
-});
-
-// Get Play History
-app.get('/api/history', async (req, res) => {
-  const userId = req.query.userId || 'default';
-  const { limit = 50 } = req.query;
-  
-  try {
-    const history = await new Promise((resolve, reject) => {
-      db.all(
-        `SELECT * FROM play_history 
-         WHERE user_id = ?
-         ORDER BY played_at DESC
-         LIMIT ?`,
-        [userId, parseInt(limit)],
-        (err, rows) => {
-          if (err) reject(err);
-          else resolve(rows);
-        }
-      );
-    });
-    
-    res.json({ success: true, history });
-  } catch (error) {
-    console.error('History error:', error);
-    res.status(500).json({ error: 'Failed to get history' });
-  }
-});
-
-// Add Song to Favorites
-app.post('/api/favorites/add', async (req, res) => {
-  const { songId, songName, artist } = req.body;
-  const userId = req.body.userId || 'default';
-  
-  if (!songId) {
-    return res.status(400).json({ error: 'Song ID is required' });
-  }
-
-  try {
-    db.run(
-      `INSERT OR REPLACE INTO user_feedback 
-       (user_id, song_id, song_name, artist, action, created_at)
-       VALUES (?, ?, ?, ?, 'like', ?)`,
-      [userId, songId, songName || 'Unknown', artist || 'Unknown', new Date().toISOString()],
-      (err) => {
-        if (err) {
-          console.error('Add favorite error:', err);
-          res.status(500).json({ error: 'Failed to add favorite' });
-        } else {
-          res.json({ success: true, message: 'Added to favorites' });
-        }
-      }
-    );
-  } catch (error) {
-    console.error('Add favorite error:', error);
-    res.status(500).json({ error: 'Failed to add favorite' });
-  }
-});
-
-// Remove Song from Favorites
-app.post('/api/favorites/remove', async (req, res) => {
-  const { songId } = req.body;
-  const userId = req.body.userId || 'default';
-  
-  if (!songId) {
-    return res.status(400).json({ error: 'Song ID is required' });
-  }
-
-  try {
-    db.run(
-      `DELETE FROM user_feedback WHERE user_id = ? AND song_id = ? AND action = 'like'`,
-      [userId, songId],
-      (err) => {
-        if (err) {
-          console.error('Remove favorite error:', err);
-          res.status(500).json({ error: 'Failed to remove favorite' });
-        } else {
-          res.json({ success: true, message: 'Removed from favorites' });
-        }
-      }
-    );
-  } catch (error) {
-    console.error('Remove favorite error:', error);
-    res.status(500).json({ error: 'Failed to remove favorite' });
-  }
-});
-
-// Check if Song is Favorite
-app.get('/api/favorites/check', async (req, res) => {
-  const { songId } = req.query;
-  const userId = req.query.userId || 'default';
-  
-  if (!songId) {
-    return res.status(400).json({ error: 'Song ID is required' });
-  }
-
-  try {
-    const result = await new Promise((resolve, reject) => {
-      db.get(
-        `SELECT id FROM user_feedback 
-         WHERE user_id = ? AND song_id = ? AND action = 'like'`,
-        [userId, songId],
-        (err, row) => {
-          if (err) reject(err);
-          else resolve(row);
-        }
-      );
-    });
-    
-    res.json({ success: true, isFavorite: !!result });
-  } catch (error) {
-    console.error('Check favorite error:', error);
-    res.status(500).json({ error: 'Failed to check favorite' });
-  }
-});
-
-// Clear Play History
-app.post('/api/history/clear', async (req, res) => {
-  const userId = req.body.userId || 'default';
-  
-  try {
-    db.run(
-      `DELETE FROM play_history WHERE user_id = ?`,
-      [userId],
-      (err) => {
-        if (err) {
-          console.error('Clear history error:', err);
-          res.status(500).json({ error: 'Failed to clear history' });
-        } else {
-          res.json({ success: true, message: 'History cleared' });
-        }
-      }
-    );
-  } catch (error) {
-    console.error('Clear history error:', error);
-    res.status(500).json({ error: 'Failed to clear history' });
-  }
-});
-
 // Get User Stats
 app.get('/api/stats', async (req, res) => {
   const userId = req.query.userId || 'default';
@@ -647,59 +508,6 @@ app.get('/api/stats', async (req, res) => {
   } catch (error) {
     console.error('Stats error:', error);
     res.status(500).json({ error: 'Failed to get stats' });
-  }
-});
-
-// Get detailed user profile analysis
-app.get('/api/profile/analysis', async (req, res) => {
-  const userId = req.query.userId || 'default';
-  
-  try {
-    const analysis = await userProfile.getDetailedAnalysis(userId);
-    res.json({ success: true, analysis });
-  } catch (error) {
-    console.error('Profile analysis error:', error);
-    res.status(500).json({ error: 'Failed to get profile analysis' });
-  }
-});
-
-// Get listening patterns
-app.get('/api/profile/listening-patterns', async (req, res) => {
-  const userId = req.query.userId || 'default';
-  
-  try {
-    const prefs = await userProfile.getPreferences(userId);
-    const patterns = await userProfile.analyzeListeningPatterns(userId);
-    res.json({ success: true, patterns });
-  } catch (error) {
-    console.error('Listening patterns error:', error);
-    res.status(500).json({ error: 'Failed to get listening patterns' });
-  }
-});
-
-// Get preferred time slots
-app.get('/api/profile/time-preferences', async (req, res) => {
-  const userId = req.query.userId || 'default';
-  
-  try {
-    const timeSlots = await userProfile.analyzePreferredTimeSlots(userId);
-    res.json({ success: true, timeSlots });
-  } catch (error) {
-    console.error('Time preferences error:', error);
-    res.status(500).json({ error: 'Failed to get time preferences' });
-  }
-});
-
-// Get artist insights
-app.get('/api/profile/artist-insights', async (req, res) => {
-  const userId = req.query.userId || 'default';
-  
-  try {
-    const insights = await userProfile.analyzeArtistInsights(userId);
-    res.json({ success: true, insights });
-  } catch (error) {
-    console.error('Artist insights error:', error);
-    res.status(500).json({ error: 'Failed to get artist insights' });
   }
 });
 
@@ -762,6 +570,17 @@ app.post('/api/chat/clear', (req, res) => {
   const userId = req.body.userId || 'default';
   hermesService.clearHistory(userId);
   res.json({ success: true, message: 'History cleared' });
+});
+
+// Generate chat welcome message
+app.get('/api/chat/welcome', async (req, res) => {
+  try {
+    const result = await hermesService.generateChatWelcome();
+    res.json(result);
+  } catch (error) {
+    console.error('Chat welcome generation error:', error);
+    res.status(500).json({ success: false, error: 'Failed to generate welcome' });
+  }
 });
 
 // ==================== Radio Host APIs ====================
@@ -868,105 +687,6 @@ app.post('/api/radio/clear-played', (req, res) => {
   }
 });
 
-// Get daily mix recommendation (balanced playlist with variety)
-app.get('/api/recommend/daily-mix', async (req, res) => {
-  const { count = 5 } = req.query;
-  const userId = req.query.userId || 'default';
-  
-  try {
-    const scene = await getCurrentScene();
-    const recommendations = await recommendationEngine.getDailyMix(parseInt(count), { userId, scene });
-    
-    res.json({
-      success: true,
-      recommendations,
-      scene: scene.timeOfDay
-    });
-  } catch (error) {
-    console.error('Daily mix error:', error);
-    res.status(500).json({ error: 'Failed to generate daily mix' });
-  }
-});
-
-// Get exploration recommendation (discover new styles)
-app.get('/api/recommend/explore', async (req, res) => {
-  const userId = req.query.userId || 'default';
-  
-  try {
-    const recommendation = await recommendationEngine.recommendExploration({ userId });
-    
-    if (!recommendation || !recommendation.song) {
-      return res.status(404).json({ error: 'No exploration recommendation available' });
-    }
-
-    res.json({
-      success: true,
-      recommendation
-    });
-  } catch (error) {
-    console.error('Exploration error:', error);
-    res.status(500).json({ error: 'Failed to get exploration recommendation' });
-  }
-});
-
-// Get similar songs recommendation
-app.get('/api/recommend/similar', async (req, res) => {
-  const { songId, songName, artist, album } = req.query;
-  
-  if (!songId && !songName) {
-    return res.status(400).json({ error: 'Song ID or name is required' });
-  }
-  
-  try {
-    const seedSong = { id: songId, name: songName, artist, album };
-    const recommendations = await recommendationEngine.recommendSimilarTo(seedSong, 3);
-    
-    res.json({
-      success: true,
-      recommendations
-    });
-  } catch (error) {
-    console.error('Similar songs error:', error);
-    res.status(500).json({ error: 'Failed to get similar songs' });
-  }
-});
-
-// Get time-context recommendation
-app.get('/api/recommend/time-context', async (req, res) => {
-  const userId = req.query.userId || 'default';
-  
-  try {
-    const scene = await getCurrentScene();
-    const recommendation = await recommendationEngine.recommendByTimeContext({ userId, scene });
-    
-    if (!recommendation || !recommendation.song) {
-      return res.status(404).json({ error: 'No time-context recommendation available' });
-    }
-
-    res.json({
-      success: true,
-      recommendation,
-      context: recommendation.context
-    });
-  } catch (error) {
-    console.error('Time-context error:', error);
-    res.status(500).json({ error: 'Failed to get time-context recommendation' });
-  }
-});
-
-// Get recommendation statistics
-app.get('/api/recommend/stats', (req, res) => {
-  res.json({
-    success: true,
-    stats: {
-      playedSongsCount: recommendationEngine.playedSongs.size,
-      recentRecsCount: recommendationEngine.recentRecommendations.length,
-      diversityThreshold: recommendationEngine.diversityThreshold,
-      noveltyBoost: recommendationEngine.noveltyBoost
-    }
-  });
-});
-
 // ==================== Library APIs ====================
 
 // Get Local Library
@@ -994,279 +714,6 @@ app.post('/api/library', (req, res) => {
         return res.status(500).json({ error: err.message });
       }
       res.json({ success: true, message: 'Added to library' });
-    }
-  );
-});
-
-// ==================== Playlist Management APIs ====================
-
-// Get User's Playlists
-app.get('/api/playlists', (req, res) => {
-  const userId = req.query.userId || 'default';
-  
-  db.all(
-    `SELECT * FROM playlists WHERE user_id = ? ORDER BY updated_at DESC`,
-    [userId],
-    (err, rows) => {
-      if (err) {
-        return res.status(500).json({ error: err.message });
-      }
-      res.json({ success: true, playlists: rows });
-    }
-  );
-});
-
-// Create New Playlist
-app.post('/api/playlists', (req, res) => {
-  const { name, description } = req.body;
-  const userId = req.body.userId || 'default';
-  
-  if (!name) {
-    return res.status(400).json({ error: 'Playlist name is required' });
-  }
-
-  db.run(
-    `INSERT INTO playlists (user_id, name, description, created_at, updated_at)
-     VALUES (?, ?, ?, ?, ?)`,
-    [userId, name, description || '', new Date().toISOString(), new Date().toISOString()],
-    function(err) {
-      if (err) {
-        return res.status(500).json({ error: err.message });
-      }
-      res.json({ success: true, playlistId: this.lastID, message: 'Playlist created' });
-    }
-  );
-});
-
-// Get Playlist Details with Songs
-app.get('/api/playlists/:id', (req, res) => {
-  const { id } = req.params;
-  const userId = req.query.userId || 'default';
-  
-  db.get(
-    `SELECT * FROM playlists WHERE id = ? AND user_id = ?`,
-    [id, userId],
-    (err, playlist) => {
-      if (err) {
-        return res.status(500).json({ error: err.message });
-      }
-      if (!playlist) {
-        return res.status(404).json({ error: 'Playlist not found' });
-      }
-      
-      db.all(
-        `SELECT ps.position, s.* FROM playlist_songs ps 
-         JOIN songs s ON ps.song_id = s.id 
-         WHERE ps.playlist_id = ? 
-         ORDER BY ps.position`,
-        [id],
-        (err, songs) => {
-          if (err) {
-            return res.status(500).json({ error: err.message });
-          }
-          res.json({ success: true, playlist, songs });
-        }
-      );
-    }
-  );
-});
-
-// Add Song to Playlist
-app.post('/api/playlists/:id/songs', (req, res) => {
-  const { id } = req.params;
-  const { songId } = req.body;
-  const userId = req.body.userId || 'default';
-  
-  if (!songId) {
-    return res.status(400).json({ error: 'Song ID is required' });
-  }
-
-  // Verify playlist ownership
-  db.get(
-    `SELECT id FROM playlists WHERE id = ? AND user_id = ?`,
-    [id, userId],
-    (err, playlist) => {
-      if (err || !playlist) {
-        return res.status(404).json({ error: 'Playlist not found' });
-      }
-      
-      // Get current max position
-      db.get(
-        `SELECT MAX(position) as maxPos FROM playlist_songs WHERE playlist_id = ?`,
-        [id],
-        (err, result) => {
-          const newPosition = (result?.maxPos || 0) + 1;
-          
-          db.run(
-            `INSERT OR IGNORE INTO playlist_songs (playlist_id, song_id, position) VALUES (?, ?, ?)`,
-            [id, songId, newPosition],
-            function(err) {
-              if (err) {
-                return res.status(500).json({ error: err.message });
-              }
-              
-              // Update playlist timestamp
-              db.run(
-                `UPDATE playlists SET updated_at = ? WHERE id = ?`,
-                [new Date().toISOString(), id]
-              );
-              
-              res.json({ success: true, message: 'Song added to playlist' });
-            }
-          );
-        }
-      );
-    }
-  );
-});
-
-// Remove Song from Playlist
-app.delete('/api/playlists/:id/songs/:songId', (req, res) => {
-  const { id, songId } = req.params;
-  const userId = req.query.userId || 'default';
-  
-  // Verify playlist ownership
-  db.get(
-    `SELECT id FROM playlists WHERE id = ? AND user_id = ?`,
-    [id, userId],
-    (err, playlist) => {
-      if (err || !playlist) {
-        return res.status(404).json({ error: 'Playlist not found' });
-      }
-      
-      db.run(
-        `DELETE FROM playlist_songs WHERE playlist_id = ? AND song_id = ?`,
-        [id, songId],
-        function(err) {
-          if (err) {
-            return res.status(500).json({ error: err.message });
-          }
-          
-          db.run(
-            `UPDATE playlists SET updated_at = ? WHERE id = ?`,
-            [new Date().toISOString(), id]
-          );
-          
-          res.json({ success: true, message: 'Song removed from playlist' });
-        }
-      );
-    }
-  );
-});
-
-// Delete Playlist
-app.delete('/api/playlists/:id', (req, res) => {
-  const { id } = req.params;
-  const userId = req.query.userId || 'default';
-  
-  // Verify playlist ownership and delete
-  db.run(
-    `DELETE FROM playlists WHERE id = ? AND user_id = ?`,
-    [id, userId],
-    function(err) {
-      if (err) {
-        return res.status(500).json({ error: err.message });
-      }
-      if (this.changes === 0) {
-        return res.status(404).json({ error: 'Playlist not found' });
-      }
-      
-      // Also delete playlist songs
-      db.run(`DELETE FROM playlist_songs WHERE playlist_id = ?`, [id]);
-      
-      res.json({ success: true, message: 'Playlist deleted' });
-    }
-  );
-});
-
-// Export Playlist (as JSON)
-app.get('/api/playlists/:id/export', (req, res) => {
-  const { id } = req.params;
-  const userId = req.query.userId || 'default';
-  
-  db.get(
-    `SELECT * FROM playlists WHERE id = ? AND user_id = ?`,
-    [id, userId],
-    (err, playlist) => {
-      if (err || !playlist) {
-        return res.status(404).json({ error: 'Playlist not found' });
-      }
-      
-      db.all(
-        `SELECT s.* FROM playlist_songs ps 
-         JOIN songs s ON ps.song_id = s.id 
-         WHERE ps.playlist_id = ? 
-         ORDER BY ps.position`,
-        [id],
-        (err, songs) => {
-          if (err) {
-            return res.status(500).json({ error: err.message });
-          }
-          
-          const exportData = {
-            name: playlist.name,
-            description: playlist.description,
-            exportedAt: new Date().toISOString(),
-            songCount: songs.length,
-            songs: songs.map(s => ({
-              id: s.id,
-              name: s.name,
-              artist: s.artist,
-              album: s.album,
-              duration: s.duration
-            }))
-          };
-          
-          res.json({ success: true, playlist: exportData });
-        }
-      );
-    }
-  );
-});
-
-// Import Playlist (from JSON)
-app.post('/api/playlists/import', async (req, res) => {
-  const { playlistData, songs } = req.body;
-  const userId = req.body.userId || 'default';
-  
-  if (!playlistData || !playlistData.name) {
-    return res.status(400).json({ error: 'Invalid playlist data' });
-  }
-
-  // Create playlist
-  db.run(
-    `INSERT INTO playlists (user_id, name, description, created_at, updated_at)
-     VALUES (?, ?, ?, ?, ?)`,
-    [userId, playlistData.name, playlistData.description || '', new Date().toISOString(), new Date().toISOString()],
-    async function(err) {
-      if (err) {
-        return res.status(500).json({ error: err.message });
-      }
-      
-      const playlistId = this.lastID;
-      
-      // Add songs to playlist
-      if (songs && songs.length > 0) {
-        let position = 1;
-        for (const song of songs) {
-          // Try to find song in database
-          db.get(`SELECT id FROM songs WHERE id = ?`, [song.id], (err, existingSong) => {
-            if (existingSong) {
-              db.run(
-                `INSERT OR IGNORE INTO playlist_songs (playlist_id, song_id, position) VALUES (?, ?, ?)`,
-                [playlistId, song.id, position++]
-              );
-            }
-          });
-        }
-      }
-      
-      res.json({ 
-        success: true, 
-        playlistId,
-        message: 'Playlist imported successfully',
-        songCount: songs?.length || 0
-      });
     }
   );
 });
