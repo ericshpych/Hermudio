@@ -26,8 +26,19 @@ class SceneAnalyzer {
     // Determine time of day
     const timeOfDay = this.getTimeOfDay(hour);
 
-    // Get weather (with caching)
-    const weather = await this.getWeather();
+    // Get weather (with caching and timeout)
+    let weather = 'sunny';
+    try {
+      weather = await Promise.race([
+        this.getWeather(),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Scene getWeather timeout')), 7000)
+        )
+      ]);
+    } catch (error) {
+      console.error('[SceneAnalyzer] getWeather failed, using default:', error.message);
+      weather = 'sunny';
+    }
 
     // Infer mood from time and weather
     const mood = this.inferMood(timeOfDay, weather);
@@ -70,12 +81,18 @@ class SceneAnalyzer {
 
     try {
       // Using Open-Meteo API (free, no key required)
-      const weather = await this.fetchWeatherFromAPI();
+      // Add timeout wrapper to prevent hanging
+      const weather = await Promise.race([
+        this.fetchWeatherFromAPI(),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Weather API timeout')), 6000)
+        )
+      ]);
       this.weatherCache = weather;
       this.weatherCacheTime = Date.now();
       return weather;
     } catch (error) {
-      console.error('[SceneAnalyzer] Weather fetch failed:', error);
+      console.error('[SceneAnalyzer] Weather fetch failed:', error.message);
       // Return default weather
       return 'sunny';
     }
@@ -92,7 +109,7 @@ class SceneAnalyzer {
       
       const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`;
 
-      https.get(url, (res) => {
+      const request = https.get(url, (res) => {
         let data = '';
 
         res.on('data', (chunk) => {
@@ -111,6 +128,12 @@ class SceneAnalyzer {
         });
       }).on('error', (error) => {
         reject(error);
+      });
+
+      // Set timeout to prevent hanging
+      request.setTimeout(5000, () => {
+        request.destroy();
+        reject(new Error('Weather API request timeout'));
       });
     });
   }

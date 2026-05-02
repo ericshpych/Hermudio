@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TTS 连续播放测试</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #0a0a0f;
+            color: #fff;
+        }
+        h1 { color: #4ade80; }
+        .test-section {
+            background: #1a1a25;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+        }
+        button {
+            background: #4ade80;
+            color: #0a0a0f;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+        }
+        button:hover { background: #22c55e; }
+        button:disabled { background: #666; cursor: not-allowed; }
+        .log {
+            background: #12121a;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-family: monospace;
+            font-size: 13px;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        .log-entry { margin: 3px 0; }
+        .log-info { color: #60a5fa; }
+        .log-success { color: #4ade80; }
+        .log-error { color: #f87171; }
+        .log-warn { color: #fbbf24; }
+        .status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+        .status-ok { background: #4ade80; color: #0a0a0f; }
+        .status-error { background: #f87171; color: #fff; }
+    </style>
+</head>
+<body>
+    <h1>🎵 TTS 连续播放测试</h1>
+    
+    <div class="test-section">
+        <h3>服务状态</h3>
+        <p>
+            服务器: <span id="serverStatus" class="status">检查中...</span>
+            TTS: <span id="ttsStatus" class="status">检查中...</span>
+        </p>
+    </div>
+
+    <div class="test-section">
+        <h3>测试选项</h3>
+        <button onclick="testSingleTTS()">测试单条 TTS</button>
+        <button onclick="testSequentialTTS()">测试连续播放 (3条)</button>
+        <button onclick="testWithBlockedAPI()">测试 API 被阻止时的回退</button>
+        <button onclick="clearLogs()">清空日志</button>
+    </div>
+
+    <div class="test-section">
+        <h3>测试日志</h3>
+        <div id="logs" class="log"></div>
+    </div>
+
+    <script>
+        const API_BASE = window.location.origin;
+        let logs = [];
+
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const entry = `[${timestamp}] ${message}`;
+            logs.push({ message: entry, type });
+            
+            const logDiv = document.getElementById('logs');
+            const div = document.createElement('div');
+            div.className = `log-entry log-${type}`;
+            div.textContent = entry;
+            logDiv.appendChild(div);
+            logDiv.scrollTop = logDiv.scrollHeight;
+            
+            console.log(`[TTS Test] ${message}`);
+        }
+
+        function clearLogs() {
+            logs = [];
+            document.getElementById('logs').innerHTML = '';
+        }
+
+        // 检查服务状态
+        async function checkStatus() {
+            try {
+                const healthRes = await fetch(`${API_BASE}/api/health`);
+                const health = await healthRes.json();
+                document.getElementById('serverStatus').textContent = '正常';
+                document.getElementById('serverStatus').className = 'status status-ok';
+                log('服务器连接正常', 'success');
+            } catch (e) {
+                document.getElementById('serverStatus').textContent = '错误';
+                document.getElementById('serverStatus').className = 'status status-error';
+                log(`服务器连接失败: ${e.message}`, 'error');
+            }
+
+            try {
+                const ttsRes = await fetch(`${API_BASE}/api/tts/status`);
+                const tts = await ttsRes.json();
+                if (tts.data.configured) {
+                    document.getElementById('ttsStatus').textContent = '已配置';
+                    document.getElementById('ttsStatus').className = 'status status-ok';
+                    log('TTS 服务已配置', 'success');
+                } else {
+                    document.getElementById('ttsStatus').textContent = '未配置';
+                    document.getElementById('ttsStatus').className = 'status status-error';
+                    log('TTS 服务未配置', 'warn');
+                }
+            } catch (e) {
+                document.getElementById('ttsStatus').textContent = '错误';
+                document.getElementById('ttsStatus').className = 'status status-error';
+                log(`TTS 状态检查失败: ${e.message}`, 'error');
+            }
+        }
+
+        // TTS 服务（复制自主应用）
+        const TTSService = {
+            audioPlayer: null,
+            isSpeaking: false,
+            currentVoice: 'Chinese (Mandarin)_Warm_Bestie',
+            apiBase: '',
+            wordTimer: null,
+            volume: 1.5,
+
+            init() {
+                this.apiBase = window.location.origin;
+                log('TTS 服务初始化完成', 'info');
+                return true;
+            },
+
+            async speak(text, options = {}) {
+                log(`开始 TTS: "${text.substring(0, 30)}..."`, 'info');
+                this.stop();
+
+                // Try MiniMax API first
+                try {
+                    log('请求 MiniMax TTS API...', 'info');
+                    const response = await fetch(`${this.apiBase}/api/tts/doubao`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            text: text,
+                            voice_type: this.currentVoice,
+                            speed: 0.9,
+                            vol: this.volume
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success && data.data.audio) {
+                        log('MiniMax TTS 成功，播放音频...', 'success');
+                        try {
+                            await this.playAudio(data.data.audio, text, options);
+                            return true;
+                        } catch (playError) {
+                            log(`音频播放失败: ${playError.message}，回退到浏览器 TTS`, 'warn');
+                            return this.fallbackSpeak(text, options);
+                        }
+                    } else {
+                        log(`MiniMax API 失败: ${data.message}，回退到浏览器 TTS`, 'warn');
+                        return this.fallbackSpeak(text, options);
+                    }
+                } catch (e) {
+                    log(`MiniMax 请求失败: ${e.message}，回退到浏览器 TTS`, 'warn');
+                    return this.fallbackSpeak(text, options);
+                }
+            },
+
+            async playAudio(base64Audio, text, options) {
+                this.audioPlayer = new Audio(`data:audio/mp3;base64,${base64Audio}`);
+                this.audioPlayer.volume = Math.min(this.volume / 2, 1.0);
+
+                this.onProgress = options.onProgress || null;
+                this.onWord = options.onWord || null;
+
+                this.audioPlayer.onplay = () => {
+                    log('音频播放开始', 'success');
+                    this.isSpeaking = true;
+                    if (options.onStart) options.onStart();
+                };
+
+                this.audioPlayer.onended = () => {
+                    log('音频播放结束', 'success');
+                    this.isSpeaking = false;
+                    this.clearProgressTimer();
+                    if (options.onEnd) options.onEnd();
+                };
+
+                this.audioPlayer.onerror = (e) => {
+                    log(`音频播放错误: ${e.message || '未知错误'}`, 'error');
+                    this.isSpeaking = false;
+                    this.clearProgressTimer();
+                    if (options.onEnd) options.onEnd();
+                };
+
+                try {
+                    await this.audioPlayer.play();
+                } catch (playError) {
+                    log(`音频 play() 失败: ${playError.message}`, 'error');
+                    throw playError;
+                }
+            },
+
+            fallbackSpeak(text, options) {
+                log('使用浏览器内置 TTS 作为备用', 'info');
+                if (!window.speechSynthesis) {
+                    log('浏览器不支持 TTS', 'error');
+                    if (options.onEnd) options.onEnd();
+                    return false;
+                }
+
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'zh-CN';
+
+                utterance.onstart = () => {
+                    log('浏览器 TTS 开始', 'success');
+                    this.isSpeaking = true;
+                    if (options.onStart) options.onStart();
+                };
+
+                utterance.onend = () => {
+                    log('浏览器 TTS 结束', 'success');
+                    this.isSpeaking = false;
+                    if (options.onEnd) options.onEnd();
+                };
+
+                utterance.onerror = (e) => {
+                    log(`浏览器 TTS 错误: ${e.error}`, 'error');
+                    this.isSpeaking = false;
+                    if (options.onEnd) options.onEnd();
+                };
+
+                window.speechSynthesis.speak(utterance);
+                return true;
+            },
+
+            clearProgressTimer() {
+                if (this.progressTimer) {
+                    cancelAnimationFrame(this.progressTimer);
+                    this.progressTimer = null;
+                }
+            },
+
+            stop() {
+                if (this.audioPlayer) {
+                    this.audioPlayer.pause();
+                    this.audioPlayer = null;
+                }
+                if (window.speechSynthesis) {
+                    window.speechSynthesis.cancel();
+                }
+                this.clearProgressTimer();
+                this.isSpeaking = false;
+            }
+        };
+
+        // 测试单条 TTS
+        async function testSingleTTS() {
+            log('=== 测试单条 TTS ===', 'info');
+            const text = "你好，这是 TTS 测试。如果能听到这段语音，说明 TTS 服务正常工作。";
+            
+            const speakPromise = TTSService.speak(text, {
+                onStart: () => log('TTS onStart 回调触发', 'info'),
+                onEnd: () => log('TTS onEnd 回调触发', 'success'),
+                onWord: (word, index) => {}
+            });
+
+            if (speakPromise && typeof speakPromise.catch === 'function') {
+                speakPromise.catch(error => {
+                    log(`TTS 未捕获错误: ${error.message}`, 'error');
+                });
+            }
+        }
+
+        // 测试连续播放
+        async function testSequentialTTS() {
+            log('=== 测试连续播放 3 条 TTS ===', 'info');
+            
+            const texts = [
+                "这是第一条测试语音。测试连续播放功能。",
+                "这是第二条测试语音。应该能正常接续播放。",
+                "这是第三条测试语音。连续播放测试完成。"
+            ];
+
+            let current = 0;
+            
+            function playNext() {
+                if (current >= texts.length) {
+                    log('=== 连续播放测试完成 ===', 'success');
+                    return;
+                }
+
+                log(`播放第 ${current + 1}/${texts.length} 条...`, 'info');
+                const speakPromise = TTSService.speak(texts[current], {
+                    onStart: () => log(`第 ${current + 1} 条 onStart`, 'info'),
+                    onEnd: () => {
+                        log(`第 ${current + 1} 条 onEnd`, 'success');
+                        current++;
+                        setTimeout(playNext, 500); // 间隔 500ms
+                    }
+                });
+
+                if (speakPromise && typeof speakPromise.catch === 'function') {
+                    speakPromise.catch(error => {
+                        log(`第 ${current + 1} 条错误: ${error.message}，继续下一条`, 'error');
+                        current++;
+                        setTimeout(playNext, 500);
+                    });
+                }
+            }
+
+            playNext();
+        }
+
+        // 测试 API 被阻止时的回退
+        async function testWithBlockedAPI() {
+            log('=== 测试 API 回退机制 ===', 'info');
+            log('模拟 API 请求失败场景...', 'info');
+            
+            // 临时修改 apiBase 为无效地址来模拟失败
+            const originalBase = TTSService.apiBase;
+            TTSService.apiBase = 'http://invalid-server:9999';
+            
+            const text = "这是回退测试。如果 MiniMax API 失败，应该自动使用浏览器 TTS。";
+            
+            const speakPromise = TTSService.speak(text, {
+                onStart: () => log('TTS onStart', 'info'),
+                onEnd: () => {
+                    log('TTS onEnd - 回退机制正常工作', 'success');
+                    TTSService.apiBase = originalBase; // 恢复
+                }
+            });
+
+            if (speakPromise && typeof speakPromise.catch === 'function') {
+                speakPromise.catch(error => {
+                    log(`错误已捕获: ${error.message}`, 'error');
+                    TTSService.apiBase = originalBase;
+                });
+            }
+            
+            // 5秒后自动恢复
+            setTimeout(() => {
+                TTSService.apiBase = originalBase;
+            }, 5000);
+        }
+
+        // 初始化
+        TTSService.init();
+        checkStatus();
+    </script>
+</body>
+</html>

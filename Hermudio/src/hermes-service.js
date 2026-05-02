@@ -59,6 +59,41 @@ class HermesService {
 - 简洁明了，避免过长回复
 - 适当使用emoji增加亲和力
 - 直接开始回复，不要有任何前缀或说明`;
+
+    // System prompt for Radio Host - 更创意、更自然的电台主持人
+    this.radioHostSystemPrompt = `你是Hermes，Hermudio电台的AI主持人。你是一位经验丰富、风格独特的电台DJ，擅长用温暖、自然、有感染力的语言与听众交流。
+
+你的主持风格：
+1. 像老朋友一样亲切自然，不说教、不机械
+2. 善于观察时间和氛围，用细腻的感受力描述当下
+3. 对音乐有独到见解，能挖掘歌曲背后的故事和情感
+4. 语言有画面感，能让听众产生共鸣和想象
+5. 每句话都有温度，不重复、不套路
+
+【极其重要 - 必须遵守】
+1. 你只允许输出电台口播文案，直接开始说，不要任何前缀
+2. 严禁输出"大家好"、"我是Hermes"等自我介绍（除非特别要求）
+3. 严禁输出思考过程、分析步骤、内心独白
+4. 严禁使用"根据系统提示"、"作为AI"等自我指涉语句
+5. 严禁罗列要点、使用编号或项目符号
+6. 语言要像真实的人类电台DJ一样流畅自然
+7. 每次输出都要有所不同，避免重复相同的表达方式
+
+文案要求：
+- 口语化、有节奏感，适合朗读
+- 结合具体时间、天气、氛围，让听众感到"这就是为我说的"
+- 可以引用歌词、分享感受、讲述故事，但不要堆砌信息
+- 适当使用修辞：比喻、拟人、排比等，但不要过度
+- 保持真诚，不说套话`;
+
+    // Radio script generation config - 更高temperature，更长的输出
+    this.radioConfig = {
+      temperature: 0.95,  // 更高的创造性
+      maxTokens: 1000,    // 更长的输出
+      topP: 0.9,          // 更多样化的选择
+      frequencyPenalty: 0.3,  // 减少重复
+      presencePenalty: 0.3    // 鼓励新话题
+    };
   }
   
   /**
@@ -204,12 +239,13 @@ class HermesService {
    * Parse user intent from message
    */
   parseIntent(message) {
-    // Multi-recommend requests (e.g., "推荐3首", "推荐几首")
+    // Multi-recommend requests (e.g., "推荐3首", "推荐几首", "推荐一首歌")
     const multiRecommendPatterns = [
       /推荐\s*(\d+)\s*首/,
       /推荐几首/,
       /来\s*(\d+)\s*首/,
-      /给?我\s*推荐/
+      /给?我\s*推荐/,
+      /^推荐(一首|个)?歌/  // 匹配 "推荐一首歌"、"推荐歌"、"推荐"
     ];
     for (const pattern of multiRecommendPatterns) {
       const match = message.match(pattern);
@@ -264,8 +300,8 @@ class HermesService {
       }
     }
 
-    // Info requests
-    if (/^(现在|当前)?.*(播放|歌|曲|什么)/.test(message) || /^(what|which).*playing/.test(message)) {
+    // Info requests - 查询当前播放什么歌（排除推荐相关的请求）
+    if (/^(现在|当前)?(播放|什么)/.test(message) || /^(what|which).*playing/.test(message)) {
       return { type: 'info_request' };
     }
 
@@ -757,6 +793,235 @@ class HermesService {
    */
   clearHistory(userId) {
     this.conversationHistory.delete(userId);
+  }
+
+  /**
+   * Generate radio script using Hermes AI with enhanced creativity settings
+   * 专门用于电台文案生成，使用更高的temperature和更长的max_tokens
+   * 
+   * @param {string} prompt - 文案生成提示
+   * @param {Object} options - 可选配置
+   * @param {string} options.type - 文案类型: 'welcome' | 'intro' | 'outro' | 'transition' | 'closing'
+   * @param {Object} options.context - 上下文信息
+   * @returns {Promise<{success: boolean, script: string, error?: string}>}
+   */
+  async generateRadioScript(prompt, options = {}) {
+    // First check if Hermes AI is available
+    const isAvailable = await this.checkHermesAvailability();
+    if (!isAvailable) {
+      console.log('[Hermes] AI service not available at', this.hermesConfig.baseUrl);
+      return {
+        success: false,
+        script: '',
+        error: 'Hermes AI service not available'
+      };
+    }
+
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30秒超时
+
+      const messages = [
+        { role: 'system', content: this.radioHostSystemPrompt },
+        { role: 'user', content: prompt }
+      ];
+
+      console.log('[Hermes] Generating radio script with enhanced settings:', {
+        type: options.type || 'general',
+        temperature: this.radioConfig.temperature,
+        maxTokens: this.radioConfig.maxTokens,
+        baseUrl: this.hermesConfig.baseUrl
+      });
+
+      const response = await fetch(`${this.hermesConfig.baseUrl}/chat/completions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: this.hermesConfig.model,
+          messages: messages,
+          stream: false,
+          temperature: this.radioConfig.temperature,
+          max_tokens: this.radioConfig.maxTokens,
+          top_p: this.radioConfig.topP,
+          frequency_penalty: this.radioConfig.frequencyPenalty,
+          presence_penalty: this.radioConfig.presencePenalty,
+          stop: ["<think>", "</think>"]
+        }),
+        signal: controller.signal
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      const script = data.choices[0]?.message?.content || '';
+
+      // 清理生成的文案
+      const cleanedScript = this.cleanRadioScript(script);
+
+      console.log('[Hermes] Radio script generated successfully, length:', cleanedScript.length);
+
+      return {
+        success: true,
+        script: cleanedScript,
+        raw: script
+      };
+    } catch (error) {
+      console.error('[Hermes] Failed to generate radio script:', error);
+      return {
+        success: false,
+        script: '',
+        error: error.message
+      };
+    }
+  }
+
+  /**
+   * Clean radio script - remove unwanted prefixes and formatting
+   */
+  cleanRadioScript(text) {
+    return text
+      // 移除常见的自我介绍前缀
+      .replace(/^(大家好[，！]|我是[Hh]ermes[，。]|各位听众[，]|欢迎来到[Hh]ermudio[，。])/g, '')
+      // 移除"主持人:"、"DJ:"等前缀
+      .replace(/^(主持人|DJ|电台主持人|主播)[：:]/g, '')
+      // 移除引号包裹
+      .replace(/^[""'](.*)[""']$/g, '$1')
+      // 移除方括号和圆括号内的内容（通常是动作描述）
+      .replace(/\[.*?\]/g, '')
+      .replace(/\(.*?\)/g, '')
+      // 移除markdown格式
+      .replace(/\*\*/g, '')
+      .replace(/__/g, '')
+      // 合并多余换行
+      .replace(/\n+/g, ' ')
+      // 移除多余空格
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  /**
+   * Generate chat welcome message using Hermes AI
+   * 生成聊天模式的欢迎语，更加自然、多样化
+   * 
+   * @param {Object} options - 可选配置
+   * @param {string} options.timeOfDay - 时间段: 'morning' | 'afternoon' | 'evening' | 'night'
+   * @returns {Promise<{success: boolean, message: string, error?: string}>}
+   */
+  async generateChatWelcome(options = {}) {
+    const hour = new Date().getHours();
+    let timeOfDay = options.timeOfDay;
+    if (!timeOfDay) {
+      if (hour < 6) timeOfDay = 'night';
+      else if (hour < 12) timeOfDay = 'morning';
+      else if (hour < 18) timeOfDay = 'afternoon';
+      else timeOfDay = 'evening';
+    }
+
+    const timeGreeting = {
+      'night': '凌晨好',
+      'morning': '早上好',
+      'afternoon': '下午好',
+      'evening': '晚上好'
+    }[timeOfDay];
+
+    // 首先尝试使用 Hermes AI 生成
+    const isAvailable = await this.checkHermesAvailability();
+    if (isAvailable) {
+      try {
+        const prompts = [
+          `你是 Hermes，一个温暖、专业的音乐助手。${timeGreeting}，用自然、亲切的语气向用户打招呼，并邀请他们分享心情或音乐喜好。要求：简短（30字以内）、像朋友一样、不要生硬。`,
+          `作为 Hermes 音乐助手，${timeGreeting}！用轻松随意的方式开场，让用户愿意和你聊天。要求：自然、友好、不超过30字。`,
+          `想象你是一个懂音乐的好朋友，${timeGreeting}！用口语化的方式打招呼，并询问用户想听什么。要求：简短、亲切、有温度。`,
+          `${timeGreeting}！用一句温暖的话开场，让用户感受到你的热情。然后自然地邀请他们分享音乐需求。要求：30字左右、真诚、不套路。`
+        ];
+
+        const prompt = prompts[Math.floor(Math.random() * prompts.length)];
+
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10秒超时
+
+        const messages = [
+          { role: 'system', content: this.systemPrompt },
+          { role: 'user', content: prompt }
+        ];
+
+        console.log('[Hermes] Generating chat welcome message...');
+
+        const response = await fetch(`${this.hermesConfig.baseUrl}/chat/completions`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            model: this.hermesConfig.model,
+            messages: messages,
+            stream: false,
+            temperature: 0.9,
+            max_tokens: 100,
+            top_p: 0.95,
+            stop: ["<think>", "</think>"]
+          }),
+          signal: controller.signal
+        });
+
+        clearTimeout(timeoutId);
+
+        if (response.ok) {
+          const data = await response.json();
+          let message = data.choices[0]?.message?.content || '';
+          
+          // 清理生成的文案
+          message = this.cleanRadioScript(message);
+          
+          if (message.length > 10 && message.length < 100) {
+            console.log('[Hermes] Chat welcome generated:', message);
+            return { success: true, message };
+          }
+        }
+      } catch (error) {
+        console.error('[Hermes] Failed to generate chat welcome:', error);
+      }
+    }
+
+    // Fallback: 使用本地兜底文案
+    console.log('[Hermes] Using fallback chat welcome');
+    const fallbacks = {
+      'night': [
+        `${timeGreeting}，夜深了，让音乐陪你吧。想听点什么？`,
+        `${timeGreeting}，我是 Hermes。这个时刻，需要什么样的音乐？`,
+        `${timeGreeting}！深夜的音乐总有特别的味道，告诉我你的心情。`,
+        `${timeGreeting}，我是你的音乐伙伴。想听点舒缓的还是节奏感强的？`
+      ],
+      'morning': [
+        `${timeGreeting}！新的一天，用音乐开启吧。今天想听什么？`,
+        `${timeGreeting}，我是 Hermes。早晨的心情，需要什么样的旋律？`,
+        `${timeGreeting}！阳光正好，来点什么音乐配合这美好早晨？`,
+        `${timeGreeting}，我是你的音乐伙伴。今天的音乐之旅，从哪里开始？`
+      ],
+      'afternoon': [
+        `${timeGreeting}！午后时光，需要点音乐调剂吗？`,
+        `${timeGreeting}，我是 Hermes。下午的心情，想听点什么？`,
+        `${timeGreeting}！工作学习累了？来首歌放松一下。`,
+        `${timeGreeting}，我是你的音乐伙伴。这个下午，想听什么风格？`
+      ],
+      'evening': [
+        `${timeGreeting}！夜幕降临，用音乐结束这一天吧。`,
+        `${timeGreeting}，我是 Hermes。晚上的时光，想听点什么？`,
+        `${timeGreeting}！忙碌了一天，来首喜欢的歌放松一下。`,
+        `${timeGreeting}，我是你的音乐伙伴。今晚的音乐，由你来定。`
+      ]
+    };
+
+    const messages = fallbacks[timeOfDay] || fallbacks['morning'];
+    const message = messages[Math.floor(Math.random() * messages.length)];
+    
+    return { success: true, message };
   }
 }
 

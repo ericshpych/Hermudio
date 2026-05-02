@@ -6,6 +6,7 @@
  * 2. User preference learning and matching
  * 3. Multi-strategy song matching
  * 4. Fallback recommendation chains
+ * 5. Daily play tracking to avoid repeats
  */
 
 const { getCurrentScene } = require('./scene-analyzer');
@@ -18,25 +19,110 @@ class RecommendationEngine {
     this.recommendationCache = new Map();
     this.lastRecommendation = null;
     this.musicService = new MusicService(db);
-    this.playedSongs = new Set(); // Track played song IDs to avoid repeats
+    this.playedSongs = new Set(); // Track played song IDs to avoid repeats in current session
+    this.dailyPlayedSongs = new Set(); // Track daily played songs from database
+    this.todayDate = this.getTodayDate();
+    this.dailyPlaysLoaded = false;
+    
+    // Load today's played songs from database (async)
+    this.loadDailyPlayedSongs().then(() => {
+      this.dailyPlaysLoaded = true;
+    });
   }
 
   /**
-   * Mark a song as played
+   * Get today's date string (YYYY-MM-DD)
+   */
+  getTodayDate() {
+    return new Date().toISOString().split('T')[0];
+  }
+
+  /**
+   * Load today's played songs from database
+   */
+  loadDailyPlayedSongs() {
+    return new Promise((resolve, reject) => {
+      try {
+        const today = this.getTodayDate();
+        this.db.all('SELECT song_id FROM daily_plays WHERE play_date = ?', [today], (err, rows) => {
+          if (err) {
+            console.error('[Recommendation] Failed to load daily played songs:', err);
+            this.dailyPlayedSongs = new Set();
+            resolve();
+            return;
+          }
+          this.dailyPlayedSongs = new Set(rows.map(row => row.song_id));
+          console.log('[Recommendation] Loaded daily played songs:', this.dailyPlayedSongs.size);
+          resolve();
+        });
+      } catch (error) {
+        console.error('[Recommendation] Failed to load daily played songs:', error);
+        this.dailyPlayedSongs = new Set();
+        resolve();
+      }
+    });
+  }
+
+  /**
+   * Mark a song as played (both in-memory and database)
    */
   markSongAsPlayed(songId) {
-    if (songId) {
-      this.playedSongs.add(songId);
-      console.log('[Recommendation] Marked song as played:', songId, 'Total played:', this.playedSongs.size);
-      
-      // If played songs exceed 50, clear half of them to allow rediscovery
-      if (this.playedSongs.size > 50) {
-        const songsArray = Array.from(this.playedSongs);
-        const halfLength = Math.floor(songsArray.length / 2);
-        this.playedSongs = new Set(songsArray.slice(halfLength));
-        console.log('[Recommendation] Cleared old played songs, remaining:', this.playedSongs.size);
-      }
+    if (!songId) return;
+    
+    // Check if date has changed
+    const currentDate = this.getTodayDate();
+    if (currentDate !== this.todayDate) {
+      console.log('[Recommendation] Date changed, clearing daily played songs');
+      this.todayDate = currentDate;
+      this.dailyPlayedSongs.clear();
+      this.playedSongs.clear();
     }
+    
+    // Add to in-memory set
+    this.playedSongs.add(songId);
+    
+    // Add to daily set
+    this.dailyPlayedSongs.add(songId);
+    
+    // Save to database using sqlite3 async API
+    const sql = `
+      INSERT INTO daily_plays (song_id, play_date, play_count)
+      VALUES (?, ?, 1)
+      ON CONFLICT(song_id, play_date) DO UPDATE SET
+        play_count = play_count + 1,
+        updated_at = CURRENT_TIMESTAMP
+    `;
+    
+    this.db.run(sql, [songId, this.todayDate], (err) => {
+      if (err) {
+        console.error('[Recommendation] Failed to save daily play:', err);
+      } else {
+        console.log('[Recommendation] Marked song as played:', songId, 'Total played today:', this.dailyPlayedSongs.size);
+      }
+    });
+    
+    // If played songs exceed 50, clear half of them to allow rediscovery
+    if (this.playedSongs.size > 50) {
+      const songsArray = Array.from(this.playedSongs);
+      const halfLength = Math.floor(songsArray.length / 2);
+      this.playedSongs = new Set(songsArray.slice(halfLength));
+      console.log('[Recommendation] Cleared old played songs, remaining:', this.playedSongs.size);
+    }
+  }
+
+  /**
+   * Check if a song has been played today
+   */
+  async isSongPlayedToday(songId) {
+    // Check if date has changed
+    const currentDate = this.getTodayDate();
+    if (currentDate !== this.todayDate) {
+      this.todayDate = currentDate;
+      this.dailyPlayedSongs.clear();
+      await this.loadDailyPlayedSongs();
+    }
+    
+    return this.dailyPlayedSongs.has(songId) || this.playedSongs.has(songId);
   }
 
   /**
@@ -44,6 +130,7 @@ class RecommendationEngine {
    */
   clearPlayedSongs() {
     this.playedSongs.clear();
+    this.dailyPlayedSongs.clear();
     console.log('[Recommendation] Cleared played songs history');
   }
 
@@ -52,34 +139,66 @@ class RecommendationEngine {
    */
   async getRecommendations(count = 5, context = {}) {
     const recommendations = [];
-    const maxAttempts = count * 5; // Allow extra attempts to find unique songs
+    const maxAttempts = count * 8; // Allow extra attempts to find unique songs (increased for daily filter)
     let attempts = 0;
     let allowPlayedSongs = false; // After many attempts, allow played songs
+    const startTime = Date.now();
+    const maxDuration = 30000; // Maximum 30 seconds for recommendations
 
     while (recommendations.length < count && attempts < maxAttempts) {
+      // Check if we've exceeded max duration
+      if (Date.now() - startTime > maxDuration) {
+        console.warn('[Recommendation] Timeout: exceeded 30 seconds, returning', recommendations.length, 'songs');
+        break;
+      }
+
       attempts++;
-      const rec = await this.getRecommendation(context);
+      
+      // Add timeout to individual getRecommendation call
+      let rec;
+      try {
+        rec = await Promise.race([
+          this.getRecommendation(context),
+          new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('getRecommendation timeout')), 10000)
+          )
+        ]);
+      } catch (error) {
+        console.error('[Recommendation] getRecommendation failed or timed out:', error.message);
+        rec = null;
+      }
       
       if (rec && rec.song) {
         // Check if this song is already in the current playlist
         const isInCurrentPlaylist = recommendations.some(r => r.song.id === rec.song.id);
         
-        // Check if this song has been played (only if we haven't exhausted options)
-        const isPlayed = !allowPlayedSongs && this.playedSongs.has(rec.song.id);
+        // Check if this song has been played today (only if we haven't exhausted options)
+        let isPlayedToday = false;
+        try {
+          isPlayedToday = !allowPlayedSongs && await Promise.race([
+            this.isSongPlayedToday(rec.song.id),
+            new Promise((_, reject) => 
+              setTimeout(() => reject(new Error('isSongPlayedToday timeout')), 5000)
+            )
+          ]);
+        } catch (error) {
+          console.error('[Recommendation] isSongPlayedToday failed:', error.message);
+          isPlayedToday = false;
+        }
         
-        if (!isInCurrentPlaylist && !isPlayed) {
+        if (!isInCurrentPlaylist && !isPlayedToday) {
           recommendations.push(rec);
           console.log('[Recommendation] Added unique song:', rec.song.name, '-', rec.song.artist);
         } else {
           if (isInCurrentPlaylist) {
             console.log('[Recommendation] Skipped duplicate in playlist:', rec.song.name);
-          } else if (isPlayed) {
-            console.log('[Recommendation] Skipped played song:', rec.song.name);
+          } else if (isPlayedToday) {
+            console.log('[Recommendation] Skipped song played today:', rec.song.name);
           }
         }
         
         // If we've tried many times and still don't have enough songs, allow played songs
-        if (attempts > count * 3 && recommendations.length < count) {
+        if (attempts > count * 5 && recommendations.length < count) {
           if (!allowPlayedSongs) {
             allowPlayedSongs = true;
             console.log('[Recommendation] Allowing played songs after', attempts, 'attempts');
@@ -100,7 +219,14 @@ class RecommendationEngine {
     const userPrefs = await this.userProfile.getPreferences();
     
     console.log('[Recommendation] Current scene:', scene);
-    console.log('[Recommendation] User preferences:', userPrefs);
+    // 只输出用户画像的关键信息，避免输出完整的 playHistory 导致日志过大
+    console.log('[Recommendation] User preferences:', {
+      preferredStyles: userPrefs.preferredStyles,
+      preferredArtists: userPrefs.preferredArtists,
+      dislikedStyles: userPrefs.dislikedStyles,
+      playHistoryCount: userPrefs.playHistory?.length || 0,
+      favoriteTimes: userPrefs.favoriteTimes
+    });
 
     // Try multiple strategies in order
     // Note: External search is prioritized to ensure we get real songs with encryptedId
@@ -179,7 +305,8 @@ class RecommendationEngine {
           try {
             const searchQueries = this.generateSearchQueries(scene, userPrefs);
             for (const query of searchQueries) {
-              const songs = await this.musicService.searchSongs(query, 3);
+              // Use searchAndFilter to ensure we only get playable songs
+              const songs = await this.searchAndFilter(query, 3);
               if (songs.length > 0) {
                 const song = songs[0];
                 resolve({

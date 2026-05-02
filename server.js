@@ -46,8 +46,13 @@ app.use(cors({ origin: '*', credentials: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// 静态文件服务
-app.use(express.static(__dirname));
+// 静态文件服务 - mvp-dashboard 作为前端应用
+app.use(express.static(path.join(__dirname, 'mvp-dashboard')));
+
+// API 路由优先，然后才是前端路由
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'mvp-dashboard', 'index.html'));
+});
 
 // ==================== CLI 控制 API ====================
 

@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>模式切换测试 - TTS 暂停/恢复</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #0a0a0f;
+            color: #fff;
+        }
+        h1 { color: #4ade80; }
+        .test-section {
+            background: #1a1a25;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+        }
+        button {
+            background: #4ade80;
+            color: #0a0a0f;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+        }
+        button:hover { background: #22c55e; }
+        button.secondary {
+            background: #60a5fa;
+        }
+        button.secondary:hover {
+            background: #3b82f6;
+        }
+        .status-box {
+            background: #12121a;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #2a2a35;
+        }
+        .status-item:last-child {
+            border-bottom: none;
+        }
+        .status-label {
+            color: #888;
+        }
+        .status-value {
+            color: #4ade80;
+            font-weight: 600;
+        }
+        .status-value.paused {
+            color: #fbbf24;
+        }
+        .status-value.stopped {
+            color: #f87171;
+        }
+        .log {
+            background: #12121a;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-family: monospace;
+            font-size: 13px;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        .log-entry { margin: 3px 0; }
+        .log-info { color: #60a5fa; }
+        .log-success { color: #4ade80; }
+        .log-error { color: #f87171; }
+        .log-warn { color: #fbbf24; }
+        
+        /* TTS Sync Highlight */
+        .radio-turn-body .word {
+            transition: color 0.15s ease, background-color 0.15s ease;
+            padding: 1px 2px;
+            border-radius: 3px;
+        }
+        .radio-turn-body .word.active {
+            color: #4ade80;
+            background: rgba(74, 222, 128, 0.15);
+        }
+        
+        .radio-turn {
+            margin: 15px 0;
+            padding: 15px;
+            background: #12121a;
+            border-radius: 8px;
+        }
+        .radio-turn-head {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 8px;
+        }
+        .radio-turn-body {
+            font-size: 16px;
+            line-height: 1.8;
+            color: #e0e0e0;
+        }
+        .radio-turn.speaking {
+            border-left: 3px solid #4ade80;
+        }
+        
+        .mode-indicator {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .mode-radio {
+            background: #4ade80;
+            color: #0a0a0f;
+        }
+        .mode-chat {
+            background: #60a5fa;
+            color: #0a0a0f;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎵 模式切换 TTS 暂停/恢复测试</h1>
+    
+    <div class="test-section">
+        <h3>当前模式</h3>
+        <p>模式: <span id="currentMode" class="mode-indicator mode-radio">电台模式</span></p>
+    </div>
+
+    <div class="test-section">
+        <h3>TTS 状态</h3>
+        <div class="status-box">
+            <div class="status-item">
+                <span class="status-label">TTS 是否正在播放:</span>
+                <span id="ttsSpeaking" class="status-value stopped">否</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">TTS 是否暂停:</span>
+                <span id="ttsPaused" class="status-value">否</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">当前播放文本:</span>
+                <span id="currentText" class="status-value" style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">-</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h3>测试操作</h3>
+        <button onclick="startTTSTest()">开始播放 TTS</button>
+        <button class="secondary" onclick="switchToChat()">切换到聊天模式</button>
+        <button class="secondary" onclick="switchToRadio()">切换回电台模式</button>
+        <button onclick="clearLogs()">清空日志</button>
+    </div>
+
+    <div class="test-section">
+        <h3>显示区域</h3>
+        <div id="transcript"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>测试日志</h3>
+        <div id="logs" class="log"></div>
+    </div>
+
+    <script>
+        // 模拟 AppState
+        const AppState = {
+            currentMode: 'radio',
+            hermesSpeaking: false,
+            hermesPaused: false,
+            
+            updateHermesPlayButton() {
+                log(`更新播放按钮状态: speaking=${this.hermesSpeaking}, paused=${this.hermesPaused}`, 'info');
+            }
+        };
+
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const entry = `[${timestamp}] ${message}`;
+            const logDiv = document.getElementById('logs');
+            const div = document.createElement('div');
+            div.className = `log-entry log-${type}`;
+            div.textContent = entry;
+            logDiv.appendChild(div);
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(`[ModeSwitch Test] ${message}`);
+        }
+
+        function clearLogs() {
+            document.getElementById('logs').innerHTML = '';
+            document.getElementById('transcript').innerHTML = '';
+        }
+
+        function updateStatus() {
+            document.getElementById('ttsSpeaking').textContent = TTSService.isSpeaking ? '是' : '否';
+            document.getElementById('ttsSpeaking').className = TTSService.isSpeaking ? 'status-value' : 'status-value stopped';
+            document.getElementById('ttsPaused').textContent = AppState.hermesPaused ? '是' : '否';
+            document.getElementById('ttsPaused').className = AppState.hermesPaused ? 'status-value paused' : 'status-value';
+        }
+
+        // 智能分词
+        function splitTextForHighlight(text) {
+            const result = [];
+            let currentWord = '';
+            for (const char of text) {
+                if (/[\u4e00-\u9fa5]/.test(char)) {
+                    if (currentWord) {
+                        result.push(currentWord);
+                        currentWord = '';
+                    }
+                    result.push(char);
+                } else if (/\s/.test(char)) {
+                    if (currentWord) {
+                        result.push(currentWord);
+                        currentWord = '';
+                    }
+                    result.push(' ');
+                } else {
+                    currentWord += char;
+                }
+            }
+            if (currentWord) result.push(currentWord);
+            return result;
+        }
+
+        // TTS Service (模拟)
+        const TTSService = {
+            audioPlayer: null,
+            isSpeaking: false,
+            charTimer: null,
+            currentCharIndex: 0,
+            chars: [],
+            onWordCallback: null,
+            onEndCallback: null,
+            onStartCallback: null,
+
+            speak(text, options = {}) {
+                log(`TTS 开始播放: "${text.substring(0, 30)}..."`, 'info');
+                this.stop();
+                
+                this.chars = splitTextForHighlight(text);
+                this.currentCharIndex = 0;
+                this.onWordCallback = options.onWord;
+                this.onEndCallback = options.onEnd;
+                this.onStartCallback = options.onStart;
+                
+                // 使用浏览器 TTS
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'zh-CN';
+                
+                utterance.onstart = () => {
+                    this.isSpeaking = true;
+                    AppState.hermesSpeaking = true;
+                    updateStatus();
+                    if (this.onStartCallback) this.onStartCallback();
+                    
+                    // 启动逐字高亮
+                    const charInterval = 250;
+                    this.charTimer = setInterval(() => {
+                        if (this.currentCharIndex < this.chars.length) {
+                            if (this.onWordCallback) {
+                                this.onWordCallback(this.chars[this.currentCharIndex], this.currentCharIndex);
+                            }
+                            this.currentCharIndex++;
+                        } else {
+                            clearInterval(this.charTimer);
+                        }
+                    }, charInterval);
+                };
+                
+                utterance.onend = () => {
+                    this.isSpeaking = false;
+                    AppState.hermesSpeaking = false;
+                    updateStatus();
+                    if (this.charTimer) clearInterval(this.charTimer);
+                    if (this.onEndCallback) this.onEndCallback();
+                };
+                
+                window.speechSynthesis.speak(utterance);
+                document.getElementById('currentText').textContent = text;
+                updateStatus();
+                
+                return Promise.resolve(true);
+            },
+
+            pause() {
+                log('TTS 暂停被调用', 'warn');
+                if (window.speechSynthesis) {
+                    window.speechSynthesis.pause();
+                }
+                if (this.charTimer) {
+                    clearInterval(this.charTimer);
+                    this.charTimer = null;
+                }
+                AppState.hermesPaused = true;
+                updateStatus();
+            },
+
+            resume() {
+                log('TTS 恢复被调用', 'success');
+                if (window.speechSynthesis) {
+                    window.speechSynthesis.resume();
+                }
+                // 恢复逐字高亮
+                if (this.currentCharIndex < this.chars.length) {
+                    const charInterval = 250;
+                    this.charTimer = setInterval(() => {
+                        if (this.currentCharIndex < this.chars.length) {
+                            if (this.onWordCallback) {
+                                this.onWordCallback(this.chars[this.currentCharIndex], this.currentCharIndex);
+                            }
+                            this.currentCharIndex++;
+                        } else {
+                            clearInterval(this.charTimer);
+                        }
+                    }, charInterval);
+                }
+                AppState.hermesPaused = false;
+                updateStatus();
+            },
+
+            stop() {
+                log('TTS 停止被调用', 'error');
+                if (window.speechSynthesis) {
+                    window.speechSynthesis.cancel();
+                }
+                if (this.charTimer) {
+                    clearInterval(this.charTimer);
+                    this.charTimer = null;
+                }
+                this.isSpeaking = false;
+                AppState.hermesSpeaking = false;
+                AppState.hermesPaused = false;
+                updateStatus();
+            }
+        };
+
+        // RadioHost (模拟)
+        const RadioHost = {
+            currentWords: null,
+            currentWordInterval: 250,
+
+            addTurn(text) {
+                const scroll = document.getElementById('transcript');
+                const now = new Date();
+                const time = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+                
+                const turn = document.createElement('div');
+                turn.className = 'radio-turn';
+                
+                const chars = splitTextForHighlight(text);
+                const charSpans = chars.map((char, i) => 
+                    `<span class="word" data-index="${i}">${char}</span>`
+                ).join('');
+                
+                turn.innerHTML = `
+                    <div class="radio-turn-head">Hermes • ${time}</div>
+                    <div class="radio-turn-body">${charSpans}</div>
+                `;
+                
+                scroll.appendChild(turn);
+                turn.classList.add('speaking');
+                
+                this.currentWords = turn.querySelectorAll('.word');
+                return turn;
+            }
+        };
+
+        // 测试函数
+        async function startTTSTest() {
+            clearLogs();
+            const text = "这是一个测试语音。当你切换到聊天模式时，这段语音应该自动暂停。切回电台模式时，语音应该继续播放。让我们测试一下这个功能是否正常工作。";
+            
+            log('=== 开始 TTS 测试 ===', 'info');
+            const turn = RadioHost.addTurn(text);
+            
+            await TTSService.speak(text, {
+                onStart: () => log('TTS 播放开始', 'success'),
+                onWord: (word, index) => {
+                    RadioHost.currentWords.forEach((w, i) => {
+                        w.classList.toggle('active', i === index);
+                    });
+                },
+                onEnd: () => {
+                    log('TTS 播放结束', 'success');
+                    turn.classList.remove('speaking');
+                }
+            });
+        }
+
+        function switchToChat() {
+            log('=== 切换到聊天模式 ===', 'warn');
+            AppState.currentMode = 'chat';
+            document.getElementById('currentMode').textContent = '聊天模式';
+            document.getElementById('currentMode').className = 'mode-indicator mode-chat';
+            
+            // 模拟 pauseRadioForChat 逻辑
+            if (TTSService.isSpeaking) {
+                log('检测到 TTS 正在播放，执行暂停...', 'info');
+                TTSService.pause();
+                AppState.hermesPaused = true;
+                AppState.updateHermesPlayButton();
+                log('Hermes TTS 已暂停', 'success');
+            } else {
+                log('TTS 未在播放，无需暂停', 'info');
+            }
+            
+            updateStatus();
+        }
+
+        function switchToRadio() {
+            log('=== 切换回电台模式 ===', 'success');
+            AppState.currentMode = 'radio';
+            document.getElementById('currentMode').textContent = '电台模式';
+            document.getElementById('currentMode').className = 'mode-indicator mode-radio';
+            
+            // 模拟 resumeRadioFromChat 逻辑
+            if (AppState.hermesPaused) {
+                log('检测到 TTS 之前被暂停，执行恢复...', 'info');
+                TTSService.resume();
+                AppState.hermesPaused = false;
+                AppState.updateHermesPlayButton();
+                log('Hermes TTS 已恢复', 'success');
+            } else {
+                log('TTS 未被暂停，无需恢复', 'info');
+            }
+            
+            updateStatus();
+        }
+
+        // 初始化
+        updateStatus();
+        log('测试页面已加载，点击"开始播放 TTS"按钮开始测试', 'info');
+    </script>
+</body>
+</html>

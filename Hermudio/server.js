@@ -106,69 +106,99 @@ const db = new sqlite3.Database('./data/hermudio.db', (err) => {
   }
 });
 
+// Service instances (initialized after database)
+let musicService, userProfile, recommendationEngine, hermesService, radioHostService;
+
 function initDatabase() {
-  // User Profile Table
-  db.run(`
-    CREATE TABLE IF NOT EXISTS user_profiles (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      user_id TEXT UNIQUE NOT NULL,
-      preferred_styles TEXT DEFAULT '[]',
-      preferred_artists TEXT DEFAULT '[]',
-      disliked_styles TEXT DEFAULT '[]',
-      play_history TEXT DEFAULT '[]',
-      skip_patterns TEXT DEFAULT '{}',
-      favorite_times TEXT DEFAULT '{}',
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-  `);
+  // Use serialize to ensure tables are created in order
+  db.serialize(() => {
+    // User Profile Table
+    db.run(`
+      CREATE TABLE IF NOT EXISTS user_profiles (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id TEXT UNIQUE NOT NULL,
+        preferred_styles TEXT DEFAULT '[]',
+        preferred_artists TEXT DEFAULT '[]',
+        disliked_styles TEXT DEFAULT '[]',
+        play_history TEXT DEFAULT '[]',
+        skip_patterns TEXT DEFAULT '{}',
+        favorite_times TEXT DEFAULT '{}',
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
 
-  // Play History Table
-  db.run(`
-    CREATE TABLE IF NOT EXISTS play_history (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      song_id TEXT NOT NULL,
-      played_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-  `);
+    // Play History Table
+    db.run(`
+      CREATE TABLE IF NOT EXISTS play_history (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        song_id TEXT NOT NULL,
+        played_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
 
-  // Local Music Library (songs with play permission)
-  db.run(`
-    CREATE TABLE IF NOT EXISTS local_library (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      song_id TEXT UNIQUE NOT NULL,
-      song_name TEXT,
-      artist TEXT,
-      album TEXT,
-      styles TEXT DEFAULT '[]',
-      can_play BOOLEAN DEFAULT 1,
-      play_count INTEGER DEFAULT 0,
-      added_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-  `);
+    // Local Music Library (songs with play permission)
+    db.run(`
+      CREATE TABLE IF NOT EXISTS local_library (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        song_id TEXT UNIQUE NOT NULL,
+        song_name TEXT,
+        artist TEXT,
+        album TEXT,
+        styles TEXT DEFAULT '[]',
+        can_play BOOLEAN DEFAULT 1,
+        play_count INTEGER DEFAULT 0,
+        added_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
 
-  // User Feedback Table
-  db.run(`
-    CREATE TABLE IF NOT EXISTS user_feedback (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      user_id TEXT NOT NULL,
-      song_id TEXT NOT NULL,
-      song_name TEXT,
-      artist TEXT,
-      action TEXT,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-  `);
+    // User Feedback Table
+    db.run(`
+      CREATE TABLE IF NOT EXISTS user_feedback (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id TEXT NOT NULL,
+        song_id TEXT NOT NULL,
+        song_name TEXT,
+        artist TEXT,
+        action TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
 
-  console.log('Database tables initialized');
+    // Daily Play Records (to avoid recommending same songs on the same day)
+    db.run(`
+      CREATE TABLE IF NOT EXISTS daily_plays (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        song_id TEXT NOT NULL,
+        play_date TEXT NOT NULL,
+        play_count INTEGER DEFAULT 1,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(song_id, play_date)
+      )
+    `);
+
+    // Create index for faster queries
+    db.run(`
+      CREATE INDEX IF NOT EXISTS idx_daily_plays_date ON daily_plays(play_date)
+    `);
+
+    console.log('Database tables initialized');
+    
+    // Initialize services after all tables are created
+    initializeServices();
+  });
 }
 
-// ==================== Initialize Services ====================
-const musicService = new MusicService(db);
-const userProfile = new UserProfile(db);
-const recommendationEngine = new RecommendationEngine(db, userProfile);
-const hermesService = new HermesService(recommendationEngine, musicService, userProfile);
-const radioHostService = new RadioHostService(db, hermesService);
+function initializeServices() {
+  console.log('Initializing services...');
+  musicService = new MusicService(db);
+  userProfile = new UserProfile(db);
+  recommendationEngine = new RecommendationEngine(db, userProfile);
+  hermesService = new HermesService(recommendationEngine, musicService, userProfile);
+  radioHostService = new RadioHostService(db, hermesService);
+  console.log('Services initialized successfully');
+}
 
 // ==================== API Routes ====================
 
@@ -370,6 +400,26 @@ app.get('/api/status', async (req, res) => {
   }
 });
 
+// Get Hermes AI Service Status
+app.get('/api/hermes/status', async (req, res) => {
+  try {
+    const isAvailable = await hermesService.checkHermesAvailability();
+    res.json({
+      success: true,
+      available: isAvailable,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Hermes status check error:', error);
+    res.json({
+      success: true,
+      available: false,
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
 // Get Song Details
 app.get('/api/song/:songId', async (req, res) => {
   const { songId } = req.params;
@@ -520,6 +570,17 @@ app.post('/api/chat/clear', (req, res) => {
   const userId = req.body.userId || 'default';
   hermesService.clearHistory(userId);
   res.json({ success: true, message: 'History cleared' });
+});
+
+// Generate chat welcome message
+app.get('/api/chat/welcome', async (req, res) => {
+  try {
+    const result = await hermesService.generateChatWelcome();
+    res.json(result);
+  } catch (error) {
+    console.error('Chat welcome generation error:', error);
+    res.status(500).json({ success: false, error: 'Failed to generate welcome' });
+  }
 });
 
 // ==================== Radio Host APIs ====================
