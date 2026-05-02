@@ -7,6 +7,9 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Hermudio">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <link rel="manifest" href="/manifest.json">
     <link rel="apple-touch-icon" href="/icon-192x192.png">
     <title>Hermudio - AI Radio</title>
@@ -307,7 +310,7 @@
 
         .radio-turn-body .word.active {
             color: var(--accent);
-            background: rgba(74, 222, 128, 0.15);
+            font-weight: 600;
         }
 
         .radio-turn.speaking {
@@ -772,9 +775,18 @@
         .dj-dot {
             width: 5px;
             height: 5px;
-            background: var(--accent);
+            background: var(--text-muted);
             border-radius: 50%;
+            transition: background 0.3s ease;
+        }
+
+        .dj-dot.connected {
+            background: var(--accent);
             animation: pulse 2s infinite;
+        }
+
+        .dj-dot.error {
+            background: #f44336;
         }
 
         .queue-wave {
@@ -1104,6 +1116,7 @@
                             <path d="M3.5 2.2 L11.5 7 L3.5 11.8 Z" fill="currentColor"></path>
                         </svg>
                     </button>
+                    <button onclick="testDirectAudio()" style="margin-left:10px;padding:4px 8px;font-size:12px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:4px;color:#fff;cursor:pointer;">测试TTS</button>
                 </div>
             </div>
         </div>
@@ -1188,9 +1201,8 @@
 
             <!-- Chat Input -->
             <div class="chat-input-container">
-                <input type="text" class="chat-input" id="chatInput" placeholder="Say something to the DJ...">
+                <input type="text" class="chat-input" id="chatInput" placeholder="Say something to Hermes..." style="flex: 1;">
                 <div class="input-actions">
-                    <button class="input-btn" id="micBtn">🎤</button>
                     <button class="input-btn send" id="chatSendBtn">➤</button>
                 </div>
             </div>
@@ -1204,35 +1216,56 @@
     </div>
 
     <script>
-        // Register Service Worker for PWA
+        // Unregister Service Worker to prevent caching issues during development
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js')
-                    .then((registration) => {
-                        console.log('SW registered:', registration);
-                    })
-                    .catch((error) => {
-                        console.log('SW registration failed:', error);
+                navigator.serviceWorker.getRegistrations().then(registrations => {
+                    registrations.forEach(registration => {
+                        registration.unregister();
+                        console.log('SW unregistered:', registration);
                     });
+                });
             });
         }
 
         // API Client
         const API = {
             baseUrl: '',
+            maxRetries: 3,
+            retryDelay: 1000,
+
+            async fetchWithRetry(url, options = {}, retryCount = 0) {
+                try {
+                    const response = await fetch(url, options);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return await response.json();
+                } catch (error) {
+                    if (retryCount < this.maxRetries) {
+                        console.warn(`[API] Request failed, retrying ${retryCount + 1}/${this.maxRetries}:`, error.message);
+                        await this.sleep(this.retryDelay * (retryCount + 1));
+                        return this.fetchWithRetry(url, options, retryCount + 1);
+                    }
+                    console.error(`[API] Request failed after ${this.maxRetries} retries:`, error);
+                    throw error;
+                }
+            },
+
+            sleep(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            },
 
             async get(endpoint) {
-                const response = await fetch(`${this.baseUrl}${endpoint}`);
-                return response.json();
+                return this.fetchWithRetry(`${this.baseUrl}${endpoint}`);
             },
 
             async post(endpoint, data) {
-                const response = await fetch(`${this.baseUrl}${endpoint}`, {
+                return this.fetchWithRetry(`${this.baseUrl}${endpoint}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data)
                 });
-                return response.json();
             },
 
             health() { return this.get('/api/health'); },
@@ -1254,7 +1287,7 @@
             isSpeaking: false,
             currentVoice: 'Chinese (Mandarin)_Warm_Bestie',
             apiBase: '',
-            wordTimer: null,
+            charTimer: null,
             volume: 1.5, // 增加 TTS 音量以匹配音乐音量
 
             init() {
@@ -1262,6 +1295,12 @@
                 // 自动检测当前服务器地址
                 this.apiBase = window.location.origin;
                 console.log('[TTS] API base set to:', this.apiBase);
+                console.log('[TTS] Window location:', window.location.href);
+                // 强制使用正确的端口（避免缓存问题）
+                if (this.apiBase.includes('localhost:6588')) {
+                    this.apiBase = 'http://localhost:6688';
+                    console.log('[TTS] Corrected API base to:', this.apiBase);
+                }
                 this.checkStatus();
                 return true;
             },
@@ -1282,12 +1321,23 @@
 
             async speak(text, options = {}) {
                 console.log('[TTS] speak called, text length:', text.length);
+                console.log('[TTS] API base:', this.apiBase);
+                console.warn('[TTS] ⚠️ TTS speak method entered!');
+                
+                // 如果文本太长，分段合成
+                const MAX_TEXT_LENGTH = 100;
+                if (text.length > MAX_TEXT_LENGTH) {
+                    console.warn('[TTS] Text too long (' + text.length + ' chars), splitting...');
+                    return this.speakLongText(text, options, MAX_TEXT_LENGTH);
+                }
+                
                 this.stop();
 
                 // Try MiniMax API first
                 try {
-                    console.log('[TTS] Requesting MiniMax TTS...');
-                    const response = await fetch(`${this.apiBase}/api/tts/doubao`, {
+                    const ttsUrl = `${this.apiBase}/api/tts/doubao`;
+                    console.log('[TTS] Requesting MiniMax TTS from:', ttsUrl);
+                    const response = await fetch(ttsUrl, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
@@ -1302,54 +1352,81 @@
 
                     if (data.success && data.data.audio) {
                         console.log('[TTS] MiniMax TTS success, playing audio...');
-                        await this.playAudio(data.data.audio, text, options);
-                        return true;
+                        try {
+                            await this.playAudio(data.data.audio, text, options);
+                            return true;
+                        } catch (playError) {
+                            console.error('[TTS] Audio playback failed:', playError.message);
+                            // 不要自动回退到浏览器TTS，而是调用onEnd让流程继续
+                            if (options.onEnd) options.onEnd();
+                            return false;
+                        }
                     } else {
                         console.warn('[TTS] MiniMax API failed:', data.message);
-                        // Fallback to browser TTS
+                        // API返回失败，使用浏览器本地语音
+                        console.log('[TTS] Falling back to browser TTS...');
                         return this.fallbackSpeak(text, options);
                     }
                 } catch (e) {
                     console.error('[TTS] MiniMax request failed:', e.message);
+                    // 网络请求失败，使用浏览器本地语音
+                    console.log('[TTS] Falling back to browser TTS...');
                     return this.fallbackSpeak(text, options);
                 }
             },
 
             async playAudio(base64Audio, text, options) {
+                console.log('[TTS] playAudio called, audio length:', base64Audio.length);
                 this.audioPlayer = new Audio(`data:audio/mp3;base64,${base64Audio}`);
+                console.log('[TTS] Audio object created');
 
                 // 设置音频音量
                 this.audioPlayer.volume = Math.min(this.volume / 2, 1.0); // 音频元素音量范围是 0-1
+                console.log('[TTS] Audio volume set to:', this.audioPlayer.volume);
 
                 // 保存音频引用到 AppState 用于 Hermes 控制
                 if (window.AppState && window.AppState.hermesAudio !== undefined) {
                     window.AppState.hermesAudio = this.audioPlayer;
                 }
                 
-                // 设置进度回调
-                if (options.onProgress) {
-                    this.onProgress = options.onProgress;
-                }
+                // 设置回调函数
+                this.onProgress = options.onProgress || null;
+                this.onWord = options.onWord || null;
                 
-                // Word timing estimation for sync display
-                const words = text.split(/\s+/);
-                const estimatedDuration = text.length * 0.15; // ~150ms per char
-                const wordInterval = estimatedDuration / words.length * 1000;
-                let currentWordIndex = 0;
+                // 使用智能分词进行同步显示
+                const chars = this.splitTextForHighlight(text);
+                console.log('[TTS] Text split into', chars.length, 'chars');
 
                 this.audioPlayer.onplay = () => {
                     console.log('[TTS] Audio playback started');
                     this.isSpeaking = true;
                     if (options.onStart) options.onStart();
                     
-                    // 启动进度更新（同时更新进度条和文字高亮）
-                    this.startProgressUpdate(words, wordInterval);
+                    // 等待音频时长可用，然后基于实际音频时长计算每个字符的间隔
+                    const setupProgressUpdate = () => {
+                        const duration = this.audioPlayer.duration;
+                        if (duration && duration > 0) {
+                            // 基于实际音频时长计算每个字符的间隔
+                            const charInterval = (duration * 1000) / chars.length;
+                            this.startProgressUpdate(chars, charInterval);
+                        } else {
+                            // 如果时长还不可用，使用估算值（中文约 250ms/字）
+                            const charInterval = 250;
+                            this.startProgressUpdate(chars, charInterval);
+                        }
+                    };
+                    
+                    // 如果时长已经可用，直接使用；否则等待 loadedmetadata 事件
+                    if (this.audioPlayer.duration) {
+                        setupProgressUpdate();
+                    } else {
+                        this.audioPlayer.addEventListener('loadedmetadata', setupProgressUpdate, { once: true });
+                    }
                 };
 
                 this.audioPlayer.onended = () => {
                     console.log('[TTS] Audio playback ended');
                     this.isSpeaking = false;
-                    if (this.wordTimer) clearInterval(this.wordTimer);
                     this.clearProgressTimer();
                     if (options.onEnd) options.onEnd();
                     // 重置 Hermes 状态
@@ -1363,12 +1440,85 @@
                 this.audioPlayer.onerror = (e) => {
                     console.error('[TTS] Audio playback error:', e);
                     this.isSpeaking = false;
-                    if (this.wordTimer) clearInterval(this.wordTimer);
                     this.clearProgressTimer();
+                    // 重置 Hermes 状态
+                    if (window.AppState) {
+                        window.AppState.hermesSpeaking = false;
+                        window.AppState.hermesPaused = false;
+                        window.AppState.updateHermesPlayButton();
+                    }
                     if (options.onEnd) options.onEnd();
                 };
 
-                await this.audioPlayer.play();
+                try {
+                    await this.audioPlayer.play();
+                    console.log('[TTS] Audio play() succeeded');
+                } catch (playError) {
+                    console.error('[TTS] Audio play() failed:', playError.message);
+                    // 可能是自动播放策略阻止
+                    if (playError.name === 'NotAllowedError') {
+                        console.warn('[TTS] Autoplay blocked by browser. User interaction required.');
+                        // 显示提示给用户，并添加点击播放按钮
+                        this.showAudioUnlockPrompt(options);
+                    }
+                    throw playError;
+                }
+            },
+
+            // 显示音频解锁提示
+            showAudioUnlockPrompt(options) {
+                console.log('[TTS] Showing audio unlock prompt');
+                
+                // 创建提示元素
+                const prompt = document.createElement('div');
+                prompt.id = 'tts-unlock-prompt';
+                prompt.style.cssText = `
+                    position: fixed;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    background: rgba(0,0,0,0.9);
+                    color: #fff;
+                    padding: 20px 30px;
+                    border-radius: 12px;
+                    z-index: 10000;
+                    text-align: center;
+                    font-size: 14px;
+                    border: 1px solid rgba(255,255,255,0.2);
+                `;
+                prompt.innerHTML = `
+                    <div style="margin-bottom: 15px;">🔇 音频播放被浏览器阻止</div>
+                    <button id="tts-unlock-btn" style="
+                        padding: 10px 20px;
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        color: white;
+                        border: none;
+                        border-radius: 8px;
+                        cursor: pointer;
+                        font-size: 14px;
+                    ">点击播放音频</button>
+                `;
+                
+                document.body.appendChild(prompt);
+                
+                // 绑定点击事件
+                document.getElementById('tts-unlock-btn').addEventListener('click', async () => {
+                    console.log('[TTS] User clicked unlock button, retrying audio playback');
+                    try {
+                        await this.audioPlayer.play();
+                        console.log('[TTS] Audio play() succeeded after user interaction');
+                        if (options.onStart) options.onStart();
+                        document.body.removeChild(prompt);
+                    } catch (e) {
+                        console.error('[TTS] Audio play() still failed:', e.message);
+                    }
+                });
+                
+                // 3秒后自动移除提示
+                setTimeout(() => {
+                    const p = document.getElementById('tts-unlock-prompt');
+                    if (p) document.body.removeChild(p);
+                }, 5000);
             },
 
             fallbackSpeak(text, options) {
@@ -1382,36 +1532,44 @@
                 const utterance = new SpeechSynthesisUtterance(text);
                 utterance.lang = 'zh-CN';
                 
-                const words = text.split(/\s+/);
-                const estimatedDuration = text.length * 0.15;
-                const wordInterval = estimatedDuration / words.length * 1000;
-                let currentWordIndex = 0;
-                let wordTimer = null;
+                // 使用与 RadioHost 相同的分词逻辑
+                const chars = this.splitTextForHighlight(text);
+                // 中文 TTS 语速约为每分钟 240-280 字，即每字约 200-250ms
+                // 考虑到标点停顿，平均每个字符约 250ms
+                const charInterval = 250; // 每个字符 250ms，与中文语音同步
+                let currentCharIndex = 0;
+                let charTimer = null;
 
                 utterance.onstart = () => {
                     this.isSpeaking = true;
                     if (options.onStart) options.onStart();
                     
-                    wordTimer = setInterval(() => {
-                        if (currentWordIndex < words.length) {
-                            if (options.onWord) options.onWord(words[currentWordIndex], currentWordIndex);
-                            currentWordIndex++;
+                    charTimer = setInterval(() => {
+                        if (currentCharIndex < chars.length) {
+                            if (options.onWord) options.onWord(chars[currentCharIndex], currentCharIndex);
+                            currentCharIndex++;
                         } else {
-                            clearInterval(wordTimer);
+                            clearInterval(charTimer);
                         }
-                    }, wordInterval);
+                    }, charInterval);
                 };
 
                 utterance.onend = () => {
                     this.isSpeaking = false;
-                    if (wordTimer) clearInterval(wordTimer);
+                    if (charTimer) clearInterval(charTimer);
                     if (options.onEnd) options.onEnd();
                 };
 
                 utterance.onerror = (e) => {
                     console.error('[TTS] Browser TTS error:', e);
                     this.isSpeaking = false;
-                    if (wordTimer) clearInterval(wordTimer);
+                    if (charTimer) clearInterval(charTimer);
+                    // 重置 Hermes 状态
+                    if (window.AppState) {
+                        window.AppState.hermesSpeaking = false;
+                        window.AppState.hermesPaused = false;
+                        window.AppState.updateHermesPlayButton();
+                    }
                     if (options.onEnd) options.onEnd();
                 };
 
@@ -1426,6 +1584,41 @@
                 }
             },
 
+            // 智能分词：中文按字符分割，英文按单词分割
+            splitTextForHighlight(text) {
+                const result = [];
+                let currentWord = '';
+                
+                for (const char of text) {
+                    // 如果是中文字符（Unicode范围），单独作为一个单元
+                    if (/[\u4e00-\u9fa5]/.test(char)) {
+                        // 先保存之前的英文单词（如果有）
+                        if (currentWord) {
+                            result.push(currentWord);
+                            currentWord = '';
+                        }
+                        result.push(char);
+                    } else if (/\s/.test(char)) {
+                        // 空格：保存当前单词并添加空格
+                        if (currentWord) {
+                            result.push(currentWord);
+                            currentWord = '';
+                        }
+                        result.push(' ');
+                    } else {
+                        // 英文或标点，累积到当前单词
+                        currentWord += char;
+                    }
+                }
+                
+                // 保存最后一个单词
+                if (currentWord) {
+                    result.push(currentWord);
+                }
+                
+                return result;
+            },
+
             stop() {
                 console.log('[TTS] stop called');
                 if (this.audioPlayer) {
@@ -1435,9 +1628,9 @@
                 if (window.speechSynthesis) {
                     window.speechSynthesis.cancel();
                 }
-                if (this.wordTimer) {
-                    clearInterval(this.wordTimer);
-                    this.wordTimer = null;
+                if (this.charTimer) {
+                    clearInterval(this.charTimer);
+                    this.charTimer = null;
                 }
                 this.clearProgressTimer();
                 this.isSpeaking = false;
@@ -1454,20 +1647,20 @@
                 this.clearProgressTimer();
             },
 
-            resume(words, wordInterval) {
+            resume(items, itemInterval) {
                 console.log('[TTS] resume called');
                 if (this.audioPlayer) {
                     this.audioPlayer.play();
-                    this.startProgressUpdate(words, wordInterval);
+                    this.startProgressUpdate(items, itemInterval);
                 }
                 if (window.speechSynthesis) {
                     window.speechSynthesis.resume();
                 }
             },
 
-            startProgressUpdate(words, wordInterval) {
+            startProgressUpdate(items, itemInterval) {
                 this.clearProgressTimer();
-                let lastWordIndex = -1;
+                let lastItemIndex = -1;
                 // 使用 requestAnimationFrame 实现更流畅的进度更新 (60fps)
                 const updateFrame = () => {
                     if (this.audioPlayer && !this.audioPlayer.paused) {
@@ -1479,12 +1672,12 @@
                             this.onProgress(currentTime, duration);
                         }
                         
-                        // 更新文字高亮 - 根据实际播放时间计算当前应该高亮的单词
-                        if (words && wordInterval && this.onWord) {
-                            const estimatedWordIndex = Math.floor(currentTime * 1000 / wordInterval);
-                            if (estimatedWordIndex !== lastWordIndex && estimatedWordIndex < words.length) {
-                                this.onWord(words[estimatedWordIndex], estimatedWordIndex);
-                                lastWordIndex = estimatedWordIndex;
+                        // 更新文字高亮 - 根据实际播放时间计算当前应该高亮的字符/单词
+                        if (items && itemInterval && this.onWord) {
+                            const estimatedItemIndex = Math.floor(currentTime * 1000 / itemInterval);
+                            if (estimatedItemIndex !== lastItemIndex && estimatedItemIndex < items.length) {
+                                this.onWord(items[estimatedItemIndex], estimatedItemIndex);
+                                lastItemIndex = estimatedItemIndex;
                             }
                         }
                     }
@@ -1498,6 +1691,66 @@
             setVoice(voiceType) {
                 this.currentVoice = voiceType;
                 console.log('[TTS] Voice set to:', voiceType);
+            },
+
+            // 分段合成长文本
+            async speakLongText(text, options, maxLength) {
+                console.log('[TTS] speakLongText called, text length:', text.length);
+                
+                // 按句子分割文本
+                const sentences = text.match(/[^。！？.!?]+[。！？.!?]+/g) || [text];
+                console.log('[TTS] Split into', sentences.length, 'sentences');
+                
+                // 合并句子，确保每段不超过 maxLength
+                const chunks = [];
+                let currentChunk = '';
+                
+                for (const sentence of sentences) {
+                    if ((currentChunk + sentence).length <= maxLength) {
+                        currentChunk += sentence;
+                    } else {
+                        if (currentChunk) chunks.push(currentChunk);
+                        currentChunk = sentence;
+                    }
+                }
+                if (currentChunk) chunks.push(currentChunk);
+                
+                console.log('[TTS] Merged into', chunks.length, 'chunks');
+                
+                // 顺序播放每个片段
+                if (options.onStart) options.onStart();
+                
+                for (let i = 0; i < chunks.length; i++) {
+                    console.log('[TTS] Speaking chunk', i + 1, '/', chunks.length, 'length:', chunks[i].length);
+                    
+                    await new Promise((resolve) => {
+                        this.speak(chunks[i], {
+                            onStart: () => {
+                                if (i === 0 && options.onStart) options.onStart();
+                            },
+                            onWord: (word, index) => {
+                                if (options.onWord) {
+                                    // 调整索引，使其对应原始文本
+                                    const offset = chunks.slice(0, i).join('').length;
+                                    options.onWord(word, index + offset);
+                                }
+                            },
+                            onEnd: () => {
+                                console.log('[TTS] Chunk', i + 1, 'ended');
+                                resolve();
+                            }
+                        });
+                    });
+                    
+                    // 在片段之间添加短暂延迟，避免触发频率限制
+                    if (i < chunks.length - 1) {
+                        await new Promise(r => setTimeout(r, 500));
+                    }
+                }
+                
+                console.log('[TTS] All chunks spoken');
+                if (options.onEnd) options.onEnd();
+                return true;
             }
         };
 
@@ -1516,15 +1769,15 @@
                 turn.className = 'radio-turn';
                 turn.dataset.type = type;
                 
-                // Wrap words in spans for highlighting
-                const words = text.split(/\s+/);
-                const wordSpans = words.map((word, i) => 
-                    `<span class="word" data-index="${i}">${word}</span>`
-                ).join(' ');
+                // 智能分词：中文按字符分割，英文按单词分割
+                const chars = this.splitTextForHighlight(text);
+                const charSpans = chars.map((char, i) => 
+                    `<span class="word" data-index="${i}">${char}</span>`
+                ).join('');
                 
                 turn.innerHTML = `
                     <div class="radio-turn-head"><span class="who">Hermes</span> • ${time}</div>
-                    <div class="radio-turn-body">${wordSpans}</div>
+                    <div class="radio-turn-body">${charSpans}</div>
                 `;
                 
                 scroll.appendChild(turn);
@@ -1539,12 +1792,50 @@
                 return turn;
             },
 
+            // 智能分词：中文按字符分割，英文按单词分割
+            splitTextForHighlight(text) {
+                const result = [];
+                let currentWord = '';
+                
+                for (const char of text) {
+                    // 如果是中文字符（Unicode范围），单独作为一个单元
+                    if (/[\u4e00-\u9fa5]/.test(char)) {
+                        // 先保存之前的英文单词（如果有）
+                        if (currentWord) {
+                            result.push(currentWord);
+                            currentWord = '';
+                        }
+                        result.push(char);
+                    } else if (/\s/.test(char)) {
+                        // 空格：保存当前单词并添加空格
+                        if (currentWord) {
+                            result.push(currentWord);
+                            currentWord = '';
+                        }
+                        result.push(' ');
+                    } else {
+                        // 英文或标点，累积到当前单词
+                        currentWord += char;
+                    }
+                }
+                
+                // 保存最后一个单词
+                if (currentWord) {
+                    result.push(currentWord);
+                }
+                
+                return result;
+            },
+
             currentWords: null,
             currentWordInterval: null,
 
             speakWithSync(text, options = {}) {
                 console.log('[RadioHost] speakWithSync called, text length:', text.length);
                 console.log('[RadioHost] Text preview:', text.substring(0, 50) + '...');
+                
+                // 强制显示一个提示，确认函数被调用
+                console.warn('[RadioHost] ⚠️ TTS about to start!');
 
                 const turn = this.addTurn(text);
                 turn.classList.add('speaking');
@@ -1554,8 +1845,8 @@
 
                 // 保存当前单词信息供 pause/resume 使用
                 this.currentWords = words;
-                const estimatedDuration = text.length * 0.15;
-                this.currentWordInterval = estimatedDuration / words.length * 1000;
+                // 中文 TTS 语速约为每分钟 240-280 字，即每字约 250ms
+                this.currentWordInterval = 250;
 
                 // 设置 Hermes 为正在播放状态
                 if (window.AppState) {
@@ -1565,7 +1856,9 @@
                 }
 
                 console.time('[RadioHost] TTS duration');
-                TTSService.speak(text, {
+                
+                // 使用 Promise 包装以捕获异步错误
+                const speakPromise = TTSService.speak(text, {
                     onStart: () => {
                         console.log('[RadioHost] TTS onStart callback');
                         console.time('[RadioHost] TTS duration');
@@ -1595,12 +1888,203 @@
                         if (options.onEnd) options.onEnd();
                     }
                 });
+                
+                // 捕获任何未处理的错误
+                if (speakPromise && typeof speakPromise.catch === 'function') {
+                    speakPromise.catch(error => {
+                        console.error('[RadioHost] TTS speak error:', error);
+                        // 确保清理状态并调用 onEnd
+                        turn.classList.remove('speaking');
+                        turn.classList.add('completed');
+                        words.forEach(w => w.classList.remove('active'));
+                        this.currentWords = null;
+                        this.currentWordInterval = null;
+                        if (window.AppState) {
+                            window.AppState.hermesSpeaking = false;
+                            window.AppState.hermesPaused = false;
+                            window.AppState.updateHermesPlayButton();
+                        }
+                        if (options.onEnd) options.onEnd();
+                    });
+                }
             },
 
             clear() {
                 const scroll = document.getElementById('radioTranscriptScroll');
                 scroll.innerHTML = '';
                 this.transcript = [];
+            }
+        };
+
+        // Server Connection Manager
+        const ServerConnection = {
+            isReady: false,
+            maxRetries: 30,
+            retryInterval: 1000,
+
+            async waitForServer() {
+                console.log('[ServerConnection] Waiting for server to be ready...');
+                this.showLoadingOverlay();
+
+                for (let i = 0; i < this.maxRetries; i++) {
+                    try {
+                        const response = await fetch('/api/health', {
+                            method: 'GET',
+                            headers: { 'Accept': 'application/json' }
+                        });
+
+                        if (response.ok) {
+                            const data = await response.json();
+                            if (data.status === 'ok') {
+                                console.log('[ServerConnection] Server is ready!');
+                                this.isReady = true;
+                                this.hideLoadingOverlay();
+                                return true;
+                            }
+                        }
+                    } catch (error) {
+                        console.log(`[ServerConnection] Retry ${i + 1}/${this.maxRetries}: Server not ready yet`);
+                    }
+
+                    // Update loading message
+                    this.updateLoadingMessage(`正在连接服务器... (${i + 1}/${this.maxRetries})`);
+                    await this.sleep(this.retryInterval);
+                }
+
+                console.error('[ServerConnection] Server connection failed after max retries');
+                this.showErrorOverlay();
+                return false;
+            },
+
+            sleep(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            },
+
+            showLoadingOverlay() {
+                const overlay = document.createElement('div');
+                overlay.id = 'serverLoadingOverlay';
+                overlay.innerHTML = `
+                    <div class="server-loading-content">
+                        <div class="server-loading-spinner"></div>
+                        <div class="server-loading-text">正在连接服务器...</div>
+                        <div class="server-loading-subtext">请稍候，正在启动 Hermudio</div>
+                    </div>
+                `;
+                overlay.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: linear-gradient(135deg, #0a0a0f 0%, #12121a 100%);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    z-index: 10000;
+                    transition: opacity 0.3s ease;
+                `;
+
+                const style = document.createElement('style');
+                style.textContent = `
+                    .server-loading-content {
+                        text-align: center;
+                        padding: 40px;
+                    }
+                    .server-loading-spinner {
+                        width: 60px;
+                        height: 60px;
+                        border: 3px solid rgba(74, 222, 128, 0.2);
+                        border-top-color: #4ade80;
+                        border-radius: 50%;
+                        animation: server-spin 1s linear infinite;
+                        margin: 0 auto 24px;
+                    }
+                    @keyframes server-spin {
+                        to { transform: rotate(360deg); }
+                    }
+                    .server-loading-text {
+                        font-size: 20px;
+                        font-weight: 600;
+                        color: #ffffff;
+                        margin-bottom: 8px;
+                    }
+                    .server-loading-subtext {
+                        font-size: 14px;
+                        color: #a0a0b0;
+                    }
+                    .server-error-content {
+                        text-align: center;
+                        padding: 40px;
+                        max-width: 400px;
+                    }
+                    .server-error-icon {
+                        font-size: 48px;
+                        margin-bottom: 16px;
+                    }
+                    .server-error-title {
+                        font-size: 20px;
+                        font-weight: 600;
+                        color: #ffffff;
+                        margin-bottom: 12px;
+                    }
+                    .server-error-text {
+                        font-size: 14px;
+                        color: #a0a0b0;
+                        margin-bottom: 24px;
+                        line-height: 1.6;
+                    }
+                    .server-retry-btn {
+                        background: linear-gradient(135deg, #4ade80 0%, #60a5fa 100%);
+                        color: #0a0a0f;
+                        border: none;
+                        padding: 12px 32px;
+                        border-radius: 24px;
+                        font-size: 16px;
+                        font-weight: 600;
+                        cursor: pointer;
+                        transition: transform 0.2s, box-shadow 0.2s;
+                    }
+                    .server-retry-btn:hover {
+                        transform: translateY(-2px);
+                        box-shadow: 0 8px 24px rgba(74, 222, 128, 0.3);
+                    }
+                `;
+                document.head.appendChild(style);
+                document.body.appendChild(overlay);
+            },
+
+            updateLoadingMessage(message) {
+                const textEl = document.querySelector('#serverLoadingOverlay .server-loading-text');
+                if (textEl) {
+                    textEl.textContent = message;
+                }
+            },
+
+            hideLoadingOverlay() {
+                const overlay = document.getElementById('serverLoadingOverlay');
+                if (overlay) {
+                    overlay.style.opacity = '0';
+                    setTimeout(() => overlay.remove(), 300);
+                }
+            },
+
+            showErrorOverlay() {
+                const overlay = document.getElementById('serverLoadingOverlay');
+                if (overlay) {
+                    overlay.innerHTML = `
+                        <div class="server-error-content">
+                            <div class="server-error-icon">⚠️</div>
+                            <div class="server-error-title">无法连接到服务器</div>
+                            <div class="server-error-text">
+                                服务器似乎还没有启动，或者网络连接出现问题。<br>
+                                请确保服务器正在运行，然后点击重试。
+                            </div>
+                            <button class="server-retry-btn" onclick="location.reload()">
+                                重新加载页面
+                            </button>
+                        </div>
+                    `;
+                }
             }
         };
 
@@ -1614,17 +2098,83 @@
             radioState: 'idle', // idle, welcome, intro, playing, outro
             playlist: [],
             currentSongIndex: 0,
+            hermesConnected: false,
+            hermesStatusCheckInterval: null,
+            chatWelcomeSent: false, // 防止重复发送欢迎语
+            currentPlayingSongId: null, // 防止重复播放同一首歌
 
             async init() {
+                // Wait for server to be ready before initializing
+                const serverReady = await ServerConnection.waitForServer();
+                if (!serverReady) {
+                    console.error('[AppState] Server not ready, aborting initialization');
+                    return;
+                }
+
                 TTSService.init();
                 this.generateWaveforms();
                 this.startClock();
                 this.initEventListeners();
                 this.startStatusPolling();
                 this.loadInitialStatus();
+                this.startHermesStatusCheck();
 
                 // 检查登录状态
                 await this.checkLoginAndShowWelcome();
+            },
+
+            // 开始定期检查 Hermes 连接状态
+            startHermesStatusCheck() {
+                // 立即检查一次
+                this.checkHermesStatus();
+                // 每 30 秒检查一次
+                this.hermesStatusCheckInterval = setInterval(() => {
+                    this.checkHermesStatus();
+                }, 30000);
+            },
+
+            // 检查 Hermes 连接状态
+            async checkHermesStatus() {
+                try {
+                    const response = await API.get('/api/hermes/status');
+                    const wasConnected = this.hermesConnected;
+                    this.hermesConnected = response.success && response.available;
+
+                    // 更新 UI
+                    this.updateHermesStatusIndicator();
+
+                    // 状态变化时记录日志
+                    if (this.hermesConnected !== wasConnected) {
+                        if (this.hermesConnected) {
+                            console.log('[HermesStatus] ✅ Hermes AI connected');
+                        } else {
+                            console.log('[HermesStatus] ❌ Hermes AI disconnected');
+                        }
+                    }
+                } catch (error) {
+                    if (this.hermesConnected) {
+                        console.log('[HermesStatus] ❌ Hermes AI connection error:', error.message);
+                    }
+                    this.hermesConnected = false;
+                    this.updateHermesStatusIndicator();
+                }
+            },
+
+            // 更新 Hermes 状态指示器
+            updateHermesStatusIndicator() {
+                const djDot = document.querySelector('.dj-dot');
+                if (!djDot) return;
+
+                if (this.hermesConnected) {
+                    djDot.classList.add('connected');
+                    djDot.classList.remove('error');
+                } else {
+                    djDot.classList.remove('connected');
+                    // 如果服务器本身不可用，显示错误状态
+                    if (!ServerConnection.isConnected) {
+                        djDot.classList.add('error');
+                    }
+                }
             },
 
             // 检查登录状态并显示欢迎语
@@ -1638,11 +2188,21 @@
                         // 未登录，显示登录提醒
                         this.showLoginWelcome();
                     } else {
-                        // 已登录，启动电台欢迎流程
-                        setTimeout(() => {
-                            console.log('[RadioFlow] Auto-starting Hermes welcome...');
-                            this.startRadioShow();
-                        }, 1500);
+                        // 已登录，根据当前模式启动相应欢迎流程
+                        const chatContainer = document.getElementById('chatContainer');
+                        const messages = chatContainer.querySelectorAll('.chat-message');
+
+                        if (this.currentMode === 'chat' && messages.length === 0 && !this.chatWelcomeSent) {
+                            // 当前在聊天模式且聊天框为空且未发送过欢迎语，发送聊天欢迎语并自动推荐
+                            console.log('[Init] In chat mode, sending chat welcome...');
+                            this.sendChatWelcome();
+                        } else if (this.currentMode === 'radio') {
+                            // 当前在电台模式，启动电台欢迎流程
+                            setTimeout(() => {
+                                console.log('[RadioFlow] Auto-starting Hermes welcome...');
+                                this.startRadioShow();
+                            }, 1500);
+                        }
                     }
                 } catch (error) {
                     console.error('[Init] Failed to check login status:', error);
@@ -1833,17 +2393,22 @@
                 document.getElementById('chatMode').classList.toggle('active', mode === 'chat');
 
                 // Handle mode switch: pause radio when switching to chat, resume when switching back
-                if (mode === 'chat' && previousMode === 'radio') {
-                    // Switching from radio to chat: pause radio playback
-                    console.log('[ModeSwitch] Switching from radio to chat, pausing radio playback...');
-                    await this.pauseRadioForChat();
-                    
-                    // 切换到聊天模式时，如果聊天框为空，Hermes 主动发起欢迎
-                    // 注意：在 pauseRadioForChat 之后执行，避免语音重叠
+                if (mode === 'chat') {
+                    // Switching to chat mode
+                    if (previousMode === 'radio') {
+                        // From radio to chat: pause radio playback
+                        console.log('[ModeSwitch] Switching from radio to chat, pausing radio playback...');
+                        await this.pauseRadioForChat();
+                    }
+
+                    // 切换到聊天模式时，如果聊天框为空且未发送过欢迎语，Hermes 主动发起欢迎
                     const chatContainer = document.getElementById('chatContainer');
                     const messages = chatContainer.querySelectorAll('.chat-message');
-                    if (messages.length === 0) {
+                    if (messages.length === 0 && !this.chatWelcomeSent) {
+                        console.log('[ModeSwitch] Chat is empty, sending welcome...');
                         this.sendChatWelcome();
+                    } else {
+                        console.log('[ModeSwitch] Chat welcome already sent or messages exist, skipping...');
                     }
                 } else if (mode === 'radio' && previousMode === 'chat') {
                     // Switching from chat to radio: resume radio playback
@@ -1877,11 +2442,17 @@
                 // Stop status polling
                 this.stopStatusPolling();
                 
-                // Stop Hermes TTS to prevent overlap with chat mode
+                // Pause Hermes TTS when switching to chat mode (can resume when switching back)
                 if (TTSService.isSpeaking) {
-                    TTSService.stop();
-                    console.log('[ModeSwitch] Hermes TTS stopped');
+                    TTSService.pause();
+                    this.hermesPaused = true;
+                    this.updateHermesPlayButton();
+                    console.log('[ModeSwitch] Hermes TTS paused');
                 }
+                
+                // Set radio state to idle (paused)
+                this.radioState = 'idle';
+                console.log('[ModeSwitch] Radio state set to idle');
                 
                 console.log('[ModeSwitch] Radio paused for chat mode');
             },
@@ -1889,72 +2460,249 @@
             // Resume radio playback when switching back to radio mode
             async resumeRadioFromChat() {
                 console.log('[ModeSwitch] Resuming radio from chat mode...');
-                
-                const savedState = this.radioStateBeforeChat;
-                if (!savedState) {
-                    console.log('[ModeSwitch] No saved radio state, starting fresh...');
-                    // If no saved state, start radio show
-                    if (this.radioState === 'idle') {
+
+                // 1. 首先暂停聊天模式的歌曲播放
+                if (this.isPlaying) {
+                    console.log('[ModeSwitch] Pausing chat mode music playback...');
+                    await API.stop();
+                    this.setPlaying(false);
+                }
+
+                // 2. 恢复 Hermes TTS 播报（如果有）
+                if (this.hermesPaused) {
+                    console.log('[ModeSwitch] Resuming Hermes TTS...');
+                    TTSService.resume(RadioHost.currentWords, RadioHost.currentWordInterval);
+                    this.hermesPaused = false;
+                    this.updateHermesPlayButton();
+                    // TTS 会在播报完成后自动触发电台音乐播放，不需要额外处理
+                } else {
+                    // 3. 如果没有 TTS 需要恢复，根据电台状态决定下一步
+                    const savedState = this.radioStateBeforeChat;
+                    if (!savedState) {
+                        console.log('[ModeSwitch] No saved radio state, starting fresh...');
+                        if (this.radioState === 'idle') {
+                            await this.startRadioShow();
+                        }
+                    } else if (this.radioState === 'idle') {
+                        // 电台处于空闲状态，启动新的电台节目
+                        console.log('[ModeSwitch] Radio was idle, starting fresh...');
                         await this.startRadioShow();
                     }
-                    return;
+                    // 如果电台正在播放中（有 TTS 或音乐），让现有的逻辑继续执行
                 }
-                
-                // Resume music playback if it was playing
-                if (savedState.isPlaying && savedState.radioState === 'playing') {
-                    const currentSong = this.playlist[this.currentSongIndex];
-                    if (currentSong) {
-                        console.log('[ModeSwitch] Resuming song:', currentSong.name);
-                        try {
-                            await this.actuallyPlaySong(currentSong);
-                            console.log('[ModeSwitch] Radio playback resumed');
-                        } catch (e) {
-                            console.error('[ModeSwitch] Failed to resume radio:', e.message);
-                        }
-                    }
-                } else if (this.radioState === 'idle') {
-                    // If radio was idle, start fresh
-                    console.log('[ModeSwitch] Radio was idle, starting fresh...');
-                    await this.startRadioShow();
-                }
-                
+
                 // Clear saved state
                 this.radioStateBeforeChat = null;
             },
 
-            // 聊天模式欢迎语
-            async sendChatWelcome() {
-                const hour = new Date().getHours();
-                let greeting = hour < 12 ? '早上好' : hour < 18 ? '下午好' : '晚上好';
-                const welcomeText = `${greeting}！我是 Hermes，你的音乐助手。告诉我你现在的心情或者想听什么类型的音乐，我来为你推荐。`;
-
-                // 添加 Hermes 欢迎消息
-                this.addChatMessage(welcomeText, false);
-
-                // 语音播报欢迎语
-                try {
-                    await TTSService.speak(welcomeText, {
-                        onStart: () => console.log('[Chat] Welcome TTS started'),
-                        onEnd: () => console.log('[Chat] Welcome TTS ended')
-                    });
-                } catch (e) {
-                    console.warn('[Chat] Welcome TTS failed:', e.message);
+            // 聊天模式欢迎语 - 只显示文字，不播放语音，自动推荐歌曲
+            async sendChatWelcome(retryCount = 0) {
+                // 防止重复发送
+                if (this.chatWelcomeSent) {
+                    console.log('[Chat] Welcome already sent, skipping...');
+                    return;
                 }
+                this.chatWelcomeSent = true;
+
+                const maxRetries = 3;
+                const retryDelay = 2000;
+                let welcomeText = null;
+
+                // 尝试获取欢迎语（带重试）
+                for (let i = 0; i <= maxRetries; i++) {
+                    try {
+                        console.log(`[Chat] Fetching welcome message from Hermes... attempt: ${i + 1}`);
+                        const response = await API.get('/api/chat/welcome');
+
+                        if (response.success && response.message) {
+                            welcomeText = response.message;
+                            console.log('[Chat] Welcome message from Hermes:', welcomeText);
+                            break;
+                        }
+                    } catch (error) {
+                        console.error(`[Chat] Failed to fetch welcome message (attempt ${i + 1}):`, error.message);
+                        if (i < maxRetries) {
+                            console.log(`[Chat] Retrying in ${retryDelay}ms...`);
+                            await this.sleep(retryDelay);
+                        }
+                    }
+                }
+
+                // 如果所有重试都失败，使用兜底文案
+                if (!welcomeText) {
+                    const hour = new Date().getHours();
+                    let greeting = hour < 12 ? '早上好' : hour < 18 ? '下午好' : '晚上好';
+                    welcomeText = `${greeting}！我是 Hermes，你的音乐助手。告诉我你现在的心情或者想听什么类型的音乐，我来为你推荐。`;
+                    console.log('[Chat] Using fallback welcome message');
+                }
+
+                // 添加 Hermes 欢迎消息（仅文字，不播放语音）
+                this.addChatMessage(welcomeText, false);
+                console.log('[Chat] Welcome message displayed (text only)');
+
+                // 自动推荐一首歌并播放
+                console.log('[Chat] Auto-recommending first song...');
+                setTimeout(() => this.autoRecommendAndPlay(), 1000);
+            },
+
+            // 聊天模式自动推荐并播放歌曲
+            async autoRecommendAndPlay() {
+                const maxRetries = 3;
+                const retryDelay = 2000;
+
+                // 尝试获取推荐（带重试）
+                for (let i = 0; i <= maxRetries; i++) {
+                    try {
+                        console.log(`[Chat] Fetching song recommendation... attempt: ${i + 1}`);
+                        const response = await API.chat('推荐一首歌');
+
+                        if (response.success) {
+                            if (response.action === 'recommend' && response.recommendedSongs && response.recommendedSongs.length > 0) {
+                                // 显示推荐卡片（包含自动倒计时播放逻辑）
+                                this.addRecommendationMessage(response.message, response.recommendedSongs, response.autoPlayTimeout || 30000);
+                                return; // 成功，退出
+
+                            } else if (response.action === 'play' && response.song) {
+                                // 直接播放
+                                this.updateCurrentSong(response.song);
+                                this.setPlaying(true);
+                                this.addChatMessage(response.message, false);
+                                return; // 成功，退出
+
+                            } else {
+                                // 普通聊天消息
+                                this.addChatMessage(response.message, false);
+                                return; // 成功，退出
+                            }
+                        } else {
+                            console.error('[Chat] Recommendation failed:', response.error);
+                            if (i < maxRetries) {
+                                console.log(`[Chat] Retrying in ${retryDelay}ms...`);
+                                await this.sleep(retryDelay);
+                            }
+                        }
+                    } catch (error) {
+                        console.error(`[Chat] Auto-recommend error (attempt ${i + 1}):`, error);
+                        if (i < maxRetries) {
+                            console.log(`[Chat] Retrying in ${retryDelay}ms...`);
+                            await this.sleep(retryDelay);
+                        }
+                    }
+                }
+
+                // 所有重试都失败
+                this.addChatMessage('抱歉，获取推荐时出错了。请直接告诉我你想听什么歌。', false);
             },
 
             toggleQueue() {
                 this.queueExpanded = !this.queueExpanded;
                 document.getElementById('queueList').classList.toggle('expanded', this.queueExpanded);
                 document.getElementById('queueToggleIcon').classList.toggle('expanded', this.queueExpanded);
+                
+                // Load queue when expanding
+                if (this.queueExpanded) {
+                    this.loadQueue();
+                }
             },
 
-            selectQueueItem(item) {
+            // Load queue from playlist
+            async loadQueue() {
+                try {
+                    // Get playlist from radio service or fetch new one
+                    let songs = [];
+                    if (this.playlist && this.playlist.length > 0) {
+                        songs = this.playlist;
+                    } else {
+                        // Fetch playlist from API
+                        const response = await API.get('/api/radio/playlist');
+                        if (response.success && response.songs) {
+                            songs = response.songs;
+                            this.playlist = songs;
+                        }
+                    }
+                    
+                    this.renderQueue(songs);
+                } catch (error) {
+                    console.error('[Queue] Failed to load queue:', error);
+                }
+            },
+
+            // Render queue list
+            renderQueue(songs) {
+                const queueList = document.getElementById('queueList');
+                const queueCount = document.getElementById('queueCount');
+                
+                if (!queueList) return;
+                
+                // Update count
+                if (queueCount) {
+                    queueCount.textContent = `${songs.length} TRACKS`;
+                }
+                
+                if (songs.length === 0) {
+                    queueList.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--text-secondary); font-size: 12px;">暂无歌曲</div>';
+                    return;
+                }
+                
+                // Get current song index
+                const currentIndex = this.currentSongIndex || 0;
+                
+                // Render queue items
+                queueList.innerHTML = songs.map((song, index) => {
+                    const isActive = index === currentIndex;
+                    const isNext = index === currentIndex + 1;
+                    
+                    return `
+                        <div class="queue-item ${isActive ? 'active' : ''}" data-index="${index}" data-song-id="${song.id || ''}">
+                            <div class="queue-number">${isActive ? '<span class="queue-play-icon">▶</span>' : index + 1}</div>
+                            <div class="queue-track-info">
+                                <div class="queue-track-name">${song.name}</div>
+                                <div class="queue-track-artist">${song.artist}</div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                
+                // Add click handlers
+                queueList.querySelectorAll('.queue-item').forEach(item => {
+                    item.addEventListener('click', () => this.selectQueueItem(item));
+                });
+            },
+
+            async selectQueueItem(item) {
+                const index = parseInt(item.dataset.index);
+                const songId = item.dataset.songId;
+                
+                // Update UI
                 document.querySelectorAll('.queue-item').forEach(i => i.classList.remove('active'));
                 item.classList.add('active');
                 
-                const songName = item.querySelector('.queue-track-name').textContent;
-                const artistName = item.querySelector('.queue-track-artist').textContent;
-                this.updateCurrentSong({ name: songName, artist: artistName });
+                // Get song from playlist
+                const song = this.playlist[index];
+                if (!song) return;
+                
+                // Update current song index
+                this.currentSongIndex = index;
+                
+                // Update display
+                this.updateCurrentSong(song);
+                
+                // Play the song
+                if (this.currentMode === 'radio') {
+                    // Radio mode: play with intro
+                    await this.playCurrentSongWithIntro();
+                } else {
+                    // Chat mode: play directly
+                    try {
+                        const response = await API.play(song.id);
+                        if (response.success) {
+                            this.setPlaying(true);
+                            this.addChatMessage(`正在播放 ${song.name} - ${song.artist}`, false);
+                        }
+                    } catch (error) {
+                        console.error('[Queue] Failed to play song:', error);
+                    }
+                }
             },
 
             playSongCard(card) {
@@ -2067,54 +2815,134 @@
                 }
             },
 
-            async startRadioShow() {
-                console.log('[RadioFlow] startRadioShow called, current state:', this.radioState);
+            async startRadioShow(retryCount = 0) {
+                console.log('[RadioFlow] startRadioShow called, current state:', this.radioState, 'retryCount:', retryCount);
+                console.warn('[RadioFlow] ⚠️ startRadioShow entered!');
                 if (this.radioState !== 'idle') {
                     console.warn('[RadioFlow] Cannot start radio show, state is not idle:', this.radioState);
                     return;
                 }
-                
+                console.warn('[RadioFlow] ⚠️ State is idle, continuing...');
+
+                const maxRetries = 3;
+                const retryDelay = 2000; // 2秒重试间隔
+
                 this.radioState = 'welcome';
                 console.log('[RadioFlow] State changed to: welcome');
                 console.time('[RadioFlow] Welcome generation');
-                
+
                 // 1. Generate and speak welcome message
                 try {
                     console.log('[RadioFlow] Fetching welcome message from API...');
                     const response = await API.get('/api/radio/welcome');
                     console.log('[RadioFlow] Welcome API response:', response.success ? 'success' : 'failed');
-                    
+
                     if (response.success && response.script) {
                         console.log('[RadioFlow] Welcome script received, length:', response.script.length);
                         console.log('[RadioFlow] Starting TTS for welcome...');
+
+                        // 根据文案长度计算超时时间（中文约 250ms/字，加上 5 秒缓冲）
+                        const estimatedDuration = response.script.length * 250 + 5000;
+                        const timeoutDuration = Math.max(estimatedDuration, 20000); // 至少20秒
+                        console.log('[RadioFlow] Estimated welcome TTS duration:', estimatedDuration, 'ms, timeout:', timeoutDuration, 'ms');
+
+                        // 确保 TTS 的 onEnd 总是被调用
+                        let welcomeTtsCompleted = false;
+                        const welcomeTtsTimeout = setTimeout(() => {
+                            if (!welcomeTtsCompleted) {
+                                console.warn('[RadioFlow] Welcome TTS onEnd timeout, forcing continue');
+                                welcomeTtsCompleted = true;
+                                console.timeEnd('[RadioFlow] Welcome generation');
+                                // 【修改】欢迎语后直接播放歌曲，跳过歌单介绍和歌曲介绍
+                                this.playFirstSongAfterWelcome();
+                            }
+                        }, timeoutDuration);
+
+                        console.warn('[RadioFlow] ⚠️ About to call RadioHost.speakWithSync!');
                         RadioHost.speakWithSync(response.script, {
                             onStart: () => console.log('[RadioFlow] Welcome TTS started'),
                             onEnd: () => {
+                                if (welcomeTtsCompleted) return; // 已经通过超时调用了
+                                welcomeTtsCompleted = true;
+                                clearTimeout(welcomeTtsTimeout);
                                 console.log('[RadioFlow] Welcome TTS ended');
                                 console.timeEnd('[RadioFlow] Welcome generation');
-                                // After welcome, get playlist and intro
-                                this.continueRadioShow();
+                                // 【修改】欢迎语后直接播放歌曲，跳过歌单介绍和歌曲介绍
+                                this.playFirstSongAfterWelcome();
                             }
                         });
+                        console.warn('[RadioFlow] ⚠️ RadioHost.speakWithSync called!');
                     } else {
                         console.warn('[RadioFlow] Welcome API returned no script, using fallback');
                         // Fallback welcome
                         const hour = new Date().getHours();
                         let greeting = hour < 12 ? '早上好' : hour < 18 ? '下午好' : '晚上好';
                         RadioHost.speakWithSync(`${greeting}，欢迎来到Hermudio。我是你的音乐伙伴Hermes。让我为你挑选一些适合此刻的音乐。`, {
-                            onEnd: () => this.continueRadioShow()
+                            onEnd: () => this.playFirstSongAfterWelcome()
                         });
                     }
                 } catch (error) {
                     console.error('[RadioFlow] Welcome generation error:', error);
                     console.timeEnd('[RadioFlow] Welcome generation');
-                    this.continueRadioShow();
+
+                    // 自动重试机制
+                    if (retryCount < maxRetries) {
+                        console.log(`[RadioFlow] Retrying startRadioShow in ${retryDelay}ms... (${retryCount + 1}/${maxRetries})`);
+                        this.radioState = 'idle'; // 重置状态以便重试
+                        await this.sleep(retryDelay);
+                        return this.startRadioShow(retryCount + 1);
+                    }
+
+                    console.warn('[RadioFlow] Max retries reached, continuing with fallback');
+                    this.playFirstSongAfterWelcome();
                 }
             },
 
-            async continueRadioShow() {
-                console.log('[RadioFlow] continueRadioShow called');
+            // 【新增】欢迎语后直接播放第一首歌（跳过歌单介绍和歌曲介绍）
+            async playFirstSongAfterWelcome() {
+                console.log('[RadioFlow] playFirstSongAfterWelcome called - skipping playlist intro and song intro');
+                console.time('[RadioFlow] First song fetch');
+
+                try {
+                    // 获取歌单
+                    console.log('[RadioFlow] Fetching playlist from API...');
+                    const response = await API.get('/api/radio/playlist');
+                    console.log('[RadioFlow] Playlist API response:', response.success ? 'success' : 'failed');
+
+                    if (response.success && response.songs && response.songs.length > 0) {
+                        this.playlist = response.songs;
+                        this.currentSongIndex = 0;
+                        console.log('[RadioFlow] Playlist received, songs count:', this.playlist.length);
+                        console.log('[RadioFlow] First song:', this.playlist[0]?.name, '-', this.playlist[0]?.artist);
+                        console.timeEnd('[RadioFlow] First song fetch');
+
+                        // 更新队列显示
+                        if (this.queueExpanded) {
+                            this.renderQueue(this.playlist);
+                        }
+
+                        // 【关键】直接播放第一首歌，跳过所有介绍
+                        const firstSong = this.playlist[0];
+                        console.log('[RadioFlow] Playing first song directly without intro:', firstSong.name);
+                        this.actuallyPlaySong(firstSong);
+                    } else {
+                        console.warn('[RadioFlow] Playlist API returned no songs, using fallback');
+                        console.timeEnd('[RadioFlow] First song fetch');
+                        this.playRecommendedSong();
+                    }
+                } catch (error) {
+                    console.error('[RadioFlow] First song fetch error:', error);
+                    console.timeEnd('[RadioFlow] First song fetch');
+                    this.playRecommendedSong();
+                }
+            },
+
+            async continueRadioShow(retryCount = 0) {
+                console.log('[RadioFlow] continueRadioShow called, retryCount:', retryCount);
                 console.time('[RadioFlow] Playlist generation');
+                
+                const maxRetries = 3;
+                const retryDelay = 2000;
                 
                 // 2. Get playlist
                 try {
@@ -2128,6 +2956,11 @@
                         console.log('[RadioFlow] Playlist received, songs count:', this.playlist.length);
                         console.log('[RadioFlow] First song:', this.playlist[0]?.name, '-', this.playlist[0]?.artist);
                         console.timeEnd('[RadioFlow] Playlist generation');
+                        
+                        // Update queue display if expanded
+                        if (this.queueExpanded) {
+                            this.renderQueue(this.playlist);
+                        }
                         
                         // Generate playlist intro
                         console.time('[RadioFlow] Playlist intro generation');
@@ -2161,18 +2994,30 @@
                 } catch (error) {
                     console.error('[RadioFlow] Playlist error:', error);
                     console.timeEnd('[RadioFlow] Playlist generation');
+                    
+                    // 自动重试机制
+                    if (retryCount < maxRetries) {
+                        console.log(`[RadioFlow] Retrying continueRadioShow in ${retryDelay}ms... (${retryCount + 1}/${maxRetries})`);
+                        await this.sleep(retryDelay);
+                        return this.continueRadioShow(retryCount + 1);
+                    }
+                    
+                    console.warn('[RadioFlow] Max retries reached, using fallback');
                     this.playRecommendedSong();
                 }
             },
 
-            async playCurrentSongWithIntro() {
+            async playCurrentSongWithIntro(retryCount = 0) {
                 const song = this.playlist[this.currentSongIndex];
-                console.log('[RadioFlow] playCurrentSongWithIntro called, songIndex:', this.currentSongIndex);
+                console.log('[RadioFlow] playCurrentSongWithIntro called, songIndex:', this.currentSongIndex, 'retryCount:', retryCount);
                 
                 if (!song) {
                     console.error('[RadioFlow] No song found at index:', this.currentSongIndex);
                     return;
                 }
+                
+                const maxRetries = 2;
+                const retryDelay = 1500;
                 
                 console.log('[RadioFlow] Current song:', song.name, '-', song.artist);
                 this.radioState = 'intro';
@@ -2187,9 +3032,29 @@
                     
                     if (response.success && response.script) {
                         console.log('[RadioFlow] Song intro received, length:', response.script.length);
+
+                        // 根据文案长度计算超时时间（中文约 250ms/字，加上 10 秒缓冲）
+                        const estimatedDuration = response.script.length * 250 + 10000;
+                        const timeoutDuration = Math.max(estimatedDuration, 30000); // 至少30秒
+                        console.log('[RadioFlow] Estimated TTS duration:', estimatedDuration, 'ms, timeout:', timeoutDuration, 'ms');
+
+                        // 确保 TTS 的 onEnd 总是被调用
+                        let introTtsCompleted = false;
+                        const introTtsTimeout = setTimeout(() => {
+                            if (!introTtsCompleted) {
+                                console.warn('[RadioFlow] Intro TTS onEnd timeout, forcing play song');
+                                introTtsCompleted = true;
+                                console.timeEnd('[RadioFlow] Song intro generation');
+                                this.actuallyPlaySong(song);
+                            }
+                        }, timeoutDuration);
+
                         RadioHost.speakWithSync(response.script, {
                             onStart: () => console.log('[RadioFlow] Song intro TTS started'),
                             onEnd: () => {
+                                if (introTtsCompleted) return; // 已经通过超时调用了
+                                introTtsCompleted = true;
+                                clearTimeout(introTtsTimeout);
                                 console.log('[RadioFlow] Song intro TTS ended');
                                 console.timeEnd('[RadioFlow] Song intro generation');
                                 // After intro, play the song
@@ -2203,11 +3068,27 @@
                 } catch (error) {
                     console.error('[RadioFlow] Song intro error:', error);
                     console.timeEnd('[RadioFlow] Song intro generation');
+                    
+                    // 自动重试机制
+                    if (retryCount < maxRetries) {
+                        console.log(`[RadioFlow] Retrying playCurrentSongWithIntro in ${retryDelay}ms... (${retryCount + 1}/${maxRetries})`);
+                        await this.sleep(retryDelay);
+                        return this.playCurrentSongWithIntro(retryCount + 1);
+                    }
+                    
+                    console.warn('[RadioFlow] Max retries reached, playing song without intro');
                     this.actuallyPlaySong(song);
                 }
             },
 
             async actuallyPlaySong(song) {
+                // 防止重复调用
+                if (this.currentPlayingSongId === song.id) {
+                    console.log('[RadioFlow] Song already playing, skipping:', song.name);
+                    return;
+                }
+                this.currentPlayingSongId = song.id;
+
                 console.log('[RadioFlow] actuallyPlaySong called for:', song.name);
                 this.radioState = 'playing';
                 console.log('[RadioFlow] State changed to: playing');
@@ -2224,10 +3105,11 @@
                     console.log('[RadioFlow] Calling API.play with songId:', song.id, 'encryptedId:', song.encryptedId);
                     console.time('[RadioFlow] Song playback start');
                     const response = await API.play(song.id, song.encryptedId);
-                    console.log('[RadioFlow] Play API response:', response.success ? 'success' : 'failed');
+                    console.log('[RadioFlow] Play API response:', response.success ? 'success' : 'failed', response);
 
                     if (response.success) {
                         this.setPlaying(true);
+                        this.consecutiveFailures = 0; // Reset failure counter
                         console.log('[RadioFlow] Song playback started successfully');
                         console.timeEnd('[RadioFlow] Song playback start');
                         // Restart status polling if it was stopped
@@ -2244,17 +3126,38 @@
                         this.setPlaying(false);
                         this.radioState = 'idle';
                     } else {
-                        console.error('[RadioFlow] Play API returned failure:', response);
+                        console.error('[RadioFlow] Play API returned failure:', response.error, response.message, response.details || '', response);
                         // If play fails, skip outro and go directly to next song intro
                         console.log('[RadioFlow] Song playback failed, skipping to next song...');
-                        this.skipToNextSongAfterFailure();
+                        this.consecutiveFailures = (this.consecutiveFailures || 0) + 1;
+                        
+                        // If too many consecutive failures, stop trying and show error
+                        if (this.consecutiveFailures >= 3) {
+                            console.error('[RadioFlow] Too many consecutive failures, stopping playback');
+                            this.addChatMessage('⚠️ 连续多首歌曲播放失败，请检查网络连接或尝试重新登录网易云音乐。', false);
+                            this.setPlaying(false);
+                            this.radioState = 'idle';
+                            this.consecutiveFailures = 0;
+                        } else {
+                            this.skipToNextSongAfterFailure();
+                        }
                     }
                 } catch (error) {
                     console.error('[RadioFlow] Play error:', error);
                     console.timeEnd('[RadioFlow] Song playback start');
                     // If play throws error, skip outro and go directly to next song intro
                     console.log('[RadioFlow] Song playback error, skipping to next song...');
-                    this.skipToNextSongAfterFailure();
+                    this.consecutiveFailures = (this.consecutiveFailures || 0) + 1;
+                    
+                    if (this.consecutiveFailures >= 3) {
+                        console.error('[RadioFlow] Too many consecutive failures, stopping playback');
+                        this.addChatMessage('⚠️ 连续多首歌曲播放失败，请检查网络连接或尝试重新登录网易云音乐。', false);
+                        this.setPlaying(false);
+                        this.radioState = 'idle';
+                        this.consecutiveFailures = 0;
+                    } else {
+                        this.skipToNextSongAfterFailure();
+                    }
                 }
             },
 
@@ -2371,8 +3274,8 @@
                 }, 5000);
             },
 
-            async onSongFinished() {
-                console.log('[RadioFlow] onSongFinished called for song index:', this.currentSongIndex);
+            async onSongFinished(retryCount = 0) {
+                console.log('[RadioFlow] onSongFinished called for song index:', this.currentSongIndex, 'retryCount:', retryCount);
                 this.radioState = 'outro';
                 console.log('[RadioFlow] State changed to: outro');
                 const song = this.playlist[this.currentSongIndex];
@@ -2382,52 +3285,81 @@
                     return;
                 }
                 
+                const maxRetries = 2;
+                const retryDelay = 1500;
+                
+                console.log('[RadioFlow] Generating outro for song:', song.name, '-', song.artist);
                 console.time('[RadioFlow] Song outro generation');
                 
                 // Generate outro
                 try {
                     console.log('[RadioFlow] Fetching song outro from API...');
                     const response = await API.post('/api/radio/song-outro', { song });
-                    console.log('[RadioFlow] Song outro API response:', response.success ? 'success' : 'failed');
+                    console.log('[RadioFlow] Song outro API response:', response.success ? 'success' : 'failed', response.error || '');
                     
                     if (response.success && response.script) {
-                        console.log('[RadioFlow] Song outro received, length:', response.script.length);
+                        console.log('[RadioFlow] Song outro received, length:', response.script.length, 'content:', response.script.substring(0, 50) + '...');
+
+                        // 根据文案长度计算超时时间（中文约 250ms/字，加上 10 秒缓冲）
+                        const estimatedDuration = response.script.length * 250 + 10000;
+                        const timeoutDuration = Math.max(estimatedDuration, 30000); // 至少30秒
+                        console.log('[RadioFlow] Estimated outro TTS duration:', estimatedDuration, 'ms, timeout:', timeoutDuration, 'ms');
+
+                        // 确保 TTS 的 onEnd 总是被调用
+                        let ttsCompleted = false;
+                        const ttsTimeout = setTimeout(() => {
+                            if (!ttsCompleted) {
+                                console.warn('[RadioFlow] TTS onEnd timeout, forcing next song');
+                                ttsCompleted = true;
+                                this.moveToNextSongAfterOutro();
+                            }
+                        }, timeoutDuration);
+
                         RadioHost.speakWithSync(response.script, {
                             onStart: () => console.log('[RadioFlow] Song outro TTS started'),
                             onEnd: () => {
+                                if (ttsCompleted) return; // 已经通过超时调用了
+                                ttsCompleted = true;
+                                clearTimeout(ttsTimeout);
                                 console.log('[RadioFlow] Song outro TTS ended');
                                 console.timeEnd('[RadioFlow] Song outro generation');
-                                // Move to next song
-                                this.currentSongIndex++;
-                                console.log('[RadioFlow] Moving to next song, new index:', this.currentSongIndex, 'total:', this.playlist.length);
-                                
-                                if (this.currentSongIndex < this.playlist.length) {
-                                    this.playCurrentSongWithIntro();
-                                } else {
-                                    // Playlist finished
-                                    console.log('[RadioFlow] Playlist finished');
-                                    this.onPlaylistFinished();
-                                }
+                                this.moveToNextSongAfterOutro();
                             }
                         });
                     } else {
-                        console.warn('[RadioFlow] Song outro API returned no script');
-                        this.currentSongIndex++;
-                        if (this.currentSongIndex < this.playlist.length) {
-                            this.playCurrentSongWithIntro();
-                        } else {
-                            this.onPlaylistFinished();
-                        }
+                        console.warn('[RadioFlow] Song outro API returned no script, skipping to next song');
+                        this.moveToNextSongAfterOutro();
                     }
                 } catch (error) {
                     console.error('[RadioFlow] Song outro error:', error);
                     console.timeEnd('[RadioFlow] Song outro generation');
-                    this.currentSongIndex++;
-                    if (this.currentSongIndex < this.playlist.length) {
-                        this.playCurrentSongWithIntro();
-                    } else {
-                        this.onPlaylistFinished();
+                    
+                    // 自动重试机制
+                    if (retryCount < maxRetries) {
+                        console.log(`[RadioFlow] Retrying onSongFinished in ${retryDelay}ms... (${retryCount + 1}/${maxRetries})`);
+                        await this.sleep(retryDelay);
+                        return this.onSongFinished(retryCount + 1);
                     }
+                    
+                    console.warn('[RadioFlow] Max retries reached, skipping to next song');
+                    this.moveToNextSongAfterOutro();
+                }
+            },
+
+            // 辅助方法：outro 后移动到下一首歌
+            moveToNextSongAfterOutro() {
+                console.log('[RadioFlow] moveToNextSongAfterOutro called');
+                this.currentSongIndex++;
+                this.currentPlayingSongId = null; // 重置，允许播放下一首歌
+                console.log('[RadioFlow] Moving to next song, new index:', this.currentSongIndex, 'total:', this.playlist.length);
+
+                if (this.currentSongIndex < this.playlist.length) {
+                    console.log('[RadioFlow] Playing next song with intro...');
+                    this.playCurrentSongWithIntro();
+                } else {
+                    // Playlist finished
+                    console.log('[RadioFlow] Playlist finished');
+                    this.onPlaylistFinished();
                 }
             },
 
@@ -2445,36 +3377,53 @@
                     ];
                     const transitionMsg = transitionMessages[Math.floor(Math.random() * transitionMessages.length)];
                     
+                    // 确保 TTS 的 onEnd 总是被调用
+                    let transitionTtsCompleted = false;
+                    const transitionTtsTimeout = setTimeout(async () => {
+                        if (!transitionTtsCompleted) {
+                            console.warn('[RadioFlow] Transition TTS onEnd timeout, forcing fetch new playlist');
+                            transitionTtsCompleted = true;
+                            await this.fetchNewPlaylistAndContinue();
+                        }
+                    }, 15000); // 15秒超时
+                    
                     RadioHost.speakWithSync(transitionMsg, {
                         onStart: () => console.log('[RadioFlow] Transition message TTS started'),
                         onEnd: async () => {
+                            if (transitionTtsCompleted) return; // 已经通过超时调用了
+                            transitionTtsCompleted = true;
+                            clearTimeout(transitionTtsTimeout);
                             console.log('[RadioFlow] Transition message ended, fetching new playlist...');
-                            
-                            // Fetch new playlist and continue
-                            try {
-                                const response = await API.get('/api/radio/playlist');
-                                if (response.success && response.songs && response.songs.length > 0) {
-                                    this.playlist = response.songs;
-                                    this.currentSongIndex = 0;
-                                    console.log('[RadioFlow] New playlist received, songs count:', this.playlist.length);
-                                    console.log('[RadioFlow] First song:', this.playlist[0]?.name, '-', this.playlist[0]?.artist);
-                                    
-                                    // Continue with new playlist intro
-                                    this.continueRadioShowWithNewPlaylist();
-                                } else {
-                                    console.warn('[RadioFlow] Failed to get new playlist, using fallback');
-                                    this.playRecommendedSong();
-                                }
-                            } catch (error) {
-                                console.error('[RadioFlow] Error fetching new playlist:', error);
-                                this.playRecommendedSong();
-                            }
+                            await this.fetchNewPlaylistAndContinue();
                         }
                     });
                 } catch (error) {
                     console.error('[RadioFlow] Transition error:', error);
                     // Fallback: just get new playlist without transition
                     this.continueRadioShow();
+                }
+            },
+
+            // 辅助方法：获取新歌单并继续播放
+            async fetchNewPlaylistAndContinue() {
+                console.log('[RadioFlow] fetchNewPlaylistAndContinue called');
+                try {
+                    const response = await API.get('/api/radio/playlist');
+                    if (response.success && response.songs && response.songs.length > 0) {
+                        this.playlist = response.songs;
+                        this.currentSongIndex = 0;
+                        console.log('[RadioFlow] New playlist received, songs count:', this.playlist.length);
+                        console.log('[RadioFlow] First song:', this.playlist[0]?.name, '-', this.playlist[0]?.artist);
+                        
+                        // Continue with new playlist intro
+                        this.continueRadioShowWithNewPlaylist();
+                    } else {
+                        console.warn('[RadioFlow] Failed to get new playlist, using fallback');
+                        this.playRecommendedSong();
+                    }
+                } catch (error) {
+                    console.error('[RadioFlow] Error fetching new playlist:', error);
+                    this.playRecommendedSong();
                 }
             },
 
@@ -2492,9 +3441,24 @@
                     
                     if (introResponse.success && introResponse.script) {
                         console.log('[RadioFlow] Playlist intro received, length:', introResponse.script.length);
+                        
+                        // 确保 TTS 的 onEnd 总是被调用
+                        let playlistIntroTtsCompleted = false;
+                        const playlistIntroTtsTimeout = setTimeout(() => {
+                            if (!playlistIntroTtsCompleted) {
+                                console.warn('[RadioFlow] Playlist intro TTS onEnd timeout, forcing play song');
+                                playlistIntroTtsCompleted = true;
+                                console.timeEnd('[RadioFlow] New playlist intro generation');
+                                this.playCurrentSongWithIntro();
+                            }
+                        }, 30000); // 30秒超时
+                        
                         RadioHost.speakWithSync(introResponse.script, {
                             onStart: () => console.log('[RadioFlow] New playlist intro TTS started'),
                             onEnd: () => {
+                                if (playlistIntroTtsCompleted) return; // 已经通过超时调用了
+                                playlistIntroTtsCompleted = true;
+                                clearTimeout(playlistIntroTtsTimeout);
                                 console.log('[RadioFlow] New playlist intro TTS ended');
                                 console.timeEnd('[RadioFlow] New playlist intro generation');
                                 // Start playing first song of new playlist
@@ -2664,6 +3628,11 @@
                 
                 // Reset like button state for new song
                 this.resetLikeButton();
+                
+                // Update queue display if expanded
+                if (this.queueExpanded && this.playlist.length > 0) {
+                    this.renderQueue(this.playlist);
+                }
             },
             
             resetLikeButton() {
@@ -2800,43 +3769,48 @@
                 // Add click handlers for song cards
                 const cards = message.querySelectorAll('.song-card');
                 let autoPlayCancelled = false;
-                
+                let userSelectedSong = false;
+
                 const playSong = async (index, card) => {
                     if (autoPlayCancelled) return;
                     autoPlayCancelled = true;
-                    
+                    userSelectedSong = true;
+
                     const song = songs[index];
-                    
+
                     // Update UI
                     cards.forEach(c => c.classList.remove('active'));
                     card.classList.add('active');
-                    
+
                     // Hide countdown
                     const countdown = message.querySelector('.auto-play-countdown');
                     if (countdown) countdown.style.display = 'none';
-                    
+
                     // Play song
                     try {
-                        const result = await API.playSong(song.id, song.encryptedId);
-                        
+                        const result = await API.play(song.id, song.encryptedId);
+
                         // Check if play failed
                         if (!result.success) {
                             throw new Error(result.message || result.error || '播放失败');
                         }
-                        
+
                         this.updateCurrentSong(song);
                         this.setPlaying(true);
-                        
+
                         // Show playing indicator
                         const playBtn = card.querySelector('.song-card-play');
                         if (playBtn) playBtn.textContent = '♪';
+
+                        // 添加正在播放的消息
+                        this.addChatMessage(`正在为你播放 **《${song.name}》** — ${song.artist}`, false);
                     } catch (error) {
                         console.error('Failed to play song:', error);
-                        
+
                         // Show error message in chat and recommend alternatives
                         const errorMessage = error.message || '播放失败';
                         let userFriendlyError = '播放失败';
-                        
+
                         // Map error codes to user-friendly messages
                         if (errorMessage.includes('ncm_not_logged_in')) {
                             userFriendlyError = '播放失败，因为需要先登录网易云音乐';
@@ -2849,13 +3823,13 @@
                         } else {
                             userFriendlyError = `播放失败，因为${errorMessage}`;
                         }
-                        
+
                         // Add error message to chat
                         this.addChatMessage(`${userFriendlyError}。让我为你推荐其他类似的歌曲：`, false);
-                        
+
                         // Get song style/genre for similar recommendations
                         const songStyle = song.style || song.genre || this.inferSongStyle(song);
-                        
+
                         // Recommend 3 similar songs
                         this.recommendSimilarSongs(song, songStyle);
                     }
@@ -3027,11 +4001,55 @@
                         // Update playing state
                         this.setPlaying(status.isPlaying);
                         
-                        // Update mini player progress
+                        // Update mini player progress (radio mode)
                         this.updateMiniPlayerProgress(status.progress || 0, status.currentSong);
+                        
+                        // Update chat mode progress bar
+                        this.updateChatProgress(status.progress || 0, status.currentSong);
+                        
+                        // Check if song finished in chat mode and auto-recommend next
+                        if (this.currentMode === 'chat' && status.currentSong && status.progress >= 99) {
+                            this.handleChatSongFinished();
+                        }
                     }
                 } catch (error) {
                     // Silent fail
+                }
+            },
+
+            // Handle song finished in chat mode - auto recommend next
+            async handleChatSongFinished() {
+                console.log('[Chat] Song finished, auto-recommending next song...');
+                
+                // Prevent multiple triggers
+                if (this._chatSongFinishedHandled) return;
+                this._chatSongFinishedHandled = true;
+                
+                // Reset flag after 5 seconds
+                setTimeout(() => {
+                    this._chatSongFinishedHandled = false;
+                }, 5000);
+                
+                // Add a message indicating song finished
+                this.addChatMessage('刚才的歌曲播放完毕了，让我为你推荐下一首...', false);
+                
+                try {
+                    // Get recommendation from Hermes
+                    const response = await API.chat('推荐一首歌');
+                    if (response.success) {
+                        if (response.action === 'recommend' && response.recommendedSongs && response.recommendedSongs.length > 0) {
+                            this.addRecommendationMessage(response.message, response.recommendedSongs, response.autoPlayTimeout);
+                        } else if (response.action === 'play' && response.song) {
+                            this.addChatMessage(response.message, false);
+                            this.updateCurrentSong(response.song);
+                            this.setPlaying(true);
+                        } else {
+                            this.addChatMessage(response.message, false);
+                        }
+                    }
+                } catch (error) {
+                    console.error('[Chat] Auto-recommend error:', error);
+                    this.addChatMessage('抱歉，推荐歌曲时出错了。你可以告诉我你想听什么类型的音乐。', false);
                 }
             },
 
@@ -3057,6 +4075,34 @@
                 }
             },
 
+            // Update chat mode progress bar and time
+            updateChatProgress(progress, song) {
+                const fill = document.getElementById('topProgressFill');
+                const currentTimeEl = document.getElementById('currentTime');
+                const totalTimeEl = document.getElementById('totalTime');
+                
+                if (fill) {
+                    fill.style.width = progress + '%';
+                }
+                
+                if (song && song.duration) {
+                    const durationSec = Math.floor(song.duration / 1000);
+                    const currentSec = Math.floor((progress / 100) * durationSec);
+                    
+                    const currentMins = Math.floor(currentSec / 60);
+                    const currentSecs = currentSec % 60;
+                    const durationMins = Math.floor(durationSec / 60);
+                    const durationSecs = durationSec % 60;
+                    
+                    if (currentTimeEl) {
+                        currentTimeEl.textContent = `${currentMins}:${currentSecs.toString().padStart(2, '0')}`;
+                    }
+                    if (totalTimeEl) {
+                        totalTimeEl.textContent = `${durationMins}:${durationSecs.toString().padStart(2, '0')}`;
+                    }
+                }
+            },
+
             async loadInitialStatus() {
                 try {
                     const response = await API.getStatus();
@@ -3072,6 +4118,84 @@
 
         // Expose AppState to window for TTSService access
         window.AppState = AppState;
+
+        // Audio context unlock - required for browser autoplay policy
+        let audioUnlocked = false;
+        function unlockAudio() {
+            if (audioUnlocked) return;
+            audioUnlocked = true;
+            console.log('[Audio] User interaction detected, audio unlocked');
+            // Create a silent audio context to unlock audio
+            const silentAudio = new Audio('data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEAQB8AAEAfAAABAAgAAABmYWN0BAAAAAAAAABkYXRhAAAAAA==');
+            silentAudio.play().catch(() => {});
+        }
+        document.addEventListener('click', unlockAudio, { once: true });
+        document.addEventListener('touchstart', unlockAudio, { once: true });
+
+        // Expose test functions for debugging
+        window.testTTS = async function() {
+            console.log('[Test] ========== TTS Test Start ==========');
+            console.log('[Test] TTSService.apiBase:', TTSService.apiBase);
+            console.log('[Test] TTSService.isSpeaking:', TTSService.isSpeaking);
+            console.log('[Test] Audio unlocked:', audioUnlocked);
+            
+            const testText = '你好，这是TTS测试。';
+            console.log('[Test] Calling TTSService.speak with:', testText);
+            
+            try {
+                const result = await TTSService.speak(testText, {
+                    onStart: () => console.log('[Test] ✅ TTS onStart callback fired'),
+                    onEnd: () => console.log('[Test] ✅ TTS onEnd callback fired'),
+                    onWord: (word, index) => console.log('[Test] TTS onWord:', word, index)
+                });
+                console.log('[Test] TTS speak returned:', result);
+            } catch (error) {
+                console.error('[Test] ❌ TTS speak failed:', error);
+            }
+            console.log('[Test] ========== TTS Test End ==========');
+        };
+        
+        window.testDirectAudio = async function() {
+            console.log('[Test] ========== Direct Audio Test ==========');
+            try {
+                const response = await fetch('http://localhost:6688/api/tts/doubao', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        text: '直接音频测试',
+                        voice_type: 'Chinese (Mandarin)_Warm_Bestie',
+                        speed: 0.9,
+                        vol: 1.0
+                    })
+                });
+                const data = await response.json();
+                console.log('[Test] API response:', data.success ? 'success' : 'failed');
+                
+                if (data.success && data.data.audio) {
+                    console.log('[Test] Creating audio element...');
+                    const audio = new Audio(`data:audio/mp3;base64,${data.data.audio}`);
+                    audio.volume = 0.5;
+                    
+                    audio.onplay = () => console.log('[Test] ✅ Direct audio playing');
+                    audio.onended = () => console.log('[Test] ✅ Direct audio ended');
+                    audio.onerror = (e) => console.error('[Test] ❌ Direct audio error:', e);
+                    
+                    console.log('[Test] Calling audio.play()...');
+                    await audio.play();
+                    console.log('[Test] ✅ audio.play() succeeded');
+                }
+            } catch (error) {
+                console.error('[Test] ❌ Direct audio test failed:', error);
+            }
+        };
+        
+        window.testRadioHost = function() {
+            console.log('[Test] Testing RadioHost...');
+            RadioHost.speakWithSync('你好，这是RadioHost测试。', {
+                onStart: () => console.log('[Test] RadioHost onStart'),
+                onEnd: () => console.log('[Test] RadioHost onEnd')
+            });
+        };
 
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {

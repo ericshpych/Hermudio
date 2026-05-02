@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TTS 高亮测试</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #0a0a0f;
+            color: #fff;
+        }
+        h1 { color: #4ade80; }
+        .test-section {
+            background: #1a1a25;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+        }
+        button {
+            background: #4ade80;
+            color: #0a0a0f;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+        }
+        button:hover { background: #22c55e; }
+        
+        /* TTS Sync Highlight */
+        .radio-turn-body .word {
+            transition: color 0.15s ease, background-color 0.15s ease;
+            padding: 1px 2px;
+            border-radius: 3px;
+        }
+        .radio-turn-body .word.active {
+            color: #4ade80;
+            background: rgba(74, 222, 128, 0.15);
+        }
+        
+        .radio-turn {
+            margin: 15px 0;
+            padding: 15px;
+            background: #12121a;
+            border-radius: 8px;
+        }
+        .radio-turn-head {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 8px;
+        }
+        .radio-turn-body {
+            font-size: 16px;
+            line-height: 1.8;
+            color: #e0e0e0;
+        }
+        .radio-turn.speaking {
+            border-left: 3px solid #4ade80;
+        }
+        .radio-turn.completed {
+            opacity: 0.7;
+        }
+        
+        .log {
+            background: #12121a;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-family: monospace;
+            font-size: 13px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .log-entry { margin: 3px 0; }
+        .log-info { color: #60a5fa; }
+        .log-success { color: #4ade80; }
+    </style>
+</head>
+<body>
+    <h1>🎵 TTS 逐字高亮测试</h1>
+    
+    <div class="test-section">
+        <h3>测试选项</h3>
+        <button onclick="testHighlight()">测试逐字高亮</button>
+        <button onclick="clearDisplay()">清空</button>
+    </div>
+
+    <div class="test-section">
+        <h3>显示区域</h3>
+        <div id="transcript"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>日志</h3>
+        <div id="logs" class="log"></div>
+    </div>
+
+    <script>
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const entry = `[${timestamp}] ${message}`;
+            const logDiv = document.getElementById('logs');
+            const div = document.createElement('div');
+            div.className = `log-entry log-${type}`;
+            div.textContent = entry;
+            logDiv.appendChild(div);
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(`[Highlight Test] ${message}`);
+        }
+
+        function clearDisplay() {
+            document.getElementById('transcript').innerHTML = '';
+            document.getElementById('logs').innerHTML = '';
+        }
+
+        // 智能分词：中文按字符分割，英文按单词分割
+        function splitTextForHighlight(text) {
+            const result = [];
+            let currentWord = '';
+            
+            for (const char of text) {
+                if (/[\u4e00-\u9fa5]/.test(char)) {
+                    if (currentWord) {
+                        result.push(currentWord);
+                        currentWord = '';
+                    }
+                    result.push(char);
+                } else if (/\s/.test(char)) {
+                    if (currentWord) {
+                        result.push(currentWord);
+                        currentWord = '';
+                    }
+                    result.push(' ');
+                } else {
+                    currentWord += char;
+                }
+            }
+            
+            if (currentWord) {
+                result.push(currentWord);
+            }
+            
+            return result;
+        }
+
+        function addTurn(text) {
+            const scroll = document.getElementById('transcript');
+            const now = new Date();
+            const time = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+            
+            const turn = document.createElement('div');
+            turn.className = 'radio-turn';
+            
+            const chars = splitTextForHighlight(text);
+            log(`分词结果: ${chars.length} 个单元`, 'info');
+            log(`前10个: ${chars.slice(0, 10).join('|')}`, 'info');
+            
+            const charSpans = chars.map((char, i) => 
+                `<span class="word" data-index="${i}">${char}</span>`
+            ).join('');
+            
+            turn.innerHTML = `
+                <div class="radio-turn-head">Hermes • ${time}</div>
+                <div class="radio-turn-body">${charSpans}</div>
+            `;
+            
+            scroll.appendChild(turn);
+            turn.classList.add('speaking');
+            
+            return { turn, chars };
+        }
+
+        async function testHighlight() {
+            const text = "这个时候啊，整个世界都安静下来了。不知道你是在加班，还是躺在床上翻来覆去睡不着。";
+            log('开始测试逐字高亮...', 'info');
+            
+            const { turn, chars } = addTurn(text);
+            const wordElements = turn.querySelectorAll('.word');
+            
+            log(`创建 ${wordElements.length} 个 span 元素`, 'success');
+            
+            // 模拟逐字高亮
+            for (let i = 0; i < wordElements.length; i++) {
+                wordElements.forEach((w, idx) => {
+                    w.classList.toggle('active', idx === i);
+                });
+                
+                if (i % 5 === 0) {
+                    log(`高亮到第 ${i}/${wordElements.length} 个字符: "${chars[i]}"`, 'info');
+                }
+                
+                await sleep(100); // 每个字符100ms
+            }
+            
+            // 完成
+            wordElements.forEach(w => w.classList.remove('active'));
+            turn.classList.remove('speaking');
+            turn.classList.add('completed');
+            log('高亮测试完成！', 'success');
+        }
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+    </script>
+</body>
+</html>
