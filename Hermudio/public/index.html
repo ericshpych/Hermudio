@@ -317,10 +317,13 @@
     background: rgba(255,200,100,0.02);
     border: 1px solid rgba(255,160,60,0.06);
     border-radius: 18px; overflow: hidden;
-    position: relative; min-height: 0;
+    position: relative; min-height: 180px; max-height: 320px;
+    display: flex;
+    flex-direction: column;
   }
   .transcript-scroll {
-    height: 100%; overflow-y: auto;
+    flex: 1 1 auto;
+    overflow-y: auto;
     padding: 18px 18px 40px;
     scroll-behavior: smooth;
   }
@@ -2598,7 +2601,15 @@
                 `;
                 
                 scroll.appendChild(turn);
-                scroll.scrollTop = scroll.scrollHeight;
+                
+                // 确保滚动到底部，使用 requestAnimationFrame 确保 DOM 更新完成
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        scroll.scrollTop = scroll.scrollHeight;
+                        console.log('[RadioHost] Scrolled to bottom, scrollHeight:', scroll.scrollHeight);
+                    });
+                });
+                
                 console.log('[RadioHost] Turn added to DOM');
                 
                 // Mark previous turns as completed
@@ -3048,24 +3059,22 @@
                     // 更新登录按钮颜色
                     this.updateLoginButtonStyle(response.isLoggedIn);
 
-                    // 无论是否登录，都启动电台节目！
-                    console.log('[Init] Current mode:', this.currentMode);
-                    console.log('[Init] Current radio state:', this.radioState);
-                    
-                    // 如果电台已经在运行中（welcome/playing/outro），不重复启动
-                    if (this.radioState && this.radioState !== 'idle') {
-                        console.log('[Init] Radio already running with state:', this.radioState, '- skipping auto-start');
+                    // 如果已经登录，强制启动电台欢迎流程（忽略当前状态）
+                    if (response.isLoggedIn && this.currentMode === 'radio') {
+                        console.log('[Init] Logged in, FORCING start of radio welcome...');
+                        this.radioState = 'idle'; // 重置状态
+                        setTimeout(() => {
+                            console.log('[RadioFlow] Auto-starting Hermes welcome NOW (login complete)!');
+                            this.startRadioShow();
+                        }, 300);
                         return;
                     }
 
+                    // 没有登录的情况
+                    console.log('[Init] Current mode:', this.currentMode);
+                    console.log('[Init] Current radio state:', this.radioState);
+                    
                     if (this.currentMode === 'radio') {
-                        // 当前在电台模式，启动电台欢迎流程
-                        console.log('[Init] In radio mode, scheduling startRadioShow...');
-                        setTimeout(() => {
-                            console.log('[RadioFlow] Auto-starting Hermes welcome NOW!');
-                            this.startRadioShow();
-                        }, 500);
-                    } else if (this.currentMode === 'chat') {
                         // 当前在聊天模式
                         let messages = [];
                         const chatContainer = document.getElementById('chatContainer');
@@ -3100,13 +3109,28 @@
 
             // 更新登录按钮样式 - 登录成功后隐藏按钮
             updateLoginButtonStyle(isLoggedIn) {
+                console.log('[Init] updateLoginButtonStyle called, isLoggedIn:', isLoggedIn);
                 const loginBtn = document.getElementById('loginBtn');
+                const bottomLoginBtn = document.getElementById('bottomLoginBtn');
+                
+                console.log('[Init] loginBtn element:', loginBtn);
+                console.log('[Init] bottomLoginBtn element:', bottomLoginBtn);
+                
                 if (loginBtn) {
                     if (isLoggedIn) {
                         loginBtn.style.display = 'none';
                     } else {
                         loginBtn.style.display = 'block';
                         loginBtn.textContent = 'LOGIN';
+                    }
+                }
+                
+                if (bottomLoginBtn) {
+                    if (isLoggedIn) {
+                        bottomLoginBtn.style.display = 'none';
+                    } else {
+                        bottomLoginBtn.style.display = 'block';
+                        bottomLoginBtn.textContent = 'LOGIN';
                     }
                 }
             },
@@ -3136,10 +3160,14 @@
 
             // 隐藏登录提示
             hideLoginWelcome() {
+                console.log('[Init] ========== hideLoginWelcome START ==========');
+                console.log('[Init] Clearing login welcome...');
+                
                 // 清除聊天区域中的登录提示消息
                 const chatMessages = document.querySelectorAll('.chat-message');
                 chatMessages.forEach(msg => {
                     if (msg.textContent.includes('请先登录') || msg.textContent.includes('登录中')) {
+                        console.log('[Init] Removing chat message:', msg.textContent.substring(0, 50));
                         msg.remove();
                     }
                 });
@@ -3147,12 +3175,20 @@
                 // 清除状态区域
                 const trackSong = document.getElementById('trackSong');
                 const trackArtist = document.getElementById('trackArtist');
-                if (trackSong && trackSong.textContent === '登录中') {
+                
+                console.log('[Init] trackSong content before clear:', trackSong?.textContent);
+                console.log('[Init] trackArtist content before clear:', trackArtist?.textContent);
+                
+                if (trackSong) {
                     trackSong.textContent = '';
+                    console.log('[Init] trackSong cleared');
                 }
-                if (trackArtist && trackArtist.textContent.includes('登录中')) {
+                if (trackArtist) {
                     trackArtist.textContent = '';
+                    console.log('[Init] trackArtist cleared');
                 }
+                
+                console.log('[Init] ========== hideLoginWelcome COMPLETED ==========');
             },
 
             generateWaveforms() {
@@ -4040,50 +4076,57 @@
             },
 
             async startRadioShow() {
+                // 【新增】记录页面刷新到第一首歌播放的总耗时
+                if (!this._pageLoadStartTime) {
+                    this._pageLoadStartTime = window._hermudioPageLoadStart || Date.now();
+                }
+                this.logWithTime('🚀 startRadioShow 开始执行！');
                 console.log('[RadioFlow] ========== startRadioShow called ==========');
                 console.log('[RadioFlow] Current radio state:', this.radioState);
                 console.log('[RadioFlow] Current mode:', this.currentMode);
                 
-                // 如果已经在运行中，不重复启动
-                if (this.radioState !== 'idle') {
-                    console.log('[RadioFlow] Radio already active with state:', this.radioState, '- skipping');
-                    return;
-                }
-
+                // 【关键修复】强制重置所有状态，确保重新开始
+                console.log('[RadioFlow] Forcing reset of radio state...');
+                this.radioState = 'idle';
+                TTSService.stop();
+                this._playlistReady = false; // 重置歌单准备状态
+                
                 this.radioState = 'welcome';
                 console.log('[RadioFlow] Radio state set to welcome');
                 
                 try {
-                    // 并行获取欢迎文案和歌单（使用新的 PlaylistService API）
-                    console.log('[RadioFlow] Step 1: Fetching welcome and playlist...');
-                    const [welcomeResponse, playlistResponse] = await Promise.all([
-                        API.get('/api/radio/welcome'),
-                        API.playlistInitialize()
-                    ]);
+                    this.logWithTime('📡 开始获取欢迎文案，同时后台初始化歌单...');
                     
-                    console.log('[RadioFlow] Welcome response:', welcomeResponse);
-                    console.log('[RadioFlow] Playlist response:', playlistResponse);
+                    // 【优化新流程】同时启动歌单初始化（不阻塞）
+                    this._initializePlaylistInBackground().catch(e =>
+                        console.error('[RadioFlow] 后台歌单初始化失败:', e.message)
+                    );
                     
-                    // 处理欢迎文案
+                    // 【优化新流程】只等 welcome 完成，不等歌单
+                    const welcomeResponse = await API.get('/api/radio/welcome');
+                    this.logWithTime('✅ 欢迎文案获取完成！');
+                    
+                    // 【优化新流程】立即开始播放 TTS（此时歌单可能已经初始化好了）
                     if (welcomeResponse.success && welcomeResponse.script) {
                         console.log('[RadioFlow] Welcome script received, speaking...');
                         console.log('[RadioFlow] Welcome script:', welcomeResponse.script);
                         
-                        // 先播报欢迎文案
                         RadioHost.speakWithSync(welcomeResponse.script, {
-                            onStart: () => console.log('[RadioFlow] Welcome TTS started'),
+                            onStart: () => {
+                                this.logWithTime('🎙️ 欢迎文案 TTS 开始播放！');
+                                console.log('[RadioFlow] Welcome TTS started');
+                            },
                             onEnd: () => {
-                                console.log('[RadioFlow] Welcome TTS ended');
+                                this.logWithTime('🎙️ 欢迎文案 TTS 播放结束！现在播放第一首歌...');
+                                console.log('[RadioFlow] Welcome TTS ended, now playing first song');
                                 
-                                // 欢迎文案播报完后获取第一首歌并播放
-                                if (playlistResponse.success && playlistResponse.playlist && playlistResponse.playlist.length > 0) {
-                                    this.playlist = playlistResponse.playlist;
-                                    this.currentSongIndex = 0;
-                                    this.playlistTheme = playlistResponse.theme;
-                                    console.log('[RadioFlow] Playlist loaded after welcome, getting first song...');
+                                // TTS 播放完后，播放第一首歌
+                                if (this._playlistReady && this.playlist && this.playlist.length > 0) {
+                                    // 歌单已准备好，播放第一首
                                     this.playNextFromPlaylist();
                                 } else {
-                                    console.warn('[RadioFlow] No playlist available after welcome');
+                                    // 歌单还没准备好，等待一下再试，或者用备用方案
+                                    console.log('[RadioFlow] Playlist not ready yet, waiting or using fallback');
                                     this.playRecommendedSong();
                                 }
                             }
@@ -4091,11 +4134,10 @@
                     } else {
                         // 如果没有欢迎文案，直接获取第一首歌并播放
                         console.log('[RadioFlow] No welcome script, playing directly...');
-                        if (playlistResponse.success && playlistResponse.playlist && playlistResponse.playlist.length > 0) {
-                            this.playlist = playlistResponse.playlist;
-                            this.currentSongIndex = 0;
-                            this.playlistTheme = playlistResponse.theme;
+                        if (this._playlistReady && this.playlist && this.playlist.length > 0) {
                             this.playNextFromPlaylist();
+                        } else {
+                            this.playRecommendedSong();
                         }
                     }
                     
@@ -4105,9 +4147,42 @@
                 }
             },
 
+            // 【新增】后台初始化歌单，不阻塞播放，也不立即播放
+            async _initializePlaylistInBackground() {
+                this.logWithTime('⚙️ 后台初始化歌单...');
+                try {
+                    const playlistResponse = await API.playlistInitialize();
+                    
+                    if (playlistResponse.success && playlistResponse.playlist && playlistResponse.playlist.length > 0) {
+                        this.playlist = playlistResponse.playlist;
+                        this.currentSongIndex = 0;
+                        this.playlistTheme = playlistResponse.theme;
+                        this.logWithTime('✅ 歌单初始化完成！等待 TTS 播放完后播放第一首歌...');
+                        // 标记歌单已准备好，在 TTS 的 onEnd 中播放
+                        this._playlistReady = true;
+                    } else {
+                        console.warn('[RadioFlow] No playlist available');
+                        this._playlistReady = false;
+                    }
+                } catch (error) {
+                    console.error('[RadioFlow] Error initializing playlist:', error);
+                    this._playlistReady = false;
+                }
+            },
+
             // 从 PlaylistService 获取并播放下一首歌曲
             async playNextFromPlaylist() {
+                this.logWithTime('🎵 playNextFromPlaylist 开始...');
                 console.log('[RadioFlow] playNextFromPlaylist called');
+                
+                // 【关键修复】清理 monitor 相关的状态
+                if (this._monitorSongInterval) {
+                    console.log('[RadioFlow] Clearing monitor interval in playNextFromPlaylist');
+                    clearInterval(this._monitorSongInterval);
+                    this._monitorSongInterval = null;
+                }
+                this._monitorSongActive = false;
+                
                 try {
                     const response = await API.playlistNext();
                     console.log('[RadioFlow] Next song response:', response);
@@ -4549,12 +4624,21 @@
             },
 
             async actuallyPlaySong(song) {
+                this.logWithTime(`🎶 actuallyPlaySong 开始播放：${song.name}`);
                 console.log('[RadioFlow] ===== TIMING: actuallyPlaySong called for:', song.name, 'id:', song.id, '=====');
                 console.time('[RadioFlow] actuallyPlaySong total');
                 console.log('[RadioFlow] actuallyPlaySong called for:', song.name, 'id:', song.id);
                 console.log('[RadioFlow] currentPlayingSongId:', this.currentPlayingSongId, 'new song id:', song.id, 'isPlayingSong:', this._isPlayingSong);
                 
-                // 【关键】播放锁检查 - 防止并发播放
+                // 【关键修复1】清理 monitor 相关的状态（防止旧的定时器还在运行）
+                if (this._monitorSongInterval) {
+                    console.log('[RadioFlow] Clearing monitor interval in actuallyPlaySong');
+                    clearInterval(this._monitorSongInterval);
+                    this._monitorSongInterval = null;
+                }
+                this._monitorSongActive = false;
+                
+                // 【关键修复2】播放锁检查 - 防止并发播放
                 if (this._isPlayingSong) {
                     console.warn('[RadioFlow] Another song is currently being played, skipping:', song.name);
                     return;
@@ -4654,6 +4738,15 @@
                     console.log('[RadioFlow] Play API response:', response.success ? 'success' : 'failed', response);
 
                     if (response.success) {
+                        // 【新增】记录从页面刷新到第一首歌播放的总耗时
+                        if (this._pageLoadStartTime && !this._firstSongPlayed) {
+                            const totalTime = Date.now() - this._pageLoadStartTime;
+                            console.log('🚀 ========================================');
+                            console.log(`🚀 页面刷新到第一首歌播放总耗时: ${totalTime}ms (${(totalTime / 1000).toFixed(2)}秒)`);
+                            console.log('🚀 ========================================');
+                            this._firstSongPlayed = true;
+                        }
+
                         // 缓存成功的歌曲URL（用于下次快速播放）
                         if (response.url) {
                             this.cacheSongUrl(song.id, response.url);
@@ -4737,18 +4830,29 @@
             async skipToNextSongAfterFailure() {
                 console.log('[RadioFlow] skipToNextSongAfterFailure called');
                 
-                // Move to next song
-                this.currentSongIndex++;
-                console.log('[RadioFlow] Moving to next song after failure, new index:', this.currentSongIndex, 'total:', this.playlist.length);
-                
-                if (this.currentSongIndex < this.playlist.length) {
-                    // Play next song's intro directly (skip outro for failed song)
-                    this.playCurrentSongWithIntro();
-                } else {
-                    // Playlist finished
-                    console.log('[RadioFlow] Playlist finished after failure');
-                    this.onPlaylistFinished();
+                // 【关键修复】清理 monitor 相关的状态
+                if (this._monitorSongInterval) {
+                    console.log('[RadioFlow] Clearing monitor interval in skipToNextSongAfterFailure');
+                    clearInterval(this._monitorSongInterval);
+                    this._monitorSongInterval = null;
                 }
+                this._monitorSongActive = false;
+                
+                // First, record the skip to PlaylistService
+                try {
+                    const status = await API.playlistStatus();
+                    if (status.success && status.status && status.status.current) {
+                        const failedSong = status.status.current;
+                        console.log('[RadioFlow] Recording skip for failed song:', failedSong.name);
+                        await API.playlistRecordSkip(failedSong.id, failedSong);
+                    }
+                } catch (e) {
+                    console.warn('[RadioFlow] Failed to record skip for failed song:', e);
+                }
+                
+                // 直接播放下一首（使用 PlaylistService API）
+                console.log('[RadioFlow] Skipping to next song after failure...');
+                await this.playNextFromPlaylist();
             },
 
             async playRecommendedSong() {
@@ -4784,11 +4888,28 @@
 
             monitorSongProgress() {
                 console.log('[RadioFlow] monitorSongProgress started (方案1: 前端独立状态管理)');
+                
+                // 【关键修复1】先清理旧的定时器，再初始化变量
+                if (this._monitorSongInterval) {
+                    console.log('[RadioFlow] Existing monitorSongProgress found, clearing first');
+                    clearInterval(this._monitorSongInterval);
+                    this._monitorSongInterval = null;
+                }
+                
+                // 【关键修复2】加一个 active 标志，防止重复进入
+                if (this._monitorSongActive) {
+                    console.log('[RadioFlow] monitorSongProgress is already active, skipping');
+                    return;
+                }
+                this._monitorSongActive = true;
+                
+                // 初始化局部变量
                 let pollCount = 0;
                 let hasStartedPlaying = false;
                 let songStartTime = null;
                 let lastProgress = 0;
                 let progressStuckCount = 0;
+                let isPlayingFalseCount = 0;
                 
                 // 获取当前歌曲信息
                 const currentSong = this.playlist[this.currentSongIndex];
@@ -4808,14 +4929,68 @@
                 console.log('[RadioFlow] Estimated song duration:', estimatedDuration, 'ms for:', currentSong?.name);
                 
                 // Poll for song completion
-                const checkInterval = setInterval(async () => {
-                    pollCount++;
-                    
-                    if (!this.isPlaying) {
-                        console.log('[RadioFlow] Song monitoring stopped (isPlaying=false), polls:', pollCount);
-                        clearInterval(checkInterval);
+                this._monitorSongInterval = setInterval(async () => {
+                    // 【关键修复3】每次循环都检查 active 标志
+                    if (!this._monitorSongActive) {
+                        console.log('[RadioFlow] monitorSongProgress not active, clearing interval');
+                        clearInterval(this._monitorSongInterval);
+                        this._monitorSongInterval = null;
                         return;
                     }
+                    
+                    pollCount++;
+                    
+                    // 如果 this.isPlaying 为 false，先不要立即停止，再检查几次！
+                    if (!this.isPlaying) {
+                        isPlayingFalseCount++;
+                        console.log('[RadioFlow] isPlaying=false count:', isPlayingFalseCount);
+                        
+                        // 只有连续3次 isPlaying 都是 false，才停止监控
+                        if (isPlayingFalseCount < 3) {
+                            console.log('[RadioFlow] isPlaying is false but continuing to check...');
+                            return;
+                        }
+
+                        console.log('[RadioFlow] Song monitoring stopped (isPlaying=false), polls:', pollCount);
+                        clearInterval(this._monitorSongInterval);
+                        this._monitorSongInterval = null;
+                        this._monitorSongActive = false; // 释放 active 标志
+                        
+                        // 关键：判断是播放失败还是正常结束！
+                        const elapsedSinceStart = songStartTime ? (Date.now() - songStartTime) : 0;
+                        const elapsedPercent = estimatedDuration > 0 ? (elapsedSinceStart / estimatedDuration) * 100 : 0;
+                        console.log('[RadioFlow] Playback stopped - hasStartedPlaying:', hasStartedPlaying, 'elapsed:', elapsedSinceStart + 'ms (', elapsedPercent.toFixed(1) + '%), estimatedDuration:', estimatedDuration + 'ms');
+                        
+                        // 判断播放失败的条件：
+                        // 1. 还没开始播放（hasStartedPlaying=false）
+                        // OR
+                        // 2. 播放时间 <30秒
+                        // OR
+                        // 3. 播放时间 < 歌曲总时长的10%
+                        const isFailure = !hasStartedPlaying || 
+                                          (songStartTime && elapsedSinceStart < 30000) || 
+                                          (songStartTime && elapsedPercent < 10);
+                        
+                        if (isFailure) {
+                            console.log('[RadioFlow] Detected playback failure!');
+                            this.skipToNextSongAfterFailure();
+                        } else {
+                            // 判断是否是正常播放完成（进度≥95%或已超过预估时长）
+                            const lastEffectiveProgress = lastProgress || 0;
+                            const shouldTriggerOutro = lastEffectiveProgress > 90 || elapsedSinceStart > estimatedDuration;
+                            
+                            if (shouldTriggerOutro) {
+                                console.log('[RadioFlow] Detected normal song completion! Triggering outro.');
+                                this.onSongFinished();
+                            } else {
+                                console.log('[RadioFlow] Playback stopped prematurely but not failure, skipping.');
+                            }
+                        }
+                        return;
+                    }
+                    
+                    // 如果 isPlaying 回到 true，重置计数器
+                    isPlayingFalseCount = 0;
                     
                     try {
                         const status = await API.getStatus();
@@ -4826,26 +5001,26 @@
                             // 方案1: 前端独立状态判断
                             // 1. 标记歌曲开始 - 基于进度或时间
                             if (!hasStartedPlaying) {
-                                if (progress > 1) {
-                                    // 进度超过1%，确认开始播放
+                                if (progress > 0.5) {
+                                    // 进度超过0.5%就标记开始，更宽松
                                     hasStartedPlaying = true;
                                     songStartTime = Date.now();
-                                    console.log('[RadioFlow] Song started (progress > 1%):', progress.toFixed(1) + '%');
-                                } else if (pollCount >= 3) {
-                                    // 15秒后强制标记为开始
+                                    console.log('[RadioFlow] Song started (progress > 0.5%):', progress.toFixed(1) + '%');
+                                } else if (pollCount >= 5) {
+                                    // 25秒后强制标记为开始
                                     hasStartedPlaying = true;
                                     songStartTime = Date.now();
-                                    console.log('[RadioFlow] Song started (forced after 15s)');
+                                    console.log('[RadioFlow] Song started (forced after 25s)');
                                 }
                             }
                             
                             // 2. 检测进度是否卡住（ncm-cli 可能报告进度为0但音乐在播放）
+                            // ⚠️ 注意：这里用的是原始 progress，不是 effectiveProgress，因为我们要检测 ncm-cli 报告的进度是否卡住
                             if (hasStartedPlaying && progress === lastProgress && progress > 0) {
                                 progressStuckCount++;
                             } else {
                                 progressStuckCount = 0;
                             }
-                            lastProgress = progress;
                             
                             // 3. 计算基于时间的进度（当 ncm-cli 进度不可靠时）
                             let effectiveProgress = progress;
@@ -4858,6 +5033,9 @@
                                 console.log('[RadioFlow] Progress stuck, using time-based estimate:', timeBasedProgress.toFixed(1) + '%');
                             }
                             
+                            // ⭐ 更新 lastProgress 为 effectiveProgress，这样后面判断时用的是最新的进度
+                            lastProgress = effectiveProgress;
+                            
                             // 每30秒或前3次轮询记录日志
                             if (pollCount % 6 === 0 || pollCount <= 3) {
                                 console.log(`[RadioFlow] Progress: ${progress.toFixed(1)}% (effective: ${effectiveProgress.toFixed(1)}%), ncmPlaying: ${isPlayingStatus}, hasStarted: ${hasStartedPlaying}, stuck: ${progressStuckCount}`);
@@ -4866,33 +5044,45 @@
                             // 4. 判断歌曲是否结束 - 不依赖 ncm isPlaying 状态
                             let shouldTriggerOutro = false;
                             
+                            // 【关键修复】更严格的判断：必须满足两个条件才会触发过渡
                             // 条件A: 进度超过95%
+                            let conditionA = false;
                             if (hasStartedPlaying && effectiveProgress > 95) {
                                 console.log('[RadioFlow] Song finish detected: progress > 95%');
-                                shouldTriggerOutro = true;
+                                conditionA = true;
                             }
                             
                             // 条件B: 基于时间的检测（歌曲预估时长已过）
+                            let conditionB = false;
                             if (hasStartedPlaying && songStartTime) {
                                 const elapsed = Date.now() - songStartTime;
                                 if (elapsed > estimatedDuration + 10000) { // 给予10秒缓冲
                                     console.log('[RadioFlow] Song finish detected: duration exceeded (', elapsed, 'ms)');
-                                    shouldTriggerOutro = true;
+                                    conditionB = true;
                                 }
                             }
                             
                             // 条件C: 进度卡住检测（连续3次轮询进度不变，且超过预估时长的80%）
+                            let conditionC = false;
                             if (hasStartedPlaying && progressStuckCount >= 3) {
                                 const elapsed = Date.now() - songStartTime;
                                 if (elapsed > estimatedDuration * 0.8) {
                                     console.log('[RadioFlow] Song finish detected: progress stuck for', progressStuckCount, 'polls');
-                                    shouldTriggerOutro = true;
+                                    conditionC = true;
                                 }
+                            }
+                            
+                            // 必须至少满足两个条件才触发过渡，避免误判
+                            shouldTriggerOutro = (conditionA && conditionB) || (conditionA && conditionC) || (conditionB && conditionC);
+                            if (shouldTriggerOutro) {
+                                console.log('[RadioFlow] Triggering outro: multiple conditions met');
                             }
                             
                             if (shouldTriggerOutro) {
                                 console.log('[RadioFlow] Song finished! effectiveProgress:', effectiveProgress.toFixed(1) + '%');
-                                clearInterval(checkInterval);
+                                clearInterval(this._monitorSongInterval);
+                                this._monitorSongInterval = null;
+                                this._monitorSongActive = false; // 【关键修复】释放 active 标志
                                 this.stopStatusPolling();
                                 this.setPlaying(false);
                                 this.onSongFinished();
@@ -4906,6 +5096,12 @@
             },
 
             async onSongFinished(retryCount = 0) {
+                // 【关键修复】防止 onSongFinished 被同时调用多次
+                if (this._onSongFinishedLock) {
+                    console.log('[RadioFlow] onSongFinished already running, skipping duplicate call');
+                    return;
+                }
+                this._onSongFinishedLock = true;
                 console.log('[RadioFlow] onSongFinished called');
                 
                 // 获取当前播放的歌曲
@@ -4930,6 +5126,7 @@
                 
                 if (!currentSong) {
                     console.error('[RadioFlow] No song found for outro');
+                    this._onSongFinishedLock = false;
                     await this.playNextFromPlaylist();
                     return;
                 }
@@ -4983,6 +5180,7 @@
                             if (!ttsCompleted) {
                                 console.warn('[RadioFlow] TTS onEnd timeout, forcing next song');
                                 ttsCompleted = true;
+                                this._onSongFinishedLock = false;
                                 this.playNextFromPlaylist();
                             }
                         }, timeoutDuration);
@@ -4995,11 +5193,13 @@
                                 clearTimeout(ttsTimeout);
                                 console.log('[RadioFlow] Song transition TTS ended');
                                 console.timeEnd('[RadioFlow] Song transition generation');
+                                this._onSongFinishedLock = false;
                                 this.playNextFromPlaylist();
                             }
                         });
                     } else {
                         console.warn('[RadioFlow] Song transition API returned no script, skipping to next song');
+                        this._onSongFinishedLock = false;
                         this.playNextFromPlaylist();
                     }
                 } catch (error) {
@@ -5008,11 +5208,13 @@
                     
                     if (retryCount < maxRetries) {
                         console.log(`[RadioFlow] Retrying onSongFinished in ${retryDelay}ms... (${retryCount + 1}/${maxRetries})`);
+                        this._onSongFinishedLock = false;
                         await this.sleep(retryDelay);
                         return this.onSongFinished(retryCount + 1);
                     }
                     
                     console.warn('[RadioFlow] Max retries reached, skipping to next song');
+                    this._onSongFinishedLock = false;
                     this.playNextFromPlaylist();
                 }
             },
@@ -5205,9 +5407,9 @@
                 }
             },
 
-            // Skip to next song in radio mode (trigger outro and next song intro)
+            // Skip to next song in radio mode (user manually clicked, show transition)
             async skipToNextSong() {
-                console.log('[RadioFlow] skipToNextSong called');
+                console.log('[RadioFlow] skipToNextSong called (USER MANUAL SKIP - SHOW TRANSITION)');
                 
                 // 先获取当前歌曲并记录 Skip
                 const currentSong = this.currentSong;
@@ -5235,8 +5437,9 @@
                 // Clear any existing TTS
                 TTSService.stop();
                 
-                // Trigger song finished logic (outro + next song)
-                this.onSongFinished();
+                // 用户手动切歌，调用 onSongFinished 来显示过渡文案！
+                console.log('[RadioFlow] User manual skip - showing transition...');
+                await this.onSongFinished();
             },
 
             // 不喜欢并切歌 - 跳过当前歌曲并屏蔽
@@ -5346,9 +5549,14 @@
             },
 
             async handleLogin() {
+                console.log('[Login] ========== handleLogin START ==========');
                 try {
+                    console.log('[Login] Calling API.getLoginUrl...');
                     const response = await API.getLoginUrl();
+                    console.log('[Login] getLoginUrl response:', response);
+                    
                     if (response.success && response.loginUrl) {
+                        console.log('[Login] Opening login window:', response.loginUrl);
                         // Open login URL in new window
                         const loginWindow = window.open(response.loginUrl, '_blank', 'width=800,height=600');
 
@@ -5356,23 +5564,37 @@
                         this.showLoginWelcome('请在弹出的窗口中完成登录...');
 
                         // 轮询检查登录状态
+                        console.log('[Login] Starting login polling...');
                         const checkLoginInterval = setInterval(async () => {
                             try {
+                                console.log('[Login] Polling auth status...');
                                 const statusResponse = await API.get('/api/auth/status');
-                                console.log('[Login] Polling login status:', statusResponse.isLoggedIn);
+                                console.log('[Login] Auth status response:', statusResponse);
+                                console.log('[Login] isLoggedIn:', statusResponse.isLoggedIn);
 
                                 if (statusResponse.isLoggedIn) {
+                                    console.log('[Login] ✅ LOGIN SUCCESS!');
                                     clearInterval(checkLoginInterval);
-                                    if (loginWindow) loginWindow.close();
+                                    if (loginWindow && !loginWindow.closed) {
+                                        console.log('[Login] Closing login window...');
+                                        loginWindow.close();
+                                    }
 
                                     // 登录成功，隐藏登录提示
+                                    console.log('[Login] Calling hideLoginWelcome...');
                                     this.hideLoginWelcome();
+                                    
+                                    // 显式调用 updateLoginButtonStyle 确保按钮被隐藏
+                                    console.log('[Login] Calling updateLoginButtonStyle(true)...');
+                                    this.updateLoginButtonStyle(true);
 
                                     // 重新检查登录状态并启动流程
+                                    console.log('[Login] Calling checkLoginAndShowWelcome...');
                                     await this.checkLoginAndShowWelcome();
+                                    console.log('[Login] ========== handleLogin COMPLETED ==========');
                                 }
                             } catch (e) {
-                                console.warn('[Login] Polling error:', e.message);
+                                console.warn('[Login] Polling error:', e.message, e);
                             }
                         }, 2000); // 每2秒检查一次
 
@@ -5382,13 +5604,15 @@
                             if (loginWindow && !loginWindow.closed) {
                                 loginWindow.close();
                             }
+                            console.log('[Login] Polling timeout');
                         }, 5 * 60 * 1000);
 
                     } else {
+                        console.error('[Login] getLoginUrl failed:', response);
                         alert('获取登录链接失败，请重试');
                     }
                 } catch (error) {
-                    console.error('Login error:', error);
+                    console.error('[Login] Login error:', error);
                     alert('登录功能暂时不可用，请稍后重试');
                 }
             },
@@ -5888,6 +6112,28 @@
                 }
             },
 
+            // 【新增】格式化时间戳用于日志
+            formatTimestamp(ts) {
+                const d = new Date(ts);
+                const h = String(d.getHours()).padStart(2, '0');
+                const m = String(d.getMinutes()).padStart(2, '0');
+                const s = String(d.getSeconds()).padStart(2, '0');
+                const ms = String(d.getMilliseconds()).padStart(3, '0');
+                return `${h}:${m}:${s}.${ms}`;
+            },
+
+            // 【新增】带时间戳的日志
+            logWithTime(msg) {
+                const now = Date.now();
+                const ts = this.formatTimestamp(now);
+                let elapsedStr = '';
+                if (this._pageLoadStartTime) {
+                    const elapsed = now - this._pageLoadStartTime;
+                    elapsedStr = ` (+${(elapsed/1000).toFixed(2)}s)`;
+                }
+                console.log(`⏱️ [${ts}]${elapsedStr} ${msg}`);
+            },
+
             // 【新增】平滑更新迷你播放器进度（不触发时间计算）
             updateMiniPlayerProgressSmooth(progress) {
                 const fill = document.getElementById('mpFill');
@@ -6309,6 +6555,11 @@
 
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
+            // 【新增】记录页面开始加载时间
+            window._hermudioPageLoadStart = Date.now();
+            const ts = new Date(window._hermudioPageLoadStart);
+            console.log(`⏱️ [${String(ts.getHours()).padStart(2,'0')}:${String(ts.getMinutes()).padStart(2,'0')}:${String(ts.getSeconds()).padStart(2,'0')}.${String(ts.getMilliseconds()).padStart(3,'0')}] Hermudio 页面加载开始！`);
+            
             // 预先解锁音频，防止自动播放被阻止
             unlockAudio();
             AppState.init();

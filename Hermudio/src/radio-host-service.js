@@ -70,13 +70,13 @@ class RadioHostService {
 
         console.log('[RadioHost] Calling Hermes AI for welcome message...');
         
-        // AI调用添加5秒超时
+        // 【优化】AI调用添加8秒超时
         const result = await Promise.race([
           this.hermes.generateRadioScript(prompt, {
             type: 'welcome',
             context: { scene, timeGreeting }
           }),
-          new Promise((_, reject) => setTimeout(() => reject(new Error('AI timeout')), 5000))
+          new Promise((_, reject) => setTimeout(() => reject(new Error('AI timeout')), 8000))
         ]);
 
         console.log('[RadioHost] Hermes AI result:', { 
@@ -652,7 +652,7 @@ ${songList}
       `${song.name}的旋律还在空气里回荡。${nextSong ? `${nextSong.artist}的《${nextSong.name}》即将响起。` : '让这份感动延续。'}`,
       `${song.artist}用《${song.name}》讲述了一个故事。${nextSong ? `接下来${nextSong.artist}的《${nextSong.name}》，带你走进另一段旋律。` : '精彩还在继续。'}`,
       `音乐流淌，《${song.name}》已成为刚才。${nextSong ? `${nextSong.artist}的《${nextSong.name}》正在等待。` : '让心随音乐继续。'}`,
-      `刚才那曲《${song.name}》，是${song.artist}送给这个${scene.timeOfDay}的礼物。${nextSong ? `下一首${nextSong.artist}的《${nextSong.name}》，请继续收听。` : '音乐时光继续。'}`,
+      `刚才那曲《${song.name}》，是${song.artist}送给你的礼物。${nextSong ? `下一首${nextSong.artist}的《${nextSong.name}》，请继续收听。` : '音乐时光继续。'}`,
       `${song.artist}的《${song.name}》画下了句点。${nextSong ? `${nextSong.artist}的《${nextSong.name}》即将为你展开。` : '好歌不断，别走开。'}`,
       `一段旋律结束，另一段即将开始。${nextSong ? `${nextSong.artist}的《${nextSong.name}》正在靠近。` : '让音乐继续流淌。'}`,
       `《${song.name}》的余韵还在，${nextSong ? `${nextSong.artist}的《${nextSong.name}》已经准备好了。` : '更多精彩等你发现。'}`

@@ -20,5 +20,8 @@
     "express": "^4.18.2",
     "node-fetch": "^2.7.0",
     "sqlite3": "^5.1.6"
+  },
+  "devDependencies": {
+    "@music163/ncm-cli": "^0.1.3"
   }
 }
