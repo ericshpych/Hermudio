@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edge TTS 测试页面 - 超自然语音！</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0a0a0f 0%, #151525 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #4ade80 0%, #60a5fa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            color: #a0a0b0;
+            font-size: 14px;
+        }
+
+        .card {
+            background: rgba(20, 20, 35, 0.8);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-title::before {
+            content: '';
+            width: 4px;
+            height: 20px;
+            background: linear-gradient(180deg, #4ade80 0%, #60a5fa 100%);
+            border-radius: 2px;
+        }
+
+        .text-input {
+            width: 100%;
+            min-height: 120px;
+            padding: 16px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 12px;
+            color: #fff;
+            font-size: 16px;
+            resize: vertical;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .text-input:focus {
+            border-color: #4ade80;
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .control-label {
+            font-size: 14px;
+            color: #a0a0b0;
+        }
+
+        .select-control {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 15px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .select-control:focus {
+            border-color: #4ade80;
+        }
+
+        .slider-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .slider {
+            flex: 1;
+            -webkit-appearance: none;
+            height: 6px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 3px;
+            outline: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            background: linear-gradient(135deg, #4ade80 0%, #60a5fa 100%);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .slider-value {
+            min-width: 50px;
+            text-align: right;
+            color: #4ade80;
+            font-weight: 600;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 14px 24px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4ade80 0%, #22d3ee 100%);
+            color: #000;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(74, 222, 128, 0.3);
+        }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.15);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.15);
+        }
+
+        .status {
+            text-align: center;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 14px;
+            margin-top: 16px;
+        }
+
+        .status-idle {
+            background: rgba(255,255,255,0.05);
+            color: #a0a0b0;
+        }
+
+        .status-speaking {
+            background: rgba(74, 222, 128, 0.15);
+            color: #4ade80;
+        }
+
+        .status-error {
+            background: rgba(255, 100, 100, 0.15);
+            color: #ff6b6b;
+        }
+
+        .wave-animation {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 4px;
+            margin-top: 10px;
+        }
+
+        .wave-bar {
+            width: 4px;
+            height: 20px;
+            background: linear-gradient(180deg, #4ade80 0%, #60a5fa 100%);
+            border-radius: 2px;
+            animation: wave 1s ease-in-out infinite;
+        }
+
+        .wave-bar:nth-child(1) { animation-delay: 0s; }
+        .wave-bar:nth-child(2) { animation-delay: 0.1s; }
+        .wave-bar:nth-child(3) { animation-delay: 0.2s; }
+        .wave-bar:nth-child(4) { animation-delay: 0.3s; }
+        .wave-bar:nth-child(5) { animation-delay: 0.4s; }
+
+        @keyframes wave {
+            0%, 100% { height: 8px; }
+            50% { height: 24px; }
+        }
+
+        .sample-texts {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .sample-btn {
+            padding: 8px 14px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            color: #a0a0b0;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .sample-btn:hover {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+
+        .voice-info {
+            font-size: 12px;
+            color: #606070;
+            margin-top: 4px;
+        }
+
+        .voice-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .voice-card {
+            padding: 12px;
+            background: rgba(0,0,0,0.2);
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .voice-card:hover {
+            border-color: #4ade80;
+            background: rgba(74, 222, 128, 0.1);
+        }
+
+        .voice-card.selected {
+            border-color: #4ade80;
+            background: rgba(74, 222, 128, 0.15);
+        }
+
+        .voice-name {
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+
+        .voice-desc {
+            font-size: 12px;
+            color: #a0a0b0;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎤 Edge TTS 测试页面</h1>
+            <p>超自然的微软语音，完全免费！</p>
+        </div>
+
+        <div class="card">
+            <div class="card-title">文本内容</div>
+            <textarea class="text-input" id="textInput" placeholder="输入要朗读的文本...">
+哈喽，你好呀！欢迎来到 Hermudio 音乐电台！
+今天天气真不错，让我为你推荐一些好听的歌曲吧～
+希望你能享受这段美好的音乐时光！</textarea>
+            
+            <div class="sample-texts">
+                <button class="sample-btn" onclick="setText('你好，世界！这是一个简单的测试。')">简单问候</button>
+                <button class="sample-btn" onclick="setText('今天天气真不错，适合出去走走呢！')">天气描述</button>
+                <button class="sample-btn" onclick="setText('欢迎使用 Hermudio，AI 个性化音乐电台，超棒的体验！')">应用介绍</button>
+                <button class="sample-btn" onclick="setText('让我为你推荐一些适合当前心情的歌曲吧！')">音乐推荐</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">选择音色（点击试听）</div>
+            <div class="voice-grid" id="voiceGrid">
+                <!-- 音色卡片会通过 JS 生成 -->
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">参数调节</div>
+            <div class="controls">
+                <div class="control-group">
+                    <label class="control-label">语速</label>
+                    <div class="slider-group">
+                        <input type="range" class="slider" id="rateSlider" min="-50" max="50" value="0">
+                        <span class="slider-value" id="rateValue">+0%</span>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label class="control-label">音调</label>
+                    <div class="slider-group">
+                        <input type="range" class="slider" id="pitchSlider" min="-50" max="50" value="0">
+                        <span class="slider-value" id="pitchValue">+0Hz</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">播放控制</div>
+            <div class="buttons">
+                <button class="btn btn-primary" id="speakBtn" onclick="speakText()">
+                    ▶️ 开始朗读
+                </button>
+                <button class="btn btn-secondary" id="stopBtn" onclick="stopSpeaking()">
+                    ⏹️ 停止
+                </button>
+            </div>
+
+            <div class="status status-idle" id="status">
+                <span id="statusText">准备就绪</span>
+                <div class="wave-animation hidden" id="waveAnim">
+                    <div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const VOICES = [
+            { id: 'zh-CN-XiaoxiaoNeural', name: '晓晓', desc: '温柔女声 🌸' },
+            { id: 'zh-CN-XiaoyiNeural', name: '晓伊', desc: '活泼女声 ✨' },
+            { id: 'zh-CN-XiaoxuanNeural', name: '晓萱', desc: '优雅女声 🎀' },
+            { id: 'zh-CN-XiaohanNeural', name: '晓涵', desc: '温暖女声 ☀️' },
+            { id: 'zh-CN-XiaomengNeural', name: '晓梦', desc: '甜美女声 🍬' },
+            { id: 'zh-CN-XiaoyanNeural', name: '晓颜', desc: '甜美女神 👑' },
+            { id: 'zh-CN-XiaochenNeural', name: '晓辰', desc: '温和男声 🎩' },
+            { id: 'zh-CN-XiaoxiongNeural', name: '晓雄', desc: '深沉男声 🌙' }
+        ];
+
+        let selectedVoice = 'zh-CN-XiaoxiaoNeural';
+        let audioPlayer = null;
+        let isSpeaking = false;
+
+        // 初始化页面
+        function init() {
+            renderVoiceCards();
+            
+            // 滑块事件
+            document.getElementById('rateSlider').addEventListener('input', (e) => {
+                const val = e.target.value;
+                const sign = val >= 0 ? '+' : '';
+                document.getElementById('rateValue').textContent = `${sign}${val}%`;
+            });
+
+            document.getElementById('pitchSlider').addEventListener('input', (e) => {
+                const val = e.target.value;
+                const sign = val >= 0 ? '+' : '';
+                document.getElementById('pitchValue').textContent = `${sign}${val}Hz`;
+            });
+        }
+
+        // 渲染音色卡片
+        function renderVoiceCards() {
+            const grid = document.getElementById('voiceGrid');
+            grid.innerHTML = VOICES.map(voice => `
+                <div class="voice-card ${voice.id === selectedVoice ? 'selected' : ''}" 
+                     onclick="selectVoice('${voice.id}', this)">
+                    <div class="voice-name">${voice.name}</div>
+                    <div class="voice-desc">${voice.desc}</div>
+                </div>
+            `).join('');
+        }
+
+        // 选择音色
+        function selectVoice(voiceId, element) {
+            selectedVoice = voiceId;
+            document.querySelectorAll('.voice-card').forEach(card => card.classList.remove('selected'));
+            element.classList.add('selected');
+            console.log('[Test] Selected voice:', voiceId);
+        }
+
+        // 设置文本
+        function setText(text) {
+            document.getElementById('textInput').value = text;
+        }
+
+        // 获取当前参数
+        function getParams() {
+            const rateVal = document.getElementById('rateSlider').value;
+            const pitchVal = document.getElementById('pitchSlider').value;
+            const rateSign = rateVal >= 0 ? '+' : '';
+            const pitchSign = pitchVal >= 0 ? '+' : '';
+            return {
+                rate: `${rateSign}${rateVal}%`,
+                pitch: `${pitchSign}${pitchVal}Hz`
+            };
+        }
+
+        // 更新状态
+        function updateStatus(text, mode) {
+            const statusText = document.getElementById('statusText');
+            const statusDiv = document.getElementById('status');
+            const waveAnim = document.getElementById('waveAnim');
+            const speakBtn = document.getElementById('speakBtn');
+
+            statusText.textContent = text;
+            statusDiv.className = 'status status-' + mode;
+
+            if (mode === 'speaking') {
+                waveAnim.classList.remove('hidden');
+                speakBtn.disabled = true;
+            } else {
+                waveAnim.classList.add('hidden');
+                speakBtn.disabled = false;
+            }
+        }
+
+        // 开始朗读
+        async function speakText() {
+            const text = document.getElementById('textInput').value.trim();
+            if (!text) {
+                alert('请输入要朗读的文本！');
+                return;
+            }
+
+            stopSpeaking();
+
+            const params = getParams();
+            console.log('[Test] Speaking with:', selectedVoice, params);
+            
+            updateStatus('正在合成...', 'idle');
+
+            try {
+                const response = await fetch('/api/tts/edge', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        text: text,
+                        voice: selectedVoice,
+                        rate: params.rate,
+                        pitch: params.pitch
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success && data.data.audio) {
+                    updateStatus('正在播放...', 'speaking');
+                    
+                    // 播放音频
+                    audioPlayer = new Audio('data:audio/mp3;base64,' + data.data.audio);
+                    audioPlayer.onended = () => {
+                        isSpeaking = false;
+                        updateStatus('播放完成！', 'idle');
+                    };
+                    audioPlayer.onerror = (e) => {
+                        console.error('[Test] Audio error:', e);
+                        isSpeaking = false;
+                        updateStatus('播放出错！', 'error');
+                    };
+                    
+                    isSpeaking = true;
+                    audioPlayer.play();
+                    
+                } else {
+                    updateStatus('合成失败: ' + (data.message || '未知错误'), 'error');
+                }
+            } catch (error) {
+                console.error('[Test] Error:', error);
+                updateStatus('请求失败: ' + error.message, 'error');
+            }
+        }
+
+        // 停止播放
+        function stopSpeaking() {
+            if (audioPlayer) {
+                audioPlayer.pause();
+                audioPlayer = null;
+            }
+            isSpeaking = false;
+            updateStatus('已停止', 'idle');
+        }
+
+        // 页面加载完成后初始化
+        window.onload = init;
+    </script>
+</body>
+</html>

@@ -2,6 +2,7 @@
  * User Profile Service for Hermudio
  * 
  * Manages user preferences and learning from interactions
+ * Enhanced with intelligent preference learning
  */
 
 class UserProfile {
@@ -11,13 +12,15 @@ class UserProfile {
   }
 
   /**
-   * Get user preferences
+   * Get user preferences with enhanced learning
    */
   async getPreferences(userId = 'default') {
-    // Check cache
     if (this.cache.has(userId)) {
+      console.log('[UserProfile] Returning cached preferences for:', userId);
       return this.cache.get(userId);
     }
+
+    console.log('[UserProfile] Fetching preferences from DB for:', userId);
 
     return new Promise((resolve, reject) => {
       this.db.get(
@@ -25,11 +28,13 @@ class UserProfile {
         [userId],
         (err, row) => {
           if (err) {
+            console.error('[UserProfile] DB error:', err);
             reject(err);
             return;
           }
 
           if (row) {
+            console.log('[UserProfile] Found user profile in DB:', row.user_id);
             const prefs = {
               userId: row.user_id,
               preferredStyles: JSON.parse(row.preferred_styles || '[]'),
@@ -38,13 +43,16 @@ class UserProfile {
               playHistory: JSON.parse(row.play_history || '[]'),
               skipPatterns: JSON.parse(row.skip_patterns || '{}'),
               favoriteTimes: JSON.parse(row.favorite_times || '{}'),
+              songRatings: JSON.parse(row.song_ratings || '{}'),
+              artistPlayCounts: JSON.parse(row.artist_play_counts || '{}'),
+              stylePlayCounts: JSON.parse(row.style_play_counts || '{}'),
               createdAt: row.created_at,
               updatedAt: row.updated_at
             };
             this.cache.set(userId, prefs);
             resolve(prefs);
           } else {
-            // Return default preferences
+            console.log('[UserProfile] No profile found for:', userId, 'returning defaults');
             const defaults = this.getDefaultPreferences(userId);
             resolve(defaults);
           }
@@ -64,8 +72,9 @@ class UserProfile {
       const stmt = this.db.prepare(`
         INSERT OR REPLACE INTO user_profiles 
         (user_id, preferred_styles, preferred_artists, disliked_styles, 
-         play_history, skip_patterns, favorite_times, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+         play_history, skip_patterns, favorite_times, song_ratings,
+         artist_play_counts, style_play_counts, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `);
 
       stmt.run(
@@ -76,6 +85,9 @@ class UserProfile {
         JSON.stringify(newPrefs.playHistory),
         JSON.stringify(newPrefs.skipPatterns),
         JSON.stringify(newPrefs.favoriteTimes),
+        JSON.stringify(newPrefs.songRatings),
+        JSON.stringify(newPrefs.artistPlayCounts),
+        JSON.stringify(newPrefs.stylePlayCounts),
         newPrefs.createdAt || new Date().toISOString(),
         newPrefs.updatedAt,
         (err) => {
@@ -99,26 +111,33 @@ class UserProfile {
     const prefs = await this.getPreferences(userId);
     
     if (action === 'like') {
-      // Add to preferred styles
       if (songInfo.style && !prefs.preferredStyles.includes(songInfo.style)) {
         prefs.preferredStyles.push(songInfo.style);
       }
-      // Add to preferred artists
       if (songInfo.artist && !prefs.preferredArtists.includes(songInfo.artist)) {
         prefs.preferredArtists.push(songInfo.artist);
       }
+      this.rateSong(prefs, songId, 5);
     } else if (action === 'dislike') {
-      // Add to disliked styles
       if (songInfo.style && !prefs.dislikedStyles.includes(songInfo.style)) {
         prefs.dislikedStyles.push(songInfo.style);
       }
+      this.rateSong(prefs, songId, 1);
     }
 
-    // Save feedback to history
     await this.saveFeedback(userId, songId, songInfo, action);
     
-    // Update preferences
     return this.updatePreferences(userId, prefs);
+  }
+
+  /**
+   * Rate a song (1-5 stars)
+   */
+  rateSong(prefs, songId, rating) {
+    if (!prefs.songRatings) {
+      prefs.songRatings = {};
+    }
+    prefs.songRatings[songId] = rating;
   }
 
   /**
@@ -143,12 +162,11 @@ class UserProfile {
   }
 
   /**
-   * Record song play (for learning patterns)
+   * Record song play with learning
    */
-  async recordPlay(userId, songId, songInfo, completed = false) {
+  async recordPlay(userId, songId, songInfo, completed = false, duration = 0) {
     const prefs = await this.getPreferences(userId);
     
-    // Track play history
     if (!prefs.playHistory) {
       prefs.playHistory = [];
     }
@@ -156,26 +174,56 @@ class UserProfile {
     prefs.playHistory.unshift({
       songId,
       timestamp: new Date().toISOString(),
-      completed
+      completed,
+      duration
     });
 
-    // Keep only last 100 plays
-    if (prefs.playHistory.length > 100) {
-      prefs.playHistory = prefs.playHistory.slice(0, 100);
+    if (prefs.playHistory.length > 200) {
+      prefs.playHistory = prefs.playHistory.slice(0, 200);
     }
 
-    // Track favorite times
     const hour = new Date().getHours();
     if (!prefs.favoriteTimes) {
       prefs.favoriteTimes = {};
     }
     prefs.favoriteTimes[hour] = (prefs.favoriteTimes[hour] || 0) + 1;
 
+    this.updateArtistPlayCount(prefs, songInfo.artist);
+    this.updateStylePlayCount(prefs, songInfo.style);
+
+    if (completed) {
+      this.rateSong(prefs, songId, 3);
+    }
+
     return this.updatePreferences(userId, prefs);
   }
 
   /**
-   * Record skip (for learning what user doesn't like)
+   * Update artist play count
+   */
+  updateArtistPlayCount(prefs, artist) {
+    if (!artist) return;
+    
+    if (!prefs.artistPlayCounts) {
+      prefs.artistPlayCounts = {};
+    }
+    prefs.artistPlayCounts[artist] = (prefs.artistPlayCounts[artist] || 0) + 1;
+  }
+
+  /**
+   * Update style play count
+   */
+  updateStylePlayCount(prefs, style) {
+    if (!style) return;
+    
+    if (!prefs.stylePlayCounts) {
+      prefs.stylePlayCounts = {};
+    }
+    prefs.stylePlayCounts[style] = (prefs.stylePlayCounts[style] || 0) + 1;
+  }
+
+  /**
+   * Record skip
    */
   async recordSkip(userId, songId, songInfo) {
     const prefs = await this.getPreferences(userId);
@@ -184,25 +232,86 @@ class UserProfile {
       prefs.skipPatterns = {};
     }
 
-    // Track skips by artist
     if (songInfo.artist) {
       const key = `artist:${songInfo.artist}`;
       prefs.skipPatterns[key] = (prefs.skipPatterns[key] || 0) + 1;
     }
 
-    // Track skips by style
     if (songInfo.style) {
       const key = `style:${songInfo.style}`;
       prefs.skipPatterns[key] = (prefs.skipPatterns[key] || 0) + 1;
     }
 
+    this.rateSong(prefs, songId, 1);
+
     return this.updatePreferences(userId, prefs);
   }
 
   /**
-   * Get user's favorite artists based on play history
+   * Learn preferences from play history
+   */
+  async learnPreferences(userId) {
+    const prefs = await this.getPreferences(userId);
+    
+    const learnedStyles = this.learnStylesFromHistory(prefs);
+    const learnedArtists = this.learnArtistsFromHistory(prefs);
+    
+    learnedStyles.forEach(style => {
+      if (!prefs.preferredStyles.includes(style)) {
+        prefs.preferredStyles.push(style);
+      }
+    });
+    
+    learnedArtists.forEach(artist => {
+      if (!prefs.preferredArtists.includes(artist)) {
+        prefs.preferredArtists.push(artist);
+      }
+    });
+
+    return this.updatePreferences(userId, prefs);
+  }
+
+  /**
+   * Learn styles from play history
+   */
+  learnStylesFromHistory(prefs) {
+    if (!prefs.stylePlayCounts) return [];
+    
+    const sortedStyles = Object.entries(prefs.stylePlayCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([style]) => style);
+    
+    return sortedStyles;
+  }
+
+  /**
+   * Learn artists from play history
+   */
+  learnArtistsFromHistory(prefs) {
+    if (!prefs.artistPlayCounts) return [];
+    
+    const sortedArtists = Object.entries(prefs.artistPlayCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 10)
+      .map(([artist]) => artist);
+    
+    return sortedArtists;
+  }
+
+  /**
+   * Get user's favorite artists based on play count
    */
   async getFavoriteArtists(userId, limit = 10) {
+    const prefs = await this.getPreferences(userId);
+    
+    if (prefs.artistPlayCounts) {
+      return Object.entries(prefs.artistPlayCounts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, limit)
+        .map(([artist]) => artist);
+    }
+
     return new Promise((resolve, reject) => {
       this.db.all(
         `SELECT artist, COUNT(*) as play_count 
@@ -224,30 +333,100 @@ class UserProfile {
   }
 
   /**
+   * Get user's favorite styles
+   */
+  async getFavoriteStyles(userId, limit = 5) {
+    const prefs = await this.getPreferences(userId);
+    
+    if (prefs.stylePlayCounts) {
+      return Object.entries(prefs.stylePlayCounts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, limit)
+        .map(([style]) => style);
+    }
+    
+    return prefs.preferredStyles.slice(0, limit);
+  }
+
+  /**
+   * Get user's peak listening hours
+   */
+  async getPeakListeningHours(userId) {
+    const prefs = await this.getPreferences(userId);
+    
+    if (!prefs.favoriteTimes) return [];
+    
+    return Object.entries(prefs.favoriteTimes)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 3)
+      .map(([hour]) => parseInt(hour));
+  }
+
+  /**
    * Get user's listening stats
    */
   async getStats(userId) {
-    return new Promise((resolve, reject) => {
-      this.db.get(
-        `SELECT 
-          COUNT(DISTINCT song_id) as unique_songs,
-          COUNT(CASE WHEN action = 'like' THEN 1 END) as likes,
-          COUNT(CASE WHEN action = 'dislike' THEN 1 END) as dislikes
-         FROM user_feedback 
-         WHERE user_id = ?`,
-        [userId],
-        (err, row) => {
-          if (err) {
-            reject(err);
-          } else {
-            resolve({
-              uniqueSongs: row?.unique_songs || 0,
-              likes: row?.likes || 0,
-              dislikes: row?.dislikes || 0
-            });
-          }
-        }
-      );
+    const prefs = await this.getPreferences(userId);
+    
+    let totalPlays = prefs.playHistory?.length || 0;
+    let completedPlays = prefs.playHistory?.filter(p => p.completed).length || 0;
+    let uniqueArtists = prefs.artistPlayCounts ? Object.keys(prefs.artistPlayCounts).length : 0;
+    let favoriteArtist = null;
+    
+    if (prefs.artistPlayCounts) {
+      favoriteArtist = Object.entries(prefs.artistPlayCounts)
+        .sort((a, b) => b[1] - a[1])[0]?.[0];
+    }
+
+    return {
+      totalPlays,
+      completedPlays,
+      completionRate: totalPlays > 0 ? Math.round((completedPlays / totalPlays) * 100) : 0,
+      uniqueArtists,
+      favoriteArtist,
+      peakHours: await this.getPeakListeningHours(userId),
+      likedSongs: prefs.songRatings ? 
+        Object.values(prefs.songRatings).filter(r => r >= 4).length : 0
+    };
+  }
+
+  /**
+   * Get personalized weights for recommendation
+   */
+  async getRecommendationWeights(userId) {
+    const prefs = await this.getPreferences(userId);
+    const stats = await this.getStats(userId);
+    
+    return {
+      timeOfDayWeight: 0.3,
+      weatherWeight: 0.2,
+      moodWeight: 0.2,
+      preferredArtistWeight: 0.4,
+      preferredStyleWeight: 0.3,
+      playHistoryWeight: stats.totalPlays > 10 ? 0.2 : 0.05,
+      completionRateBonus: stats.completionRate > 70 ? 0.1 : 0
+    };
+  }
+
+  /**
+   * Should exclude this artist based on skip patterns
+   */
+  shouldExcludeArtist(userId, artist) {
+    return this.getPreferences(userId).then(prefs => {
+      if (!prefs.skipPatterns) return false;
+      const key = `artist:${artist}`;
+      return (prefs.skipPatterns[key] || 0) > 3;
+    });
+  }
+
+  /**
+   * Should exclude this style based on skip patterns
+   */
+  shouldExcludeStyle(userId, style) {
+    return this.getPreferences(userId).then(prefs => {
+      if (!prefs.skipPatterns) return false;
+      const key = `style:${style}`;
+      return (prefs.skipPatterns[key] || 0) > 3;
     });
   }
 
@@ -257,12 +436,15 @@ class UserProfile {
   getDefaultPreferences(userId) {
     return {
       userId,
-      preferredStyles: ['流行', '轻音乐', '钢琴'],
+      preferredStyles: ['流行', '轻音乐', '钢琴', '爵士'],
       preferredArtists: [],
       dislikedStyles: [],
       playHistory: [],
       skipPatterns: {},
       favoriteTimes: {},
+      songRatings: {},
+      artistPlayCounts: {},
+      stylePlayCounts: {},
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
@@ -273,6 +455,15 @@ class UserProfile {
    */
   clearCache(userId) {
     this.cache.delete(userId);
+  }
+
+  /**
+   * Reset user profile
+   */
+  async resetProfile(userId) {
+    const defaults = this.getDefaultPreferences(userId);
+    this.cache.set(userId, defaults);
+    return this.updatePreferences(userId, defaults);
   }
 }
 

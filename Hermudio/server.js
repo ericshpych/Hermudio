@@ -13,7 +13,8 @@ const path = require('path');
 const sqlite3 = require('sqlite3').verbose();
 const fs = require('fs');
 const { exec } = require('child_process');
-const axios = require('axios');
+const fetch = require('node-fetch');
+const { toVoice } = require('edge-tts-nodejs');
 
 // Import services
 const { RecommendationEngine } = require('./src/recommendation-engine');
@@ -22,6 +23,7 @@ const { UserProfile } = require('./src/user-profile');
 const { HermesService } = require('./src/hermes-service');
 const { getCurrentScene, getSceneDescription } = require('./src/scene-analyzer');
 const { RadioHostService } = require('./src/radio-host-service');
+const { PlaylistService } = require('./src/playlist-service');
 
 const app = express();
 const PORT = process.env.PORT || 6688;
@@ -107,7 +109,7 @@ const db = new sqlite3.Database('./data/hermudio.db', (err) => {
 });
 
 // Service instances (initialized after database)
-let musicService, userProfile, recommendationEngine, hermesService, radioHostService;
+let musicService, userProfile, recommendationEngine, hermesService, radioHostService, playlistService;
 
 function initDatabase() {
   // Use serialize to ensure tables are created in order
@@ -178,9 +180,23 @@ function initDatabase() {
       )
     `);
 
-    // Create index for faster queries
+    // Song Blacklist Table (快速拉黑功能)
+    db.run(`
+      CREATE TABLE IF NOT EXISTS song_blacklist (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        song_id TEXT UNIQUE NOT NULL,
+        song_name TEXT,
+        artist TEXT,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Create indexes for faster queries
     db.run(`
       CREATE INDEX IF NOT EXISTS idx_daily_plays_date ON daily_plays(play_date)
+    `);
+    db.run(`
+      CREATE INDEX IF NOT EXISTS idx_song_blacklist_song_id ON song_blacklist(song_id)
     `);
 
     console.log('Database tables initialized');
@@ -197,6 +213,7 @@ function initializeServices() {
   recommendationEngine = new RecommendationEngine(db, userProfile);
   hermesService = new HermesService(recommendationEngine, musicService, userProfile);
   radioHostService = new RadioHostService(db, hermesService);
+  playlistService = new PlaylistService(db, recommendationEngine, musicService, userProfile);
   console.log('Services initialized successfully');
 }
 
@@ -355,6 +372,28 @@ app.post('/api/stop', async (req, res) => {
   } catch (error) {
     console.error('Stop error:', error);
     res.status(500).json({ error: 'Stop failed' });
+  }
+});
+
+// Pause Playback
+app.post('/api/pause', async (req, res) => {
+  try {
+    const result = await musicService.pause();
+    res.json(result);
+  } catch (error) {
+    console.error('Pause error:', error);
+    res.status(500).json({ error: 'Pause failed' });
+  }
+});
+
+// Resume Playback
+app.post('/api/resume', async (req, res) => {
+  try {
+    const result = await musicService.resume();
+    res.json(result);
+  } catch (error) {
+    console.error('Resume error:', error);
+    res.status(500).json({ error: 'Resume failed' });
   }
 });
 
@@ -528,7 +567,7 @@ app.get('/api/history', async (req, res) => {
 
 // Chat with Hermes AI
 app.post('/api/chat', async (req, res) => {
-  const { message } = req.body;
+  const { message, blockedSongs = [] } = req.body;
   const userId = req.body.userId || 'default';
   
   if (!message) {
@@ -547,7 +586,8 @@ app.post('/api/chat', async (req, res) => {
         timeOfDay: scene.timeOfDay,
         weather: scene.weather,
         mood: scene.mood
-      }
+      },
+      blockedSongs: blockedSongs || [] // 被屏蔽的歌曲ID列表
     };
     
     const response = await hermesService.chat(userId, message, context);
@@ -649,11 +689,11 @@ app.get('/api/radio/closing', async (req, res) => {
 app.get('/api/radio/playlist', async (req, res) => {
   try {
     const scene = await getCurrentScene();
-    
+
     // Generate 5 unique songs for the playlist using the new method
     const recommendations = await recommendationEngine.getRecommendations(5, { scene });
     const playlist = recommendations.filter(r => r && r.song).map(r => r.song);
-    
+
     radioHostService.setPlaylist(playlist);
     res.json({ success: true, songs: playlist });
   } catch (error) {
@@ -662,7 +702,129 @@ app.get('/api/radio/playlist', async (req, res) => {
   }
 });
 
-// Mark song as played (to avoid repeats)
+// ==================== New Playlist Service APIs ====================
+
+// Initialize playlist (获取第一批推荐) - 同时支持旧路径
+app.post('/api/playlist/init', async (req, res) => {
+  const userId = req.body.userId || 'default';
+  try {
+    const result = await playlistService.initializePlaylist(userId);
+    res.json(result);
+  } catch (error) {
+    console.error('[API] playlist/init error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+app.post('/api/playlist/initialize', async (req, res) => {
+  const userId = req.body.userId || 'default';
+  try {
+    const result = await playlistService.initializePlaylist(userId);
+    res.json(result);
+  } catch (error) {
+    console.error('[API] playlist/initialize error:', error);
+    res.status(500).json({ success: false, error: 'Failed to initialize playlist' });
+  }
+});
+
+// Get next song and play (获取下一首并播放，自动检查补给)
+app.post('/api/playlist/next', async (req, res) => {
+  const userId = req.body.userId || 'default';
+  try {
+    const song = await playlistService.getNextSong(userId);
+    if (!song) {
+      return res.json({ success: false, error: '队列为空，请先调用 /api/playlist/init' });
+    }
+
+    // enrichment 已在 getNextSong() 内部完成，song.encryptedId 已填充
+    const playResult = await musicService.playSong(song.id, song.encryptedId);
+    if (playResult.loginRequired) {
+      return res.json({ success: false, loginRequired: true, song });
+    }
+
+    res.json({ success: true, song, playResult });
+  } catch (error) {
+    console.error('[API] playlist/next error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Request new batch (手动触发补给)
+app.post('/api/playlist/request-batch', async (req, res) => {
+  const userId = req.body.userId || 'default';
+  const scene = req.body.scene || null;
+  try {
+    const result = await playlistService.requestNewBatch(userId, scene);
+    res.json(result);
+  } catch (error) {
+    console.error('Request batch error:', error);
+    res.status(500).json({ success: false, error: 'Failed to request new batch' });
+  }
+});
+
+// Get queue status (获取队列状态)
+app.get('/api/playlist/status', async (req, res) => {
+  try {
+    res.json({ success: true, ...playlistService.getQueueStatus() });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Record skip (记录跳过) - 同时支持旧路径
+app.post('/api/playlist/skip', async (req, res) => {
+  const { songId, song } = req.body;
+  try {
+    playlistService.recordSkip(songId, song);
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+app.post('/api/playlist/record-skip', (req, res) => {
+  try {
+    const { songId, song } = req.body;
+    playlistService.recordSkip(songId, song);
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Record skip error:', error);
+    res.status(500).json({ success: false, error: 'Failed to record skip' });
+  }
+});
+
+// Record full play (记录完整播放) - 同时支持旧路径
+app.post('/api/playlist/fullplay', async (req, res) => {
+  const { songId, song } = req.body;
+  try {
+    playlistService.recordFullPlay(songId, song);
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+app.post('/api/playlist/record-full-play', (req, res) => {
+  try {
+    const { songId, song } = req.body;
+    playlistService.recordFullPlay(songId, song);
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Record full play error:', error);
+    res.status(500).json({ success: false, error: 'Failed to record full play' });
+  }
+});
+
+// Fallback playlist (本地兜底推荐)
+app.get('/api/playlist/fallback', async (req, res) => {
+  try {
+    const scene = await getCurrentScene();
+    const result = await playlistService.getFallbackPlaylist(scene);
+    res.json(result);
+  } catch (error) {
+    console.error('Fallback playlist error:', error);
+    res.status(500).json({ success: false, error: 'Failed to get fallback playlist' });
+  }
+});
+
+// Mark song as played (to avoid repeats) - keep for backward compatibility
 app.post('/api/radio/mark-played', (req, res) => {
   try {
     const { songId } = req.body;
@@ -1071,24 +1233,23 @@ app.post('/api/tts/doubao', async (req, res) => {
       apiUrl += `?GroupId=${MINIMAX_TTS_CONFIG.group_id}`;
     }
 
-    const response = await axios.post(
-      apiUrl,
-      requestData,
-      {
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${MINIMAX_TTS_CONFIG.api_key}`
-        },
-        timeout: 30000
-      }
-    );
+    const response = await fetch(apiUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${MINIMAX_TTS_CONFIG.api_key}`
+      },
+      body: JSON.stringify(requestData)
+    });
 
     console.log('[TTS] 响应状态:', response.status);
 
+    const responseData = await response.json();
+
     // MiniMax 返回的音频数据在 data.audio 中（hex编码）
-    if (response.data && response.data.data && response.data.data.audio) {
+    if (responseData && responseData.data && responseData.data.audio) {
       // 将 hex 转换为 base64
-      const audioHex = response.data.data.audio;
+      const audioHex = responseData.data.audio;
       const audioBuffer = Buffer.from(audioHex, 'hex');
       const audioBase64 = audioBuffer.toString('base64');
 
@@ -1103,10 +1264,10 @@ app.post('/api/tts/doubao', async (req, res) => {
         message: '语音合成成功'
       });
       console.log('[TTS] 合成成功，音频大小:', audioBase64.length, 'bytes');
-    } else if (response.data && response.data.base_resp && response.data.base_resp.status_code !== 0) {
+    } else if (responseData && responseData.base_resp && responseData.base_resp.status_code !== 0) {
       res.status(500).json({
         success: false,
-        message: '语音合成失败: ' + (response.data.base_resp.status_msg || '未知错误')
+        message: '语音合成失败: ' + (responseData.base_resp.status_msg || '未知错误')
       });
     } else {
       res.status(500).json({
@@ -1133,9 +1294,109 @@ app.get('/api/tts/status', (req, res) => {
     data: {
       configured: isConfigured,
       has_api_key: !!MINIMAX_TTS_CONFIG.api_key,
-      has_group_id: !!MINIMAX_TTS_CONFIG.group_id
+      has_group_id: !!MINIMAX_TTS_CONFIG.group_id,
+      has_edge_tts: true // Edge TTS 总是可用的
     }
   });
+});
+
+// ==================== Hermes TTS (Edge TTS) 接口
+const { VoiceConfig } = require('./src/voice-config');
+const voiceConfig = new VoiceConfig();
+
+// 健康检查接口
+app.get('/api/tts/health', (req, res) => {
+  res.json({
+    success: true,
+    status: 'ok',
+    message: 'Hermes TTS service is running'
+  });
+});
+
+// 获取音色列表
+app.get('/api/tts/voices', (req, res) => {
+  const hermesProvider = voiceConfig.getProvider('hermes');
+  const voices = hermesProvider ? hermesProvider.voices || [] : [];
+  res.json({
+    success: true,
+    data: voices,
+    voices: voices,
+    message: '获取音色列表成功'
+  });
+});
+
+// 包装 toVoice 成 Promise
+function toVoicePromise(text, filePath, options) {
+  return new Promise((resolve, reject) => {
+    const execCommand = "edge-tts";
+    let command = `${execCommand} --text '${text}' --write-media ${filePath}`;
+    
+    if (options?.voice) command += ` -v ${options.voice}`;
+    if (options?.rate) command += ` --rate ${options.rate>0?'+'+options.rate:options.rate}%`;
+    if (options?.volume) command += ` --volume ${options.volume>0?'+'+options.volume:options.volume}%`;
+    if (options?.pitch) command += ` --pitch ${options.pitch>0?'+'+options.pitch:options.pitch}Hz`;
+    
+    console.log('[Edge TTS] 执行命令:', command);
+    
+    exec(command, (error, stdout, stderr) => {
+      if (error) {
+        console.error('[Edge TTS] 执行错误:', error);
+        reject(error);
+      } else {
+        console.log('[Edge TTS] 生成成功，路径:', filePath);
+        resolve(filePath);
+      }
+    });
+  });
+}
+
+// Edge TTS 语音合成接口（免费）
+app.post('/api/tts/synthesize', async (req, res) => {
+  try {
+    const { text, voice = 'zh-CN-XiaoxiaoNeural', rate = 0, pitch = 0 } = req.body;
+
+    if (!text) {
+      return res.status(400).json({ success: false, message: '缺少文本参数' });
+    }
+
+    console.log(`[Edge TTS] 合成请求: ${text.substring(0, 50)}...`);
+    console.log(`[Edge TTS] 使用音色: ${voice}`);
+
+    // 创建临时目录
+    const tempDir = path.join(__dirname, 'temp');
+    if (!fs.existsSync(tempDir)) {
+      fs.mkdirSync(tempDir, { recursive: true });
+    }
+
+    // 生成临时文件名
+    const tempFileName = `tts_${Date.now()}_${Math.random().toString(36).substr(2, 9)}.mp3`;
+    const tempFilePath = path.join(tempDir, tempFileName);
+
+    // 调用 toVoice 生成音频
+    await toVoicePromise(text, tempFilePath, {
+      voice: voice,
+      rate: rate,
+      pitch: pitch
+    });
+
+    // 读取生成的音频文件
+    const audioBuffer = fs.readFileSync(tempFilePath);
+
+    // 直接返回二进制音频数据
+    res.setHeader('Content-Type', 'audio/mpeg');
+    res.send(audioBuffer);
+    console.log('[Edge TTS] 合成成功，音频大小:', audioBuffer.length, 'bytes');
+
+    // 清理临时文件
+    fs.unlinkSync(tempFilePath);
+    
+  } catch (error) {
+    console.error('[Edge TTS] 错误:', error);
+    res.status(500).json({
+      success: false,
+      message: '语音合成失败: ' + error.message
+    });
+  }
 });
 
 // ==================== Start Server ====================

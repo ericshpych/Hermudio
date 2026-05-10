@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Speech API 测试</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0a0a0f 0%, #151525 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #4ade80 0%, #60a5fa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .card {
+            background: rgba(20, 20, 35, 0.8);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-title::before {
+            content: '';
+            width: 4px;
+            height: 20px;
+            background: linear-gradient(180deg, #4ade80 0%, #60a5fa 100%);
+            border-radius: 2px;
+        }
+
+        .text-input {
+            width: 100%;
+            min-height: 120px;
+            padding: 16px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 12px;
+            color: #fff;
+            font-size: 16px;
+            resize: vertical;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .text-input:focus {
+            border-color: #4ade80;
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .control-label {
+            font-size: 14px;
+            color: #a0a0b0;
+        }
+
+        .select-control {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 15px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .select-control:focus {
+            border-color: #4ade80;
+        }
+
+        .slider-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .slider {
+            flex: 1;
+            -webkit-appearance: none;
+            height: 6px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 3px;
+            outline: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            background: linear-gradient(135deg, #4ade80 0%, #60a5fa 100%);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .slider-value {
+            min-width: 50px;
+            text-align: right;
+            color: #4ade80;
+            font-weight: 600;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 14px 24px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4ade80 0%, #22d3ee 100%);
+            color: #000;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(74, 222, 128, 0.3);
+        }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.15);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.15);
+        }
+
+        .status {
+            text-align: center;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 14px;
+            margin-top: 16px;
+        }
+
+        .status-idle {
+            background: rgba(255,255,255,0.05);
+            color: #a0a0b0;
+        }
+
+        .status-speaking {
+            background: rgba(74, 222, 128, 0.15);
+            color: #4ade80;
+        }
+
+        .status-error {
+            background: rgba(255, 100, 100, 0.15);
+            color: #ff6b6b;
+        }
+
+        .sample-texts {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .sample-btn {
+            padding: 8px 14px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            color: #a0a0b0;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .sample-btn:hover {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎤 Web Speech API 测试</h1>
+            <p>测试浏览器的语音合成功能</p>
+        </div>
+
+        <div class="card">
+            <div class="card-title">文本内容</div>
+            <textarea class="text-input" id="textInput" placeholder="输入要朗读的文本...">你好，欢迎来到 Hermudio 音乐电台！今天天气真不错，让我为你推荐一些好听的歌曲吧！希望你能享受这段美好的音乐时光。</textarea>
+            
+            <div class="sample-texts">
+                <button class="sample-btn" onclick="setText('你好，世界！这是一个简单的测试。')">简单问候</button>
+                <button class="sample-btn" onclick="setText('今天天气真不错，适合出去走走呢！')">天气描述</button>
+                <button class="sample-btn" onclick="setText('欢迎来到 Hermudio，AI 个性化音乐电台！')">应用介绍</button>
+                <button class="sample-btn" onclick="setText('让我为你推荐一些适合当前心情的歌曲！')">音乐推荐</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">参数设置</div>
+            <div class="controls">
+                <div class="control-group">
+                    <label class="control-label">选择音色</label>
+                    <select class="select-control" id="voiceSelect">
+                        <option value="">加载音色中...</option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <label class="control-label">语速</label>
+                    <div class="slider-group">
+                        <input type="range" class="slider" id="rateSlider" min="0.5" max="2" step="0.1" value="0.9">
+                        <span class="slider-value" id="rateValue">0.9</span>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label class="control-label">音调</label>
+                    <div class="slider-group">
+                        <input type="range" class="slider" id="pitchSlider" min="0.5" max="2" step="0.1" value="1.0">
+                        <span class="slider-value" id="pitchValue">1.0</span>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label class="control-label">音量</label>
+                    <div class="slider-group">
+                        <input type="range" class="slider" id="volumeSlider" min="0" max="1" step="0.1" value="1.0">
+                        <span class="slider-value" id="volumeValue">1.0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">播放控制</div>
+            <div class="buttons">
+                <button class="btn btn-primary" id="speakBtn" onclick="speakText()">
+                    ▶️ 开始朗读
+                </button>
+                <button class="btn btn-secondary" id="pauseBtn" onclick="togglePause()" disabled>
+                    ⏸️ 暂停
+                </button>
+                <button class="btn btn-secondary" onclick="stopSpeaking()">
+                    ⏹️ 停止
+                </button>
+            </div>
+
+            <div class="status status-idle" id="status">
+                <span id="statusText">准备就绪</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let voices = [];
+        let isSpeaking = false;
+        let isPaused = false;
+        let utterance = null;
+
+        // 初始化
+        function init() {
+            if (!window.speechSynthesis) {
+                alert('您的浏览器不支持 Web Speech API！');
+                return;
+            }
+
+            // 加载音色
+            loadVoices();
+            if (speechSynthesis.onvoiceschanged !== undefined) {
+                speechSynthesis.onvoiceschanged = loadVoices;
+            }
+
+            // 滑块事件
+            document.getElementById('rateSlider').addEventListener('input', (e) => {
+                document.getElementById('rateValue').textContent = e.target.value;
+            });
+            document.getElementById('pitchSlider').addEventListener('input', (e) => {
+                document.getElementById('pitchValue').textContent = e.target.value;
+            });
+            document.getElementById('volumeSlider').addEventListener('input', (e) => {
+                document.getElementById('volumeValue').textContent = e.target.value;
+            });
+        }
+
+        // 加载音色列表
+        function loadVoices() {
+            voices = speechSynthesis.getVoices();
+            const select = document.getElementById('voiceSelect');
+            select.innerHTML = '';
+
+            // 中文音色优先
+            const chineseVoices = voices.filter(v => v.lang && v.lang.startsWith('zh'));
+            if (chineseVoices.length > 0) {
+                select.innerHTML += '<option value="" disabled>── 中文音色 ──</option>';
+                chineseVoices.forEach((v, i) => {
+                    const index = voices.indexOf(v);
+                    select.innerHTML += `<option value="${index}">${v.name} (${v.lang})</option>`;
+                });
+            }
+
+            // 其他音色
+            const otherVoices = voices.filter(v => !v.lang || !v.lang.startsWith('zh'));
+            if (otherVoices.length > 0) {
+                select.innerHTML += '<option value="" disabled>── 其他音色 ──</option>';
+                otherVoices.forEach((v, i) => {
+                    const index = voices.indexOf(v);
+                    select.innerHTML += `<option value="${index}">${v.name} (${v.lang})</option>`;
+                });
+            }
+
+            // 默认选择第一个中文音色
+            if (chineseVoices.length > 0) {
+                const index = voices.indexOf(chineseVoices[0]);
+                select.value = index;
+            }
+        }
+
+        // 设置文本
+        function setText(text) {
+            document.getElementById('textInput').value = text;
+        }
+
+        // 更新状态
+        function updateStatus(text, mode) {
+            const statusText = document.getElementById('statusText');
+            const statusDiv = document.getElementById('status');
+            const speakBtn = document.getElementById('speakBtn');
+            const pauseBtn = document.getElementById('pauseBtn');
+
+            statusText.textContent = text;
+            statusDiv.className = 'status status-' + mode;
+
+            if (mode === 'speaking') {
+                speakBtn.disabled = true;
+                pauseBtn.disabled = false;
+            } else {
+                speakBtn.disabled = false;
+                pauseBtn.disabled = true;
+            }
+        }
+
+        // 开始朗读
+        function speakText() {
+            const text = document.getElementById('textInput').value.trim();
+            if (!text) {
+                alert('请输入要朗读的文本！');
+                return;
+            }
+
+            stopSpeaking();
+
+            utterance = new SpeechSynthesisUtterance(text);
+            
+            // 设置音色
+            const voiceIndex = parseInt(document.getElementById('voiceSelect').value);
+            if (voiceIndex >= 0 && voices[voiceIndex]) {
+                utterance.voice = voices[voiceIndex];
+            }
+            
+            // 设置参数
+            utterance.lang = 'zh-CN';
+            utterance.rate = parseFloat(document.getElementById('rateSlider').value);
+            utterance.pitch = parseFloat(document.getElementById('pitchSlider').value);
+            utterance.volume = parseFloat(document.getElementById('volumeSlider').value);
+
+            utterance.onstart = () => {
+                isSpeaking = true;
+                isPaused = false;
+                updateStatus('正在朗读...', 'speaking');
+                document.getElementById('pauseBtn').textContent = '⏸️ 暂停';
+            };
+
+            utterance.onend = () => {
+                isSpeaking = false;
+                isPaused = false;
+                updateStatus('朗读完成！', 'idle');
+            };
+
+            utterance.onerror = (e) => {
+                console.error('[Test] 错误:', e);
+                isSpeaking = false;
+                isPaused = false;
+                updateStatus('出错了！', 'error');
+            };
+
+            speechSynthesis.speak(utterance);
+        }
+
+        // 暂停/继续
+        function togglePause() {
+            if (isPaused) {
+                speechSynthesis.resume();
+                isPaused = false;
+                document.getElementById('pauseBtn').textContent = '⏸️ 暂停';
+                updateStatus('正在朗读...', 'speaking');
+            } else {
+                speechSynthesis.pause();
+                isPaused = true;
+                document.getElementById('pauseBtn').textContent = '▶️ 继续';
+                updateStatus('已暂停', 'idle');
+            }
+        }
+
+        // 停止播放
+        function stopSpeaking() {
+            speechSynthesis.cancel();
+            isSpeaking = false;
+            isPaused = false;
+            updateStatus('已停止', 'idle');
+            document.getElementById('pauseBtn').textContent = '⏸️ 暂停';
+        }
+
+        // 页面加载完成后初始化
+        window.onload = init;
+    </script>
+</body>
+</html>
