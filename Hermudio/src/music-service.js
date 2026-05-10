@@ -22,6 +22,9 @@ class MusicService {
     this.playQueue = []; // 播放队列，用于上一曲/下一曲
     this.currentQueueIndex = -1; // 当前播放位置
     this.ncmLoggedIn = null; // Cache login status
+    // 【修复】日志节流变量
+    this._lastReportedNcmStatus = null;
+    this._statusCheckCount = 0;
     this.checkNcmLogin();
   }
 
@@ -186,14 +189,67 @@ class MusicService {
         // Stop current playback if any
         await this.stop();
 
-        // Get song details first
-        const details = await this.getSongDetails(songId);
-        if (details) {
-          this.currentSong = details;
-        } else {
-          this.currentSong = { id: songId };
+        // 【优化】先确定两个 ID
+        let originalId = null;
+        let encId = encryptedId;
+
+        // 如果 songId 是数字 ID
+        if (/^\d+$/.test(songId)) {
+          originalId = songId;
+          console.log(`[MusicService] Using originalId directly: ${originalId}`);
+          
+          // ⚡️ 优化：如果已经有 encryptedId，直接用，完全跳过 getSongDetails
+          if (encryptedId) {
+            encId = encryptedId;
+            console.log(`[MusicService] Using provided encryptedId directly: ${encId}`);
+            // 因为我们是从 playlistService 来的，已经有完整歌曲信息
+            // 所以我们可以构造一个简单的 currentSong 对象，不需要搜索
+            this.currentSong = { 
+              id: originalId,
+              encryptedId: encId,
+              originalId: originalId
+              // name, artist 等信息在 playlistService 中已经有了，前端会处理显示
+            };
+          } else {
+            // 如果没有提供 encryptedId，才从 details 找
+            const details = await this.getSongDetails(songId);
+            if (details && details.encryptedId) {
+              encId = details.encryptedId;
+              console.log(`[MusicService] Got encryptedId from details: ${encId}`);
+            }
+            // 更新 currentSong
+            if (details) {
+              this.currentSong = details;
+            } else {
+              this.currentSong = { id: originalId };
+            }
+          }
+        } 
+        // 如果 songId 是加密 ID（兼容旧逻辑）
+        else if (/^[A-F0-9]{32}$/i.test(songId)) {
+          encId = songId;
+          console.log(`[MusicService] songId is encryptedId, searching for originalId...`);
+          
+          const details = await this.getSongDetails(songId);
+          if (details && details.originalId && /^\d+$/.test(details.originalId)) {
+            originalId = details.originalId;
+            this.currentSong = details;
+            console.log(`[MusicService] Got originalId from details: ${originalId}`);
+          } else {
+            // 搜索获取
+            const searchResults = await this.searchSongs(details?.name || songId, 5);
+            const match = searchResults.find(s => s.originalId && /^\d+$/.test(s.originalId));
+            if (match) {
+              originalId = match.originalId;
+              encId = match.encryptedId;
+              this.currentSong = match;
+              console.log(`[MusicService] Got from search: originalId=${originalId}, encryptedId=${encId}`);
+            }
+          }
         }
+        
         this.isPlaying = true;
+        this._ncmStoppedCount = 0; // 重置计数器
 
         // Add to history
         await this.addToHistory(songId);
@@ -201,78 +257,14 @@ class MusicService {
         // Try to play with ncm-cli
         // ncm-cli play requires --song --encrypted-id <id> --original-id <id>
         try {
-          // We need both encryptedId and originalId
-          // If encryptedId is not provided, we need to search for it
-          let originalId = songId;
-          let encId = encryptedId;
-
-          // If songId looks like an encryptedId (32 hex chars), we need to find originalId
-          if (/^[A-F0-9]{32}$/i.test(songId)) {
-            encId = songId;
-            // Try to get originalId from details or search
-            if (details && details.originalId && /^\d+$/.test(details.originalId)) {
-              originalId = details.originalId;
-              console.log(`[MusicService] Got originalId from details: ${originalId}`);
-            } else {
-              // Search for the song to get originalId
-              console.log(`[MusicService] Searching for originalId with keyword: ${details?.name || songId}`);
-              const searchResults = await this.searchSongs(details?.name || songId, 5);
-              if (searchResults.length > 0) {
-                // Find the song that matches the encryptedId or has a valid originalId
-                const match = searchResults.find(s =>
-                  s.id === songId ||
-                  (s.originalId && /^\d+$/.test(s.originalId))
-                );
-                if (match) {
-                  if (match.originalId && /^\d+$/.test(match.originalId)) {
-                    originalId = match.originalId;
-                    console.log(`[MusicService] Got originalId from search: ${originalId}`);
-                  }
-                  // Also update encryptedId if we found a better match
-                  if (match.encryptedId && match.encryptedId !== encId) {
-                    console.log(`[MusicService] Updating encryptedId from search: ${match.encryptedId}`);
-                    encId = match.encryptedId;
-                  }
-                }
-              }
-            }
-          } else if (/^\d+$/.test(songId)) {
-            // songId is originalId, need to find encryptedId
-            originalId = songId;
-            if (!encId) {
-              // Search for the song to get encryptedId
-              console.log(`[MusicService] Searching for encryptedId with originalId: ${songId}`);
-              const searchResults = await this.searchSongs(details?.name || songId, 5);
-              const match = searchResults.find(s => s.originalId == songId || s.id == songId);
-              if (match && match.encryptedId) {
-                encId = match.encryptedId;
-                console.log(`[MusicService] Got encryptedId from search: ${encId}`);
-              }
-            }
-          }
-
-          if (!encId) {
-            console.log(`[MusicService] Could not find encryptedId for song ${songId}`);
+          // 【修复】如果有 encryptedId，直接用，避免搜索
+          if (!encId && !originalId) {
+            console.log(`[MusicService] Could not find valid IDs for song ${songId}`);
             return {
               success: false,
-              error: 'missing_encrypted_id',
+              error: 'missing_ids',
               message: '无法获取歌曲播放信息，请尝试搜索其他歌曲'
             };
-          }
-
-          // Validate originalId - if it's still the encryptedId, we need to find the real originalId
-          if (!/^\d+$/.test(originalId)) {
-            console.log(`[MusicService] originalId is not a valid numeric ID: ${originalId}, searching...`);
-            const searchResults = await this.searchSongs(details?.name || encId, 5);
-            const match = searchResults.find(s => s.originalId && /^\d+$/.test(s.originalId));
-            if (match && match.originalId) {
-              originalId = match.originalId;
-              console.log(`[MusicService] Found valid originalId: ${originalId}`);
-            } else {
-              // If we still can't find originalId, use a placeholder (ncm-cli might still work)
-              console.log(`[MusicService] Could not find valid originalId, using encryptedId as fallback`);
-              originalId = encId;
-            }
           }
 
           console.log(`[MusicService] Playing with ncm-cli: encryptedId=${encId}, originalId=${originalId}`);
@@ -488,6 +480,7 @@ class MusicService {
         env: this.getEnv()
       }).catch(() => {});
       this.isPlaying = true;
+      this._ncmStoppedCount = 0; // 重置计数器
       return { success: true };
     } catch (error) {
       return { success: false, error: error.message };
@@ -557,16 +550,19 @@ class MusicService {
               };
             }
             this.isPlaying = true;
+            this._ncmStoppedCount = 0; // 重置计数器
             console.log('[MusicService] Synced with ncm-cli:', songName);
           }
         } else if (playState.status === 'stopped' || playState.status === 'paused') {
-          // ncm-cli reports stopped/paused, update our state
-          if (this.isPlaying) {
-            this.isPlaying = false;
-            console.log('[MusicService] ncm-cli stopped/paused, updating state');
+          // 【临时修复】暂时不更新 isPlaying 为 false，避免 ncm-cli 误报导致频繁切歌
+          // 日志节流：只有状态变化或每10次才打印
+          this._statusCheckCount++;
+          const statusKey = `ncm-${playState.status}`;
+          if (statusKey !== this._lastReportedNcmStatus || this._statusCheckCount % 10 === 0) {
+            console.log(`[MusicService] Status check #${this._statusCheckCount}, ncm reports ${playState.status} (ignoring for now)`);
+            this._lastReportedNcmStatus = statusKey;
           }
-          // 【修复】ncm-cli 报告 stopped 但可能实际上还在播放，不要清空 currentSong
-          // 只在明确知道歌曲结束或切换时才更新 currentSong
+          // 暂时不更新 isPlaying，不重置计数器，避免误报影响体验
         }
       }
     } catch (error) {
@@ -635,6 +631,12 @@ class MusicService {
    */
   async getSongDetails(songId) {
     try {
+      // 【关键修复】如果 songId 是纯数字（originalId），不要用它搜索（ncm-cli 不接受纯数字搜索）
+      if (/^\d+$/.test(songId.toString())) {
+        console.log('[MusicService] getSongDetails called with pure numeric ID, skipping search:', songId);
+        return null;
+      }
+      
       // Search for the song by ID to get details
       const songs = await this.searchSongs(songId.toString(), 5);
       

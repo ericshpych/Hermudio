@@ -7,6 +7,7 @@ node_modules/
 .ncm-home/.npm/_npx/
 .claudio/.npm/_cacache/
 .claudio/.npm/_npx/
+.ncm-home/.config/ncm-cli/
 
 # Large binary files
 *.exe
@@ -35,10 +36,38 @@ Thumbs.db
 *.swp
 *.swo
 *~
+.trae/
+temp/
+Hermudio/temp/
 
 # Backup files
 *.bak
 *.backup
+*.backup-*
+Hermudio/public/index.backup*
+Hermudio/public/index-*.html
+Hermudio/public/*backup*
+Hermudio/server.backup*
+*.backup-*
+diagram-*.html
+test-*.png
+test-*.js
+*.py
 
-# Database (optional, if you want to exclude it)
-# *.db
+# Database
+*.db
+Hermudio/data/*.db
+Hermudio/hermudio.db
+Hermudio/data/hermudio.db
+
+# Configs with secrets
+Hermudio/config/
+
+# Demo and test files
+Hermudio/public/demo*.html
+Hermudio/public/test*.html
+Hermudio/public/body-content.html
+Hermudio/public/part*.html
+Hermudio/public/temp-script.js
+Hermudio/public/hermudio-design-*.html
+hermudio-design-*.html

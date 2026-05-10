@@ -662,15 +662,27 @@ app.post('/api/radio/song-intro', async (req, res) => {
   }
 });
 
-// Generate song outro
+// Generate song outro (with optional next song)
 app.post('/api/radio/song-outro', async (req, res) => {
   try {
-    const { song } = req.body;
-    const script = await radioHostService.generateSongOutro(song);
+    const { song, nextSong } = req.body;
+    const script = await radioHostService.generateSongOutro(song, nextSong);
     res.json({ success: true, script });
   } catch (error) {
     console.error('Song outro error:', error);
     res.status(500).json({ success: false, error: 'Failed to generate outro' });
+  }
+});
+
+// Generate song transition (between two songs)
+app.post('/api/radio/song-transition', async (req, res) => {
+  try {
+    const { currentSong, nextSong } = req.body;
+    const script = await radioHostService.generateSongOutro(currentSong, nextSong);
+    res.json({ success: true, script });
+  } catch (error) {
+    console.error('Song transition error:', error);
+    res.status(500).json({ success: false, error: 'Failed to generate transition' });
   }
 });
 

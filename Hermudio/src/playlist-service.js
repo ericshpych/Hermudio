@@ -29,7 +29,7 @@ class PlaylistService {
       triggerThreshold: 5, // 剩余 ≤5 首时触发补给
       keepRecentPlayed: 5, // 保留最近 5 首已播放
       fallbackThreshold: 5, // Hermes 不可用时，本地兜底生成歌单
-      hermesTimeout: 10000, // Hermes 请求超时 10 秒（快速降级到兜底）
+      hermesTimeout: 60000, // Hermes 请求超时 60 秒
       hermesBaseUrl: 'http://localhost:8642/v1'
     };
 
@@ -98,21 +98,24 @@ class PlaylistService {
 - **只返回 JSON**，不要在 JSON 之外添加任何解释性文字
 - **第一首歌固定为「鲜花 - 回春丹」**：这是测试逻辑，playlist[0] 固定为 originalId \`2088079571\`（回春丹《鲜花》Live版，已验证可播放），后续歌曲从第二首开始按正常逻辑推荐
 - **不要用 markdown 代码块包裹 JSON**（部分实现会把它当作文本）
-- **确保歌曲可播放**：搜索后再返回，或明确知道为 Remix/Cover 版本
+- **搜索次数限制**：最多搜索 3 次。只搜索你不确定是否可播放的歌曲，不要搜索已知的偏好歌手作品
+- **信任你的知识**：你对用户的偏好歌手（回春丹、告五人、九宝乐队、周杰伦、孙燕姿等）已有了解，优先直接推荐，搜索只用于验证你不确定的那几首
+- **确保歌曲可播放**：搜索验证确认 \`vipFlag: false\` 的歌曲更可靠，Remix/Cover 版本通常可播放
 - **同一歌手不要连续出现超过 3 首**
-- **playlist 数组最多 30 首**，通常不超过 20 首
-- **不要猜测 song ID**：如果你不确定某首歌的 originalId，先通过 Hermudio 搜索接口查证
+- **playlist 数组最多 30 首**，通常不超过 15 首
 
 ## 搜索接口使用
-Hermudio 提供搜索接口，用于在推荐前验证歌曲可播放性：
+Hermudio 提供搜索接口，用于在推荐前验证歌曲可播放性。**不要对每首歌都搜索**，只搜索你特别不确定的那几首：
+
 \`\`\`bash
-KEYWORD=\$(python3 -c "import urllib.parse; print(urllib.parse.quote('关键词'))")
-curl "http://localhost:6688/api/search?keyword=\${KEYWORD}&limit=6"
+# 搜索歌曲（中文关键词需 URL 编码）
+curl "http://localhost:6688/api/search?keyword=%E5%91%8A%E4%BA%94%E4%BA%BA&limit=3"
 \`\`\`
+
 返回字段说明：
 - \`originalId\`：纯数字 ID，用于 \`id\` 字段
 - \`encryptedId\`：32位 hex 加密 ID，播放时使用
-- \`vipFlag: false\`：可播放概率高（优先选）
+- \`vipFlag: false\`：基本可播放
 - \`canPlay\`：不可靠，不要作为唯一依据
 
 ## 行为反馈
@@ -123,7 +126,7 @@ curl "http://localhost:6688/api/search?keyword=\${KEYWORD}&limit=6"
    * 初始化播放列表
    */
   async initializePlaylist(userId = 'default') {
-    console.log('[PlaylistService] 初始化播放列表');
+    console.log('[PlaylistService] 初始化播放列表（极速模式）');
 
     // 强制重置锁状态（防止上次的异常退出残留）
     this.isRequesting = false;
@@ -136,8 +139,238 @@ curl "http://localhost:6688/api/search?keyword=\${KEYWORD}&limit=6"
     // 重置反馈统计
     this.resetBatchFeedback();
 
-    // 获取第一批推荐
-    return await this.requestNewBatch(userId);
+    // 直接使用快速模式：先获取推荐，只 enrichment 前 2 首，剩下后台做
+    return await this.requestNewBatchFast(userId);
+  }
+
+  /**
+   * 后台请求 Hermes 真实推荐（不阻塞）
+   */
+  async requestNewBatchInBackground(userId, scene) {
+    await new Promise(resolve => setTimeout(resolve, 6000)); // 【优化】延迟6秒再请求 Hermes，确保 Welcome 完全不抢资源
+    
+    if (this.isRequesting) {
+      console.log('[PlaylistService] 后台 Hermes 请求已在进行中，跳过');
+      return;
+    }
+
+    console.log('[PlaylistService] 后台开始请求 Hermes 真实推荐');
+    const result = await this.requestNewBatch(userId, scene);
+    
+    if (result.success && result.playlist) {
+      console.log('[PlaylistService] 后台 Hermes 请求成功，追加', result.playlist.length, '首歌');
+    }
+  }
+
+  /**
+   * 快速合并批次（只 enrichment 前 2 首，剩下的后台做）
+   */
+  async mergeNewBatchFastWithFixedFirst(playlist) {
+    if (!playlist || playlist.length === 0) {
+      return;
+    }
+
+    // 快速 enrichment 前 2 首，立刻返回
+    const count = Math.min(2, playlist.length);
+    const songsToEnrich = playlist.slice(0, count);
+    
+    console.log(`[PlaylistService] 极速模式：enrich 前 ${count} 首`);
+    const enrichedSongs = [];
+    
+    for (const song of songsToEnrich) {
+      try {
+        const results = await this.musicService.searchSongs(song.name, 5);
+        const match = results.find(s =>
+          s.name === song.name ||
+          (song.artist && s.artist.includes(song.artist.split(',')[0]))
+        ) || results[0];
+
+        if (match && match.originalId && match.encryptedId) {
+          enrichedSongs.push({
+            id: match.originalId,
+            encryptedId: match.encryptedId,
+            originalId: match.originalId,
+            name: song.name,
+            artist: song.artist || match.artist,
+            album: song.album || match.album,
+            duration: song.duration || match.duration,
+            reason: song.reason,
+            scene_tags: song.scene_tags,
+            style: song.style,
+            canPlay: match.canPlay
+          });
+          console.log(`[PlaylistService] Fast Enriched: ${song.name} → originalId=${match.originalId}, encryptedId=${match.encryptedId}`);
+        }
+      } catch (err) {
+        console.error(`[PlaylistService] Fast Enrich 异常 for ${song.name}:`, err.message);
+      }
+    }
+    
+    this.queuedSongs = [...this.queuedSongs, ...enrichedSongs];
+    
+    // 剩下的后台继续 enrichment
+    if (playlist.length > count) {
+      this.mergeNewBatchBackground(playlist.slice(count)).catch(e =>
+        console.error('[PlaylistService] 后台 enrichment 失败:', e.message)
+      );
+    }
+    
+    console.log('[PlaylistService] 极速队列已更新:', {
+      已播放: this.playedSongs.length,
+      待播放: this.queuedSongs.length
+    });
+  }
+
+  /**
+   * 快速获取第一批推荐（只 enrichment 前 1 首就返回，剩下的后台做）
+   */
+  async requestNewBatchFast(userId = 'default', scene = null) {
+    if (this.isRequesting) {
+      console.log('[PlaylistService] 已有推荐请求进行中，跳过');
+      return { success: false, error: '已有推荐请求进行中' };
+    }
+
+    this.isRequesting = true;
+    console.log('[PlaylistService] 开始快速请求新一批推荐（优先本地兜底）');
+
+    try {
+      // 【优化】先直接用本地兜底，立即返回，不等待 Hermes！
+      const currentScene = scene || await this.getCurrentScene();
+      const playlistResponse = await this.getFallbackPlaylist(currentScene);
+
+      if (playlistResponse.success && playlistResponse.playlist) {
+        // 1. ⚡️ 只 enrichment 前 1 首，立刻返回！让第一首歌尽快播放
+        console.log('[PlaylistService] 极速模式：只 enrichment 第 1 首歌就返回');
+        await this.mergeNewBatchFast(playlistResponse.playlist, 1); // 只 enrichment 1 首
+
+        // 2. 标记批次开始的歌曲 ID
+        if (this.queuedSongs.length > 0) {
+          this.batchFeedback.batchStartSongId = this.queuedSongs[0].id;
+        }
+
+        // 3. 后台慢慢 enrichment 剩下的歌曲（从第 2 首开始），不阻塞
+        this.mergeNewBatchBackground(playlistResponse.playlist.slice(1)).catch(e =>
+          console.error('[PlaylistService] 后台 enrichment 失败:', e.message)
+        );
+
+        // 4. 后台再慢慢请求 Hermes 真实推荐，完全不阻塞
+        this.requestNewBatchInBackground(userId, currentScene).catch(e =>
+          console.error('[PlaylistService] 后台 Hermes 请求失败:', e.message)
+        );
+
+        console.log('[PlaylistService] 快速新批次推荐成功，当前队列长度:', this.queuedSongs.length);
+        return {
+          success: true,
+          playlist: this.queuedSongs,
+          theme: playlistResponse.theme,
+          keywords: playlistResponse.keywords,
+          source: playlistResponse.source
+        };
+      }
+
+      return { success: false, error: '未能获取推荐歌单' };
+    } catch (error) {
+      console.error('[PlaylistService] 快速请求推荐失败:', error);
+      return { success: false, error: error.message };
+    } finally {
+      this.isRequesting = false;
+    }
+  }
+
+  /**
+   * 只 merge 前 N 首歌（快速模式）
+   */
+  async mergeNewBatchFast(newSongs, count = 2) {
+    if (!newSongs || newSongs.length === 0) {
+      return;
+    }
+
+    // 只 enrichment 前 N 首
+    const songsToEnrich = newSongs.slice(0, count);
+    console.log(`[PlaylistService] 快速模式：enrich 前 ${count} 首`);
+
+    const enrichedSongs = [];
+    for (const song of songsToEnrich) {
+      try {
+        const results = await this.musicService.searchSongs(song.name, 5);
+        const match = results.find(s =>
+          s.name === song.name ||
+          (song.artist && s.artist.includes(song.artist.split(',')[0]))
+        ) || results[0];
+
+        if (match && match.originalId && match.encryptedId) {
+          enrichedSongs.push({
+            id: match.originalId,            // 【修复】存 originalId（数字ID）用于搜索
+            encryptedId: match.encryptedId,  // 保留 encryptedId 用于播放
+            originalId: match.originalId,
+            name: song.name,
+            artist: song.artist || match.artist,
+            album: song.album || match.album,
+            duration: song.duration || match.duration,
+            reason: song.reason,
+            scene_tags: song.scene_tags,
+            style: song.style,
+            canPlay: match.canPlay
+          });
+          console.log(`[PlaylistService] Fast Enriched: ${song.name} → originalId=${match.originalId}, encryptedId=${match.encryptedId}`);
+        }
+      } catch (err) {
+        console.error(`[PlaylistService] Fast Enrich 异常 for ${song.name}:`, err.message);
+      }
+    }
+
+    this.queuedSongs = [...this.queuedSongs, ...enrichedSongs];
+    console.log('[PlaylistService] 快速队列已更新:', {
+      已播放: this.playedSongs.length,
+      待播放: this.queuedSongs.length
+    });
+  }
+
+  /**
+   * 后台继续 enrichment 剩下的歌曲
+   */
+  async mergeNewBatchBackground(remainingSongs) {
+    if (!remainingSongs || remainingSongs.length === 0) {
+      return;
+    }
+
+    console.log(`[PlaylistService] 后台开始 enrichment 剩余 ${remainingSongs.length} 首歌`);
+    const enrichedSongs = [];
+
+    for (const song of remainingSongs) {
+      try {
+        const results = await this.musicService.searchSongs(song.name, 5);
+        const match = results.find(s =>
+          s.name === song.name ||
+          (song.artist && s.artist.includes(song.artist.split(',')[0]))
+        ) || results[0];
+
+        if (match && match.originalId && match.encryptedId) {
+          enrichedSongs.push({
+            id: match.originalId,            // 【修复】存 originalId（数字ID）用于搜索
+            encryptedId: match.encryptedId,  // 保留 encryptedId 用于播放
+            originalId: match.originalId,
+            name: song.name,
+            artist: song.artist || match.artist,
+            album: song.album || match.album,
+            duration: song.duration || match.duration,
+            reason: song.reason,
+            scene_tags: song.scene_tags,
+            style: song.style,
+            canPlay: match.canPlay
+          });
+          console.log(`[PlaylistService] Background Enriched: ${song.name} → originalId=${match.originalId}, encryptedId=${match.encryptedId}`);
+        }
+      } catch (err) {
+        console.error(`[PlaylistService] Background Enrich 异常 for ${song.name}:`, err.message);
+      }
+    }
+
+    this.queuedSongs = [...this.queuedSongs, ...enrichedSongs];
+    console.log('[PlaylistService] 后台 enrichment 完成，队列更新:', {
+      已播放: this.playedSongs.length,
+      待播放: this.queuedSongs.length
+    });
   }
 
   /**
@@ -312,13 +545,14 @@ curl "http://localhost:6688/api/search?keyword=\${KEYWORD}&limit=6"
   }
 
   /**
-   * 本地兜底推荐引擎
+   * 本地兜底推荐引擎（快速模式：减少推荐数量）
    */
   async getFallbackPlaylist(scene) {
-    console.log('[PlaylistService] 使用本地兜底推荐引擎');
+    console.log('[PlaylistService] 使用本地兜底推荐引擎（快速模式）');
 
     try {
-      const recommendations = await this.recommendationEngine.getRecommendations(15, { scene });
+      // 【优化】快速模式：只推荐 6 首歌，凑够前几首快速播放，剩余后台慢慢补
+      const recommendations = await this.recommendationEngine.getRecommendations(6, { scene });
       const playlist = recommendations
         .filter(r => r && r.song)
         .map(r => ({
@@ -364,10 +598,10 @@ curl "http://localhost:6688/api/search?keyword=\${KEYWORD}&limit=6"
           (song.artist && s.artist.includes(song.artist.split(',')[0]))
         ) || results[0];
 
-        if (match && match.encryptedId) {
+        if (match && match.originalId && match.encryptedId) {
           enrichedSongs.push({
-            id: match.encryptedId,           // 用真实的 encryptedId
-            encryptedId: match.encryptedId,
+            id: match.originalId,            // 【修复】存 originalId（数字ID）用于搜索
+            encryptedId: match.encryptedId,  // 保留 encryptedId 用于播放
             originalId: match.originalId,
             name: song.name,
             artist: song.artist || match.artist,
@@ -378,15 +612,15 @@ curl "http://localhost:6688/api/search?keyword=\${KEYWORD}&limit=6"
             style: song.style,
             canPlay: match.canPlay
           });
-          console.log(`[PlaylistService] Enriched: ${song.name} → ${match.encryptedId}`);
+          console.log(`[PlaylistService] Enriched: ${song.name} → originalId=${match.originalId}, encryptedId=${match.encryptedId}`);
         } else {
-          // 搜索失败，保留原数据（可能播不了，但不阻塞流程）
-          console.warn(`[PlaylistService] Could not enrich: ${song.name}`);
-          enrichedSongs.push({ ...song, id: song.id || song.name });
+          // 搜索失败，丢弃，不入队
+          console.warn(`[PlaylistService] 丢弃无法 enrichment 的歌曲: ${song.name}`);
+          // 不入队
         }
       } catch (err) {
-        console.error(`[PlaylistService] Enrich failed for ${song.name}:`, err.message);
-        enrichedSongs.push({ ...song, id: song.id || song.name });
+        console.error(`[PlaylistService] Enrich 异常 for ${song.name}:`, err.message);
+        // 丢弃，不入队
       }
     }
 
@@ -415,8 +649,9 @@ curl "http://localhost:6688/api/search?keyword=\${KEYWORD}&limit=6"
       this.playedSongs.push(this.currentSong);
     }
 
-    // 检查是否需要补给
-    if (this.queuedSongs.length <= this.config.triggerThreshold) {
+    // 检查是否需要补给，但刚初始化后第一次获取时不触发（因为后台还在 enrichment）
+    const isFirstRequestAfterInit = this.playedSongs.length === 0;
+    if (!isFirstRequestAfterInit && this.queuedSongs.length <= this.config.triggerThreshold) {
       console.log('[PlaylistService] 队列不足，触发补给');
       await this.requestNewBatch(userId);
     }

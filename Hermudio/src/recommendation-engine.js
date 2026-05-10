@@ -24,6 +24,10 @@ class RecommendationEngine {
     this.todayDate = this.getTodayDate();
     this.dailyPlaysLoaded = false;
     
+    // 【优化】日志重复打印控制标志
+    this._hasLoggedSceneInfo = false;
+    this._hasLoggedUserPrefs = false;
+    
     // Load today's played songs from database (async)
     this.loadDailyPlayedSongs().then(() => {
       this.dailyPlaysLoaded = true;
@@ -282,15 +286,18 @@ class RecommendationEngine {
       console.log('[Recommendation] Blocked songs from user:', blockedSongs.length);
     }
     
-    console.log('[Recommendation] Current scene:', scene);
-    // 只输出用户画像的关键信息，避免输出完整的 playHistory 导致日志过大
-    console.log('[Recommendation] User preferences:', {
-      preferredStyles: userPrefs.preferredStyles,
-      preferredArtists: userPrefs.preferredArtists,
-      dislikedStyles: userPrefs.dislikedStyles,
-      playHistoryCount: userPrefs.playHistory?.length || 0,
-      favoriteTimes: userPrefs.favoriteTimes
-    });
+    // 【优化】只在第一次调用时打印完整的用户偏好日志
+    if (!this._hasLoggedUserPrefs) {
+      this._hasLoggedUserPrefs = true;
+      console.log('[Recommendation] Current scene:', scene);
+      console.log('[Recommendation] User preferences:', {
+        preferredStyles: userPrefs.preferredStyles,
+        preferredArtists: userPrefs.preferredArtists,
+        dislikedStyles: userPrefs.dislikedStyles,
+        playHistoryCount: userPrefs.playHistory?.length || 0,
+        favoriteTimes: userPrefs.favoriteTimes
+      });
+    }
 
     // Try multiple strategies in order
     // Note: External search is prioritized to ensure we get real songs with encryptedId
@@ -441,11 +448,15 @@ class RecommendationEngine {
     const detailedTime = this.getDetailedTimePeriod();
     const mood = this.inferMood(scene);
 
-    console.log('[Recommendation] ==========================================');
-    console.log('[Recommendation] Scene-based recommendation triggered');
-    console.log('[Recommendation] Time:', scene.timeOfDay, '| Hour:', scene.hour, '| Detailed:', detailedTime);
-    console.log('[Recommendation] Weather:', scene.weather, '| Mood:', mood);
-    console.log('[Recommendation] ==========================================');
+    // 【优化】只在第一次调用时打印完整的场景日志
+    if (!this._hasLoggedSceneInfo) {
+      this._hasLoggedSceneInfo = true;
+      console.log('[Recommendation] ==========================================');
+      console.log('[Recommendation] Scene-based recommendation triggered');
+      console.log('[Recommendation] Time:', scene.timeOfDay, '| Hour:', scene.hour, '| Detailed:', detailedTime);
+      console.log('[Recommendation] Weather:', scene.weather, '| Mood:', mood);
+      console.log('[Recommendation] ==========================================');
+    }
 
     // Get base keywords from time
     const timeKw = timeKeywords[detailedTime] || ['流行', '轻音乐'];
