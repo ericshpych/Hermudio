@@ -363,80 +363,93 @@ ${song.artist}的《${song.name}》即将响起...
 - 开头：不要用"这首歌"，可以用"刚才"、"这一曲"、"${song.artist}的这首"、"这段旋律"等
 - 结尾过渡：不要用"好了"，可以用"接下来"、"下面"、"让"、"现在"等`,
 
-      `你是电台主持人Hermes。刚刚那首歌是${song.artist}的《${song.name}》。
-请用中文说几句：
-- 对这首歌的简单感受
-- 预告接下来还有更多好音乐
-- 保持听众的期待感
+      `你是电台主持人Hermes。${song.artist}的《${song.name}》像一阵微风掠过心头。
+请用温暖的声音说几句：
+- 分享这首歌带给你的画面或感受
+- 用诗意的方式预告下一首歌
+- 让听众期待接下来的音乐
 
 【重要】
-- 开头多样化：避免用"这首歌"，可以用"刚才"、"这一曲"、"这段音乐"等
-- 结尾过渡多样化：避免用"好了"，可以用"接下来"、"下面"、"让"、"现在"等`,
+- 开头：用"像一阵风"、"刚才那曲"、"这段旋律"等意象化表达
+- 结尾：用"接下来"、"让"、"下面"等，营造期待感
+- 避免："这首歌"、"好了"等平淡表达`,
 
       // 更多样化的outro prompts
-      `《${song.name}》结束了。${nextSongInfo}。
-请用简洁自然的方式，总结刚才的歌并预告下一首。
+      `${song.artist}的《${song.name}》刚刚结束，余音还在空气里。
+${nextSongInfo}
+请用有画面感的语言，让听众感受到音乐的流动。
 
 【重要】
-- 开头：不要用"这首歌"，可以用"刚才"、"这一曲"、"这段旋律"等
-- 结尾过渡：不要用"好了"，可以用"接下来"、"下面"、"让"、"现在"等`,
+- 开头：用"余音还在"、"旋律散去"、"音符落下"等
+- 结尾：用"接下来"、"让"、"即将"等，保持连贯
+- 避免："这首歌"、"好了"、"结束了"等`,
 
-      `刚才${song.artist}的《${song.name}》，听得怎么样？
-${nextSongInfo}，请生成一段能让听众保持收听欲望的过渡语。
-
-【重要】
-- 开头：避免重复使用"这首歌"，可以用"这一曲"、"这段音乐"、"刚才的歌"等
-- 结尾过渡：避免用"好了"，可以用"接下来"、"下面"、"让"、"现在"等`,
-
-      `一首歌的时间过得真快。${song.artist}的《${song.name}》还萦绕在耳边...
-${nextSongInfo}。请用感性的语言完成这段过渡。
+      `刚才${song.artist}的《${song.name}》，是否触动了你的某个瞬间？
+${nextSongInfo}
+请用共情的语气，让听众觉得"音乐懂我"。
 
 【重要】
-- 开头：可以用"这一曲"、"这段旋律"、"刚才的音乐"等，不要总是"这首歌"
-- 结尾过渡：避免用"好了"，可以用"接下来"、"下面"、"让"、"现在"等`,
+- 开头：用问句或感受引入，"是否触动"、"像在说"、"让人想起"
+- 结尾：用"接下来"、"让"、"下面"等自然过渡
+- 避免："这首歌"、"好了"`,
 
-      `${song.artist}的《${song.name}》，是不是触动了你某个瞬间？
-${nextSongInfo}。请用共情的语气，让听众觉得"这首歌懂我"。
-
-【重要】
-- 开头：可以用"这一曲"、"这段旋律"、"刚才的歌"等，避免每段都用"这首歌"
-- 结尾过渡：避免用"好了"，可以用"接下来"、"下面"、"让"、"现在"等`,
-
-      `音乐继续流淌。${song.artist}的《${song.name}》刚刚结束，
-${nextSongInfo}。
-请生成一段简洁流畅的过渡。
+      `${song.artist}用《${song.name}》讲述了一个故事。
+${nextSongInfo}
+请用讲故事的方式完成这段过渡。
 
 【重要】
-- 开头：可以用"这一曲"、"这段音乐"、"刚才的歌"等，不要总是"这首歌"
-- 结尾过渡：避免用"好了"，可以用"接下来"、"下面"、"让"、"现在"等`,
+- 开头：用"讲述"、"描绘"、"带来"等动词
+- 结尾：用"接下来"、"让"、"继续"等
+- 避免："这首歌"、"好了"`,
 
-      `有时候，一首歌结束，但情绪还在。就像这首《${song.name}》。
-${nextSongInfo}。
-请用留有余韵的方式结束这段介绍。
-
-【重要】
-- 开头：可以用"这一曲"、"这段旋律"、"刚才的音乐"等
-- 结尾过渡：避免用"好了"，可以用"接下来"、"下面"、"让"、"现在"等`,
-
-      `感谢${song.artist}带来的《${song.name}》。
-${nextSongInfo}。
-请用朋友间聊天的自然语气完成这段过渡。
+      `音乐如流水，《${song.name}》这一段已经流过。
+${nextSongInfo}
+请用流畅自然的语言，让过渡像水一样顺滑。
 
 【重要】
-- 开头：可以用"这一曲"、"这段音乐"、"刚才的歌"等，避免重复使用"这首歌"
-- 结尾过渡：避免用"好了"，可以用"接下来"、"下面"、"让"、"现在"等`,
+- 开头：用"如流水"、"像风"、"若光"等比喻
+- 结尾：用"接下来"、"让"、"现在"等
+- 避免："这首歌"、"好了"`,
 
-      // 新增：强调过渡多样性的prompts
-      `刚刚${song.artist}的《${song.name}》唱完了。
-${nextSongInfo}。
+      `刚才那曲《${song.name}》，是${song.artist}送给这个时刻的礼物。
+${nextSongInfo}
+请用温暖的语气，让听众感受到被音乐拥抱。
+
+【重要】
+- 开头：用"礼物"、"拥抱"、"陪伴"等温暖词汇
+- 结尾：用"接下来"、"让"、"继续"等
+- 避免："这首歌"、"好了"`,
+
+      `有时候，旋律停止，但情绪还在蔓延。就像${song.artist}的《${song.name}》。
+${nextSongInfo}
+请用留有余韵的方式，让音乐在话语间延续。
+
+【重要】
+- 开头：用"情绪蔓延"、"余韵"、"回响"等
+- 结尾：用"接下来"、"让"、"下面"等
+- 避免："这首歌"、"好了"`,
+
+      `${song.artist}的《${song.name}》画下了温柔的句点。
+${nextSongInfo}
+请用朋友间分享音乐的语气，自然真诚。
+
+【重要】
+- 开头：用"画下句点"、"写下"、"留下"等
+- 结尾：用"接下来"、"让"、"继续"等
+- 避免："这首歌"、"好了"`,
+
+      // 新增：强调画面感和温度的prompts
+      `${song.artist}的《${song.name}》像一幅画，刚刚收起。
+${nextSongInfo}
 请生成一段outro，要求：
-- 开头用"刚才"、"这一曲"、"这段旋律"等，不要用"这首歌"
-- 结尾过渡到下一首时，用"接下来"、"下面"、"让"等，不要用"好了"`,
+- 开头用意象化表达："像一幅画"、"如一阵风"、"若一束光"
+- 结尾用期待感："接下来"、"让"、"即将"等
+- 避免："这首歌"、"好了"、"结束了"`,
 
-      `${song.artist}的《${song.name}》结束了。
-${nextSongInfo}。
-请生成一段自然的outro：
-- 开头多样化：用"刚才"、"这一曲"、"这段音乐"等
+      `《${song.name}》的旋律还在心里轻轻回荡。
+${nextSongInfo}
+请生成一段有温度的outro：
+- 开头：用"还在心里"、"萦绕"、"回响"等感受性词汇
 - 结尾过渡多样化：用"接下来"、"下面"、"让"、"现在"等，避免"好了"`,
 
       `一段旋律结束，${song.artist}的《${song.name}》。
@@ -631,18 +644,18 @@ ${songList}
   }
 
   getRandomFallbackOutro(song, nextSong) {
-    // 【修改】所有兜底文案限制在60字以内，合并上首总结和下首推荐
+    // 【修改】所有兜底文案限制在60字以内，合并上首总结和下首推荐，更有温度和画面感
     const fallbacks = [
-      `刚才${song.artist}的《${song.name}》很有感觉。${nextSong ? `接下来听${nextSong.artist}的《${nextSong.name}》。` : '音乐继续。'}`,
-      `《${song.name}》结束了。${nextSong ? `下一首${nextSong.artist}《${nextSong.name}》。` : '好歌继续。'}`,
-      `感谢${song.artist}的《${song.name}》。${nextSong ? `接下来${nextSong.artist}《${nextSong.name}》。` : '音乐不停。'}`,
-      `刚才的旋律还在耳边。${nextSong ? `下一首${nextSong.artist}《${nextSong.name}》。` : '继续聆听。'}`,
-      `${song.artist}的《${song.name}》很动人。${nextSong ? `接下来${nextSong.artist}《${nextSong.name}》。` : '精彩继续。'}`,
-      `这一曲《${song.name}》结束了。${nextSong ? `下一首${nextSong.artist}《${nextSong.name}》。` : '音乐继续。'}`,
-      `刚才的歌很有味道。${nextSong ? `接下来${nextSong.artist}《${nextSong.name}》。` : '继续收听。'}`,
-      `这段音乐结束了。${nextSong ? `下一首${nextSong.artist}《${nextSong.name}》。` : '好歌不断。'}`,
-      `《${song.name}》唱完了。${nextSong ? `接下来${nextSong.artist}《${nextSong.name}》。` : '别走开。'}`,
-      `刚才那一曲很精彩。${nextSong ? `下一首${nextSong.artist}《${nextSong.name}》。` : '继续享受。'}`
+      `${song.artist}的《${song.name}》像一阵风掠过心头。${nextSong ? `接下来${nextSong.artist}的《${nextSong.name}》，带你进入另一种情绪。` : '让音乐继续陪伴你。'}`,
+      `这一曲《${song.name}》刚刚散去，${nextSong ? `${nextSong.artist}的《${nextSong.name}》已经在路上。` : '好音乐还在路上。'}`,
+      `刚才${song.artist}的《${song.name}》，是否触动了你的某个瞬间？${nextSong ? `下一首${nextSong.artist}的《${nextSong.name}》，继续这段音乐旅程。` : '音乐不会停止。'}`,
+      `${song.name}的旋律还在空气里回荡。${nextSong ? `${nextSong.artist}的《${nextSong.name}》即将响起。` : '让这份感动延续。'}`,
+      `${song.artist}用《${song.name}》讲述了一个故事。${nextSong ? `接下来${nextSong.artist}的《${nextSong.name}》，带你走进另一段旋律。` : '精彩还在继续。'}`,
+      `音乐流淌，《${song.name}》已成为刚才。${nextSong ? `${nextSong.artist}的《${nextSong.name}》正在等待。` : '让心随音乐继续。'}`,
+      `刚才那曲《${song.name}》，是${song.artist}送给这个${scene.timeOfDay}的礼物。${nextSong ? `下一首${nextSong.artist}的《${nextSong.name}》，请继续收听。` : '音乐时光继续。'}`,
+      `${song.artist}的《${song.name}》画下了句点。${nextSong ? `${nextSong.artist}的《${nextSong.name}》即将为你展开。` : '好歌不断，别走开。'}`,
+      `一段旋律结束，另一段即将开始。${nextSong ? `${nextSong.artist}的《${nextSong.name}》正在靠近。` : '让音乐继续流淌。'}`,
+      `《${song.name}》的余韵还在，${nextSong ? `${nextSong.artist}的《${nextSong.name}》已经准备好了。` : '更多精彩等你发现。'}`
     ];
     return fallbacks[Math.floor(Math.random() * fallbacks.length)];
   }

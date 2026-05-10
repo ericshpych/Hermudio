@@ -101,10 +101,17 @@ class MusicService {
 
       // Map to unified format with encryptedId and originalId from ncm-cli
       const songs = data.data.records.map(song => {
+        // Extract originalId - ncm-cli returns it in a specific format
+        let originalId = song.originalId || song.id;
+        // If originalId is not numeric, try to extract it from other fields
+        if (!/^\d+$/.test(String(originalId))) {
+          originalId = song.album?.id || song.id;
+        }
+
         return {
           id: song.id, // encryptedId from ncm-cli
           encryptedId: song.id,
-          originalId: song.originalId,
+          originalId: originalId,
           name: song.name,
           artist: song.artists?.map(a => a.name).join(', ') || 'Unknown',
           album: song.album?.name || 'Unknown',
@@ -158,167 +165,206 @@ class MusicService {
    * Falls back to mock mode if ncm-cli is not available
    */
   async playSong(songId, encryptedId = null) {
-    try {
-      // Check ncm login status first
-      const isLoggedIn = await this.checkNcmLogin();
-      
-      if (!isLoggedIn) {
-        console.log('[MusicService] ncm-cli not logged in, returning login required');
-        return {
-          success: false,
-          error: 'ncm_not_logged_in',
-          message: '请先登录网易云音乐',
-          loginRequired: true
-        };
-      }
+    const MAX_RETRIES = 3;
+    let retryCount = 0;
 
-      // Stop current playback if any
-      await this.stop();
-
-      // Get song details first
-      const details = await this.getSongDetails(songId);
-      if (details) {
-        this.currentSong = details;
-      } else {
-        this.currentSong = { id: songId };
-      }
-      this.isPlaying = true;
-      
-      // Add to history
-      await this.addToHistory(songId);
-      
-      // Try to play with ncm-cli
-      // ncm-cli play requires --song --encrypted-id <id> --original-id <id>
+    const attemptPlay = async () => {
       try {
-        // We need both encryptedId and originalId
-        // If encryptedId is not provided, we need to search for it
-        let originalId = songId;
-        let encId = encryptedId;
-        
-        // If songId looks like an encryptedId (32 hex chars), we need to find originalId
-        if (/^[A-F0-9]{32}$/i.test(songId)) {
-          encId = songId;
-          // Try to get originalId from details or search
-          if (details && details.originalId && /^\d+$/.test(details.originalId)) {
-            originalId = details.originalId;
-            console.log(`[MusicService] Got originalId from details: ${originalId}`);
-          } else {
-            // Search for the song to get originalId
-            console.log(`[MusicService] Searching for originalId with keyword: ${details?.name || songId}`);
-            const searchResults = await this.searchSongs(details?.name || songId, 5);
-            if (searchResults.length > 0) {
-              // Find the song that matches the encryptedId or has a valid originalId
-              const match = searchResults.find(s => 
-                s.id === songId || 
-                (s.originalId && /^\d+$/.test(s.originalId))
-              );
-              if (match) {
-                if (match.originalId && /^\d+$/.test(match.originalId)) {
-                  originalId = match.originalId;
-                  console.log(`[MusicService] Got originalId from search: ${originalId}`);
-                }
-                // Also update encryptedId if we found a better match
-                if (match.encryptedId && match.encryptedId !== encId) {
-                  console.log(`[MusicService] Updating encryptedId from search: ${match.encryptedId}`);
-                  encId = match.encryptedId;
+        // Check ncm login status first
+        const isLoggedIn = await this.checkNcmLogin();
+
+        if (!isLoggedIn) {
+          console.log('[MusicService] ncm-cli not logged in, returning login required');
+          return {
+            success: false,
+            error: 'ncm_not_logged_in',
+            message: '请先登录网易云音乐',
+            loginRequired: true
+          };
+        }
+
+        // Stop current playback if any
+        await this.stop();
+
+        // Get song details first
+        const details = await this.getSongDetails(songId);
+        if (details) {
+          this.currentSong = details;
+        } else {
+          this.currentSong = { id: songId };
+        }
+        this.isPlaying = true;
+
+        // Add to history
+        await this.addToHistory(songId);
+
+        // Try to play with ncm-cli
+        // ncm-cli play requires --song --encrypted-id <id> --original-id <id>
+        try {
+          // We need both encryptedId and originalId
+          // If encryptedId is not provided, we need to search for it
+          let originalId = songId;
+          let encId = encryptedId;
+
+          // If songId looks like an encryptedId (32 hex chars), we need to find originalId
+          if (/^[A-F0-9]{32}$/i.test(songId)) {
+            encId = songId;
+            // Try to get originalId from details or search
+            if (details && details.originalId && /^\d+$/.test(details.originalId)) {
+              originalId = details.originalId;
+              console.log(`[MusicService] Got originalId from details: ${originalId}`);
+            } else {
+              // Search for the song to get originalId
+              console.log(`[MusicService] Searching for originalId with keyword: ${details?.name || songId}`);
+              const searchResults = await this.searchSongs(details?.name || songId, 5);
+              if (searchResults.length > 0) {
+                // Find the song that matches the encryptedId or has a valid originalId
+                const match = searchResults.find(s =>
+                  s.id === songId ||
+                  (s.originalId && /^\d+$/.test(s.originalId))
+                );
+                if (match) {
+                  if (match.originalId && /^\d+$/.test(match.originalId)) {
+                    originalId = match.originalId;
+                    console.log(`[MusicService] Got originalId from search: ${originalId}`);
+                  }
+                  // Also update encryptedId if we found a better match
+                  if (match.encryptedId && match.encryptedId !== encId) {
+                    console.log(`[MusicService] Updating encryptedId from search: ${match.encryptedId}`);
+                    encId = match.encryptedId;
+                  }
                 }
               }
             }
-          }
-        } else if (/^\d+$/.test(songId)) {
-          // songId is originalId, need to find encryptedId
-          originalId = songId;
-          if (!encId) {
-            // Search for the song to get encryptedId
-            console.log(`[MusicService] Searching for encryptedId with originalId: ${songId}`);
-            const searchResults = await this.searchSongs(details?.name || songId, 5);
-            const match = searchResults.find(s => s.originalId == songId || s.id == songId);
-            if (match && match.encryptedId) {
-              encId = match.encryptedId;
-              console.log(`[MusicService] Got encryptedId from search: ${encId}`);
+          } else if (/^\d+$/.test(songId)) {
+            // songId is originalId, need to find encryptedId
+            originalId = songId;
+            if (!encId) {
+              // Search for the song to get encryptedId
+              console.log(`[MusicService] Searching for encryptedId with originalId: ${songId}`);
+              const searchResults = await this.searchSongs(details?.name || songId, 5);
+              const match = searchResults.find(s => s.originalId == songId || s.id == songId);
+              if (match && match.encryptedId) {
+                encId = match.encryptedId;
+                console.log(`[MusicService] Got encryptedId from search: ${encId}`);
+              }
             }
           }
-        }
-        
-        if (!encId) {
-          console.log(`[MusicService] Could not find encryptedId for song ${songId}`);
-          return {
-            success: false,
-            error: 'missing_encrypted_id',
-            message: '无法获取歌曲播放信息，请尝试搜索其他歌曲'
-          };
-        }
-        
-        // Validate originalId - if it's still the encryptedId, we need to find the real originalId
-        if (!/^\d+$/.test(originalId)) {
-          console.log(`[MusicService] originalId is not a valid numeric ID: ${originalId}, searching...`);
-          const searchResults = await this.searchSongs(details?.name || encId, 5);
-          const match = searchResults.find(s => s.originalId && /^\d+$/.test(s.originalId));
-          if (match && match.originalId) {
-            originalId = match.originalId;
-            console.log(`[MusicService] Found valid originalId: ${originalId}`);
-          } else {
-            // If we still can't find originalId, use a placeholder (ncm-cli might still work)
-            console.log(`[MusicService] Could not find valid originalId, using encryptedId as fallback`);
-            originalId = encId;
+
+          if (!encId) {
+            console.log(`[MusicService] Could not find encryptedId for song ${songId}`);
+            return {
+              success: false,
+              error: 'missing_encrypted_id',
+              message: '无法获取歌曲播放信息，请尝试搜索其他歌曲'
+            };
           }
-        }
-        
-        console.log(`[MusicService] Playing with ncm-cli: encryptedId=${encId}, originalId=${originalId}`);
-        
-        // Use the correct play command with both IDs
-        const playCommand = `npx @music163/ncm-cli play --song --encrypted-id ${encId} --original-id ${originalId}`;
-        
-        // 使用 promisify 的 execAsync 来等待命令完成
-        let ncmPlaySuccess = false;
-        try {
-          console.log(`[MusicService] Executing ncm-cli play command...`);
-          const { stdout, stderr } = await execAsync(playCommand, { env: this.getEnv(), timeout: 30000 });
-          console.log(`[MusicService] ncm-cli play stdout:`, stdout);
-          if (stderr) {
-            console.log(`[MusicService] ncm-cli play stderr:`, stderr);
+
+          // Validate originalId - if it's still the encryptedId, we need to find the real originalId
+          if (!/^\d+$/.test(originalId)) {
+            console.log(`[MusicService] originalId is not a valid numeric ID: ${originalId}, searching...`);
+            const searchResults = await this.searchSongs(details?.name || encId, 5);
+            const match = searchResults.find(s => s.originalId && /^\d+$/.test(s.originalId));
+            if (match && match.originalId) {
+              originalId = match.originalId;
+              console.log(`[MusicService] Found valid originalId: ${originalId}`);
+            } else {
+              // If we still can't find originalId, use a placeholder (ncm-cli might still work)
+              console.log(`[MusicService] Could not find valid originalId, using encryptedId as fallback`);
+              originalId = encId;
+            }
           }
-          console.log(`[MusicService] Successfully started playing with ncm-cli: ${songId}`);
-          ncmPlaySuccess = true;
+
+          console.log(`[MusicService] Playing with ncm-cli: encryptedId=${encId}, originalId=${originalId}`);
+
+          // Use the correct play command with both IDs
+          const playCommand = `npx @music163/ncm-cli play --song --encrypted-id ${encId} --original-id ${originalId}`;
+
+          // 使用 promisify 的 execAsync 来等待命令完成
+          let ncmPlaySuccess = false;
+          try {
+            console.log(`[MusicService] Executing ncm-cli play command...`);
+            const { stdout, stderr } = await execAsync(playCommand, { env: this.getEnv(), timeout: 30000 });
+            console.log(`[MusicService] ncm-cli play stdout:`, stdout);
+            if (stderr) {
+              console.log(`[MusicService] ncm-cli play stderr:`, stderr);
+            }
+            console.log(`[MusicService] Successfully started playing with ncm-cli: ${songId}`);
+            ncmPlaySuccess = true;
+          } catch (ncmError) {
+            console.error(`[MusicService] ncm-cli play error:`, ncmError.message);
+            console.error(`[MusicService] ncm-cli play error details:`, ncmError);
+            // 如果还没有达到最大重试次数，尝试使用搜索结果的第一个有效歌曲
+            if (retryCount < MAX_RETRIES) {
+              retryCount++;
+              console.log(`[MusicService] Retrying with first search result (attempt ${retryCount}/${MAX_RETRIES})...`);
+
+              // 获取歌曲名称并搜索
+              const songName = details?.name || songId;
+              const searchResults = await this.searchSongs(songName, 5);
+
+              // 找到第一个可播放的歌曲
+              const playableSong = searchResults.find(s =>
+                s.canPlay &&
+                s.originalId &&
+                /^\d+$/.test(String(s.originalId)) &&
+                s.encryptedId &&
+                /^[A-F0-9]{32}$/i.test(s.encryptedId)
+              );
+
+              if (playableSong) {
+                console.log(`[MusicService] Retrying with song: ${playableSong.name}`);
+                return await this.playSong(playableSong.originalId, playableSong.encryptedId);
+              }
+            }
+
+            // ncm-cli 执行失败，返回错误
+            return {
+              success: false,
+              error: 'ncm_play_failed',
+              message: '歌曲播放失败，请尝试其他歌曲',
+              details: ncmError.message,
+              songId,
+              encryptedId: encId,
+              originalId
+            };
+          }
         } catch (ncmError) {
-          console.error(`[MusicService] ncm-cli play error:`, ncmError.message);
-          console.error(`[MusicService] ncm-cli play error details:`, ncmError);
-          // ncm-cli 执行失败，返回错误
+          console.log(`[MusicService] ncm-cli error: ${ncmError.message}`);
           return {
             success: false,
-            error: 'ncm_play_failed',
-            message: '歌曲播放失败，请尝试其他歌曲',
-            details: ncmError.message,
-            songId,
-            encryptedId: encId,
-            originalId
+            error: 'ncm_error',
+            message: '播放服务异常，请稍后重试'
           };
         }
-      } catch (ncmError) {
-        console.log(`[MusicService] ncm-cli error: ${ncmError.message}`);
+
+        // 添加到播放队列
+        this.addToQueue(this.currentSong);
+
+        return {
+          success: true,
+          songId,
+          isPlaying: true,
+          mock: false
+        };
+      } catch (error) {
+        console.error('[MusicService] Play failed:', error);
+
+        // 如果还没有达到最大重试次数，尝试使用搜索结果的第一个有效歌曲
+        if (retryCount < MAX_RETRIES) {
+          retryCount++;
+          console.log(`[MusicService] Play error, retrying (attempt ${retryCount}/${MAX_RETRIES})...`);
+          return await attemptPlay();
+        }
+
         return {
           success: false,
-          error: 'ncm_error',
-          message: '播放服务异常，请稍后重试'
+          error: error.message
         };
       }
-      
-      // 添加到播放队列
-      this.addToQueue(this.currentSong);
+    };
 
-      return {
-        success: true,
-        songId,
-        isPlaying: true,
-        mock: false
-      };
-    } catch (error) {
-      console.error('[MusicService] Play failed:', error);
-      return {
-        success: false,
-        error: error.message
-      };
-    }
+    return await attemptPlay();
   }
 
   /**
@@ -347,36 +393,56 @@ class MusicService {
    * Play previous song from queue
    */
   async playPrevious() {
-    if (this.currentQueueIndex > 0) {
-      this.currentQueueIndex--;
-      const previousSong = this.playQueue[this.currentQueueIndex];
-      console.log(`[MusicService] Playing previous song: ${previousSong.name}`);
-      return await this.playSong(previousSong.id, previousSong.encryptedId);
+    try {
+      // 使用 ncm-cli prev 命令切换上一首
+      console.log(`[MusicService] Calling ncm-cli prev`);
+      await execAsync('npx @music163/ncm-cli prev', { 
+        timeout: 5000,
+        env: this.getEnv()
+      });
+      
+      // 更新队列索引（如果还有上一首）
+      if (this.currentQueueIndex > 0) {
+        this.currentQueueIndex--;
+      }
+      
+      return { success: true };
+    } catch (error) {
+      console.error('[MusicService] ncm-cli prev failed:', error.message);
+      return {
+        success: false,
+        error: 'prev_failed',
+        message: '切换上一首失败'
+      };
     }
-    
-    return {
-      success: false,
-      error: 'no_previous_song',
-      message: '没有上一首歌曲'
-    };
   }
 
   /**
    * Play next song from queue
    */
   async playNext() {
-    if (this.currentQueueIndex < this.playQueue.length - 1) {
-      this.currentQueueIndex++;
-      const nextSong = this.playQueue[this.currentQueueIndex];
-      console.log(`[MusicService] Playing next song from queue: ${nextSong.name}`);
-      return await this.playSong(nextSong.id, nextSong.encryptedId);
+    try {
+      // 使用 ncm-cli next 命令切换下一首
+      console.log(`[MusicService] Calling ncm-cli next`);
+      await execAsync('npx @music163/ncm-cli next', { 
+        timeout: 5000,
+        env: this.getEnv()
+      });
+      
+      // 更新队列索引（如果还有下一首）
+      if (this.currentQueueIndex < this.playQueue.length - 1) {
+        this.currentQueueIndex++;
+      }
+      
+      return { success: true };
+    } catch (error) {
+      console.error('[MusicService] ncm-cli next failed:', error.message);
+      return {
+        success: false,
+        error: 'next_failed',
+        message: '切换下一首失败'
+      };
     }
-    
-    return {
-      success: false,
-      error: 'no_next_song',
-      message: '没有下一首歌曲，请使用推荐功能'
-    };
   }
 
   /**
@@ -397,11 +463,35 @@ class MusicService {
   }
 
   /**
-   * Pause playback (if supported by player)
+   * Pause playback
    */
   async pause() {
-    // ncm-cli doesn't support pause, we stop instead
-    return this.stop();
+    try {
+      await execAsync('npx @music163/ncm-cli pause', { 
+        timeout: 5000,
+        env: this.getEnv()
+      }).catch(() => {});
+      this.isPlaying = false;
+      return { success: true };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  }
+
+  /**
+   * Resume playback
+   */
+  async resume() {
+    try {
+      await execAsync('npx @music163/ncm-cli resume', { 
+        timeout: 5000,
+        env: this.getEnv()
+      }).catch(() => {});
+      this.isPlaying = true;
+      return { success: true };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
   }
 
   /**
@@ -410,6 +500,8 @@ class MusicService {
   async getStatus() {
     let progress = 0;
     let ncmPlaying = false;
+    let ncmPosition = 0;
+    let ncmDuration = 0;
     
     // Try to get current playing song from ncm-cli
     try {
@@ -422,12 +514,14 @@ class MusicService {
       // ncm-cli state returns { success: true, state: { status, title, position, duration, ... } }
       if (result.success && result.state) {
         const playState = result.state;
+        ncmPosition = playState.position || 0;
+        ncmDuration = playState.duration || 0;
         
         // Calculate progress if playing
         if (playState.status === 'playing') {
           ncmPlaying = true;
-          if (playState.duration && playState.duration > 0) {
-            progress = (playState.position / playState.duration) * 100;
+          if (ncmDuration && ncmDuration > 0) {
+            progress = (ncmPosition / ncmDuration) * 100;
           }
           
           // title format: "歌曲名 - 艺术家"
@@ -459,7 +553,7 @@ class MusicService {
                 name: songName,
                 artist: artistName,
                 album: 'Unknown',
-                duration: playState.duration * 1000 // convert to ms
+                duration: ncmDuration * 1000 // convert to ms
               };
             }
             this.isPlaying = true;
@@ -471,16 +565,25 @@ class MusicService {
             this.isPlaying = false;
             console.log('[MusicService] ncm-cli stopped/paused, updating state');
           }
+          // 【修复】ncm-cli 报告 stopped 但可能实际上还在播放，不要清空 currentSong
+          // 只在明确知道歌曲结束或切换时才更新 currentSong
         }
       }
     } catch (error) {
       // ncm-cli not playing or not available
     }
     
+    // 【修复】确保不返回无效的歌曲数据
+    const validCurrentSong = this.currentSong && this.currentSong.id && this.currentSong.name 
+      ? this.currentSong 
+      : null;
+    
     return {
       isPlaying: this.isPlaying,
-      currentSong: this.currentSong,
+      currentSong: validCurrentSong,
       progress: progress,
+      position: ncmPosition,
+      duration: ncmDuration,
       timestamp: new Date().toISOString()
     };
   }

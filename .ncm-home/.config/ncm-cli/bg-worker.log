@@ -3271,3 +3271,1236 @@
 [PlayReportService] session 已保存: id=FDDB408D341AE92BE06ED04C13863D87, duration=0
 2026-05-02 15:04:25[PlayDataReportApi] 发送回传 biz={"id":"FDDB408D341AE92BE06ED04C13863D87","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777734265139}
 [PlayReportService] startplay 回传发送成功: id=FDDB408D341AE92BE06ED04C13863D87
+[bg-login] 登录成功：登录成功，欢迎 Ericshp！
+[bg-login] 轮询异常：轮询登录状态失败: device has login success
+[bg-login] 登录成功：登录成功，欢迎 Ericshp！
+[UnifiedPlayService] 已启动，等待命令...
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：安眠曲大全 - 流星钢琴 | --:--
+[PlayReportService] session 已保存: id=B051D165DB04BF272B27A730E6EBB8CC, duration=0
+2026-05-02 16:25:04[PlayDataReportApi] 发送回传 biz={"id":"B051D165DB04BF272B27A730E6EBB8CC","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777739104802}
+[PlayReportService] startplay 回传发送成功: id=B051D165DB04BF272B27A730E6EBB8CC
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=B051D165DB04BF272B27A730E6EBB8CC, startLogTime=1777739104802, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=337204, pausedMs=0, netMs=337204, netSec=337, time=337
+[PlayReportService] 准备发送 play 回传: id=B051D165DB04BF272B27A730E6EBB8CC, time=337, end=playend
+2026-05-02 16:30:42[PlayDataReportApi] 发送回传 biz={"id":"B051D165DB04BF272B27A730E6EBB8CC","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777739104802,"time":337,"end":"playend"}
+[PlayReportService] play 回传发送成功
+队列已播放完毕
+[UnifiedPlayService] 30 秒无活动，自动退出
+[UnifiedPlayService] 已启动，等待命令...
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：在宁静的领域平静 - Massage Music | --:--
+[PlayReportService] session 已保存: id=FE43B6C815E6EAC2E9D90526296BE451, duration=0
+2026-05-02 16:36:45[PlayDataReportApi] 发送回传 biz={"id":"FE43B6C815E6EAC2E9D90526296BE451","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777739805559}
+[PlayReportService] startplay 回传发送成功: id=FE43B6C815E6EAC2E9D90526296BE451
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=FE43B6C815E6EAC2E9D90526296BE451, startLogTime=1777739805559, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=146823, pausedMs=0, netMs=146823, netSec=146, time=146
+[PlayReportService] 准备发送 play 回传: id=FE43B6C815E6EAC2E9D90526296BE451, time=146, end=playend
+2026-05-02 16:39:12[PlayDataReportApi] 发送回传 biz={"id":"FE43B6C815E6EAC2E9D90526296BE451","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777739805559,"time":146,"end":"playend"}
+[PlayReportService] play 回传发送成功
+队列已播放完毕
+[UnifiedPlayService] 30 秒无活动，自动退出
+[UnifiedPlayService] 已启动，等待命令...
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：逢考必过 (钢琴曲) - 轻音乐馆 | --:--
+[PlayReportService] session 已保存: id=3EF1623E47261D181CFA4B339BECD3FF, duration=0
+2026-05-02 16:40:22[PlayDataReportApi] 发送回传 biz={"id":"3EF1623E47261D181CFA4B339BECD3FF","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777740022337}
+[PlayReportService] startplay 回传发送成功: id=3EF1623E47261D181CFA4B339BECD3FF
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=3EF1623E47261D181CFA4B339BECD3FF, startLogTime=1777740022337, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=3141, pausedMs=0, netMs=3141, netSec=3, time=3
+[PlayReportService] 准备发送 play 回传: id=3EF1623E47261D181CFA4B339BECD3FF, time=3, end=ui
+2026-05-02 16:40:25[PlayDataReportApi] 发送回传 biz={"id":"3EF1623E47261D181CFA4B339BECD3FF","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777740022337,"time":3,"end":"ui"}
+[PlayReportService] session 加载成功: id=3EF1623E47261D181CFA4B339BECD3FF, startLogTime=1777740022337, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=3144, pausedMs=0, netMs=3144, netSec=3, time=3
+[PlayReportService] 准备发送 play 回传: id=3EF1623E47261D181CFA4B339BECD3FF, time=3, end=ui
+2026-05-02 16:40:25[PlayDataReportApi] 发送回传 biz={"id":"3EF1623E47261D181CFA4B339BECD3FF","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777740022337,"time":3,"end":"ui"}
+[PlayReportService] play 回传发送成功
+[PlayReportService] play 回传发送成功
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：安眠曲 - 睡眠用 | --:--
+[PlayReportService] session 已保存: id=55F520CEF6D3A58587BB1F280A7A0DD5, duration=0
+2026-05-02 16:40:36[PlayDataReportApi] 发送回传 biz={"id":"55F520CEF6D3A58587BB1F280A7A0DD5","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777740036667}
+[PlayReportService] startplay 回传发送成功: id=55F520CEF6D3A58587BB1F280A7A0DD5
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+[PlayReportService] 未找到有效 session，跳过回传
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：诀别书 - 邓垚 | --:--
+[PlayReportService] session 已保存: id=CC5328F7EEE908CDE936A2236EDEA213, duration=0
+2026-05-02 16:40:53[PlayDataReportApi] 发送回传 biz={"id":"CC5328F7EEE908CDE936A2236EDEA213","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777740053626}
+[PlayReportService] startplay 回传发送成功: id=CC5328F7EEE908CDE936A2236EDEA213
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=CC5328F7EEE908CDE936A2236EDEA213, startLogTime=1777740053626, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=5280, pausedMs=0, netMs=5280, netSec=5, time=5
+[PlayReportService] 准备发送 play 回传: id=CC5328F7EEE908CDE936A2236EDEA213, time=5, end=ui
+2026-05-02 16:40:58[PlayDataReportApi] 发送回传 biz={"id":"CC5328F7EEE908CDE936A2236EDEA213","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777740053626,"time":5,"end":"ui"}
+[PlayReportService] session 加载成功: id=CC5328F7EEE908CDE936A2236EDEA213, startLogTime=1777740053626, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=5282, pausedMs=0, netMs=5282, netSec=5, time=5
+[PlayReportService] 准备发送 play 回传: id=CC5328F7EEE908CDE936A2236EDEA213, time=5, end=ui
+2026-05-02 16:40:58[PlayDataReportApi] 发送回传 biz={"id":"CC5328F7EEE908CDE936A2236EDEA213","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777740053626,"time":5,"end":"ui"}
+[PlayReportService] play 回传发送成功
+[PlayReportService] play 回传发送成功
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：24 Preludes, Op. 28; No. 1 in C Major - No. 2 in A Minor - No. 3 in G Major - No. 4 in E Minor - No. 5 in D Major - No. 6 in B Minor - No. 7 in A Major - No. 8 In F-Sharp Minor - No. 9 in E Major: No. 10 in C-Sharp Minor - No. 11 in B Major - No. 12 G-Sha - Johnnie Ray | --:--
+[PlayReportService] session 已保存: id=D442006CDC2E33ACC15D95D670DF46A4, duration=0
+2026-05-02 16:41:06[PlayDataReportApi] 发送回传 biz={"id":"D442006CDC2E33ACC15D95D670DF46A4","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777740066539}
+[PlayReportService] startplay 回传发送成功: id=D442006CDC2E33ACC15D95D670DF46A4
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：小城夏天 - LBI利比 | --:--
+[PlayReportService] session 已保存: id=5996DF6B0E10F331226DD2CA7BA45661, duration=0
+2026-05-03 00:17:44[PlayDataReportApi] 发送回传 biz={"id":"5996DF6B0E10F331226DD2CA7BA45661","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777767464468}
+[PlayReportService] startplay 回传发送成功: id=5996DF6B0E10F331226DD2CA7BA45661
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=5996DF6B0E10F331226DD2CA7BA45661, startLogTime=1777767464468, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=20902, pausedMs=0, netMs=20902, netSec=20, time=20
+[PlayReportService] 准备发送 play 回传: id=5996DF6B0E10F331226DD2CA7BA45661, time=20, end=ui
+2026-05-03 00:18:05[PlayDataReportApi] 发送回传 biz={"id":"5996DF6B0E10F331226DD2CA7BA45661","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777767464468,"time":20,"end":"ui"}
+[PlayReportService] session 加载成功: id=5996DF6B0E10F331226DD2CA7BA45661, startLogTime=1777767464468, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=20904, pausedMs=0, netMs=20904, netSec=20, time=20
+[PlayReportService] 准备发送 play 回传: id=5996DF6B0E10F331226DD2CA7BA45661, time=20, end=ui
+2026-05-03 00:18:05[PlayDataReportApi] 发送回传 biz={"id":"5996DF6B0E10F331226DD2CA7BA45661","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777767464468,"time":20,"end":"ui"}
+[PlayReportService] play 回传发送成功
+[PlayReportService] play 回传发送成功
+[UnifiedPlayService] 30 秒无活动，自动退出
+[UnifiedPlayService] 已启动，等待命令...
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：24 Preludes, Op. 28; No. 1 in C Major - No. 2 in A Minor - No. 3 in G Major - No. 4 in E Minor - No. 5 in D Major - No. 6 in B Minor - No. 7 in A Major - No. 8 In F-Sharp Minor - No. 9 in E Major: No. 10 in C-Sharp Minor - No. 11 in B Major - No. 12 G-Sha - Johnnie Ray | --:--
+[PlayReportService] session 已保存: id=D442006CDC2E33ACC15D95D670DF46A4, duration=0
+2026-05-03 00:26:02[PlayDataReportApi] 发送回传 biz={"id":"D442006CDC2E33ACC15D95D670DF46A4","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777767962790}
+[PlayReportService] startplay 回传发送成功: id=D442006CDC2E33ACC15D95D670DF46A4
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：阳光下的快乐畅想 - 励志写好文 | --:--
+[PlayReportService] session 已保存: id=CC127F07D74A4DFB23D1542DD990E503, duration=0
+2026-05-03 00:27:46[PlayDataReportApi] 发送回传 biz={"id":"CC127F07D74A4DFB23D1542DD990E503","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777768066390}
+[PlayReportService] startplay 回传发送成功: id=CC127F07D74A4DFB23D1542DD990E503
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+[PlayReportService] 未找到有效 session，跳过回传
+[UnifiedPlayService] 30 秒无活动，自动退出
+[UnifiedPlayService] 已启动，等待命令...
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：24 Preludes, Op. 28; No. 1 in C Major - No. 2 in A Minor - No. 3 in G Major - No. 4 in E Minor - No. 5 in D Major - No. 6 in B Minor - No. 7 in A Major - No. 8 In F-Sharp Minor - No. 9 in E Major: No. 10 in C-Sharp Minor - No. 11 in B Major - No. 12 G-Sha - Johnnie Ray | --:--
+[PlayReportService] session 已保存: id=D442006CDC2E33ACC15D95D670DF46A4, duration=0
+2026-05-03 00:30:01[PlayDataReportApi] 发送回传 biz={"id":"D442006CDC2E33ACC15D95D670DF46A4","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777768201390}
+[PlayReportService] startplay 回传发送成功: id=D442006CDC2E33ACC15D95D670DF46A4
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：适合办公事务轻音乐 - 酒店大堂音乐 | --:--
+[PlayReportService] session 已保存: id=CF675EB93C2F0702CE541D1CD079FEA1, duration=0
+2026-05-03 00:57:26[PlayDataReportApi] 发送回传 biz={"id":"CF675EB93C2F0702CE541D1CD079FEA1","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777769846613}
+[PlayReportService] startplay 回传发送成功: id=CF675EB93C2F0702CE541D1CD079FEA1
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=CF675EB93C2F0702CE541D1CD079FEA1, startLogTime=1777769846613, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=6630, pausedMs=0, netMs=6630, netSec=6, time=6
+[PlayReportService] 准备发送 play 回传: id=CF675EB93C2F0702CE541D1CD079FEA1, time=6, end=ui
+2026-05-03 00:57:33[PlayDataReportApi] 发送回传 biz={"id":"CF675EB93C2F0702CE541D1CD079FEA1","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777769846613,"time":6,"end":"ui"}
+[PlayReportService] session 加载成功: id=CF675EB93C2F0702CE541D1CD079FEA1, startLogTime=1777769846613, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=6632, pausedMs=0, netMs=6632, netSec=6, time=6
+[PlayReportService] 准备发送 play 回传: id=CF675EB93C2F0702CE541D1CD079FEA1, time=6, end=ui
+2026-05-03 00:57:33[PlayDataReportApi] 发送回传 biz={"id":"CF675EB93C2F0702CE541D1CD079FEA1","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777769846613,"time":6,"end":"ui"}
+[PlayReportService] play 回传发送成功
+[PlayReportService] play 回传发送成功
+[UnifiedPlayService] 30 秒无活动，自动退出
+[bg-login] 登录成功：登录成功，欢迎 Ericshp！
+[UnifiedPlayService] 已启动，等待命令...
+[_fetchUrl] 获取失败 8BFB8DB5A9AF9C20B55200DC87BA5527 (8BFB8DB5A9AF9C20B55200DC87BA5527): 该歌曲暂无音源或暂无播放权限
+已跳过：8BFB8DB5A9AF9C20B55200DC87BA5527（获取链接失败）
+队列已播放完毕
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+[_fetchUrl] 获取失败 AF5FF1465A694E69552AAECCD363A996 (AF5FF1465A694E69552AAECCD363A996): 该歌曲暂无音源或暂无播放权限
+已跳过：AF5FF1465A694E69552AAECCD363A996（获取链接失败）
+队列已播放完毕
+[UnifiedPlayService] 30 秒无活动，自动退出
+[UnifiedPlayService] 已启动，等待命令...
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：适合办公事务幽默的音乐 - 快乐寒意音乐 | --:--
+[PlayReportService] session 已保存: id=BB048A969FAEF1D29E5971E2253ACB5D, duration=0
+2026-05-03 01:14:00[PlayDataReportApi] 发送回传 biz={"id":"BB048A969FAEF1D29E5971E2253ACB5D","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777770840622}
+[PlayReportService] startplay 回传发送成功: id=BB048A969FAEF1D29E5971E2253ACB5D
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=BB048A969FAEF1D29E5971E2253ACB5D, startLogTime=1777770840622, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=15900, pausedMs=0, netMs=15900, netSec=15, time=15
+[PlayReportService] 准备发送 play 回传: id=BB048A969FAEF1D29E5971E2253ACB5D, time=15, end=ui
+2026-05-03 01:14:16[PlayDataReportApi] 发送回传 biz={"id":"BB048A969FAEF1D29E5971E2253ACB5D","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777770840622,"time":15,"end":"ui"}
+[PlayReportService] session 加载成功: id=BB048A969FAEF1D29E5971E2253ACB5D, startLogTime=1777770840622, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=15904, pausedMs=0, netMs=15904, netSec=15, time=15
+[PlayReportService] 准备发送 play 回传: id=BB048A969FAEF1D29E5971E2253ACB5D, time=15, end=ui
+2026-05-03 01:14:16[PlayDataReportApi] 发送回传 biz={"id":"BB048A969FAEF1D29E5971E2253ACB5D","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777770840622,"time":15,"end":"ui"}
+[PlayReportService] play 回传发送成功
+[PlayReportService] play 回传发送成功
+[UnifiedPlayService] 30 秒无活动，自动退出
+[UnifiedPlayService] 已启动，等待命令...
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：安静的学校工作声音 - 快乐 学习音乐 | --:--
+[PlayReportService] session 已保存: id=94C519641AB29A2393C16A23794BBBA1, duration=0
+2026-05-03 01:19:37[PlayDataReportApi] 发送回传 biz={"id":"94C519641AB29A2393C16A23794BBBA1","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777771177385}
+[PlayReportService] startplay 回传发送成功: id=94C519641AB29A2393C16A23794BBBA1
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+[PlayReportService] 未找到有效 session，跳过回传
+[UnifiedPlayService] 30 秒无活动，自动退出
+[UnifiedPlayService] 已启动，等待命令...
+[_fetchUrl] 获取失败 189434EA5E164DEC817C0C8C3F2078FF (189434EA5E164DEC817C0C8C3F2078FF): 该歌曲暂无音源或暂无播放权限
+已跳过：189434EA5E164DEC817C0C8C3F2078FF（获取链接失败）
+队列已播放完毕
+[UnifiedPlayService] 30 秒无活动，自动退出
+[UnifiedPlayService] 已启动，等待命令...
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：生日快乐歌 (爵士钢琴) - 贵族钢琴轻音乐 | --:--
+[PlayReportService] session 已保存: id=5FA7DC4BC545462F1BC78E1A0654A702, duration=0
+2026-05-03 01:27:52[PlayDataReportApi] 发送回传 biz={"id":"5FA7DC4BC545462F1BC78E1A0654A702","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777771672918}
+[PlayReportService] startplay 回传发送成功: id=5FA7DC4BC545462F1BC78E1A0654A702
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=5FA7DC4BC545462F1BC78E1A0654A702, startLogTime=1777771672918, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=277583, pausedMs=0, netMs=277583, netSec=277, time=277
+[PlayReportService] 准备发送 play 回传: id=5FA7DC4BC545462F1BC78E1A0654A702, time=277, end=playend
+2026-05-03 01:32:30[PlayDataReportApi] 发送回传 biz={"id":"5FA7DC4BC545462F1BC78E1A0654A702","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777771672918,"time":277,"end":"playend"}
+[PlayReportService] play 回传发送成功
+队列已播放完毕
+[UnifiedPlayService] 30 秒无活动，自动退出
+[UnifiedPlayService] 已启动，等待命令...
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：诀别书 - 邓垚 | --:--
+[PlayReportService] session 已保存: id=CC5328F7EEE908CDE936A2236EDEA213, duration=0
+2026-05-03 01:33:53[PlayDataReportApi] 发送回传 biz={"id":"CC5328F7EEE908CDE936A2236EDEA213","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777772033762}
+[PlayReportService] startplay 回传发送成功: id=CC5328F7EEE908CDE936A2236EDEA213
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+[PlayReportService] session 加载成功: id=CC5328F7EEE908CDE936A2236EDEA213, startLogTime=1777772033762, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=142892, pausedMs=0, netMs=142892, netSec=142, time=142
+[PlayReportService] 准备发送 play 回传: id=CC5328F7EEE908CDE936A2236EDEA213, time=142, end=ui
+2026-05-03 01:36:16[PlayDataReportApi] 发送回传 biz={"id":"CC5328F7EEE908CDE936A2236EDEA213","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777772033762,"time":142,"end":"ui"}
+[PlayReportService] play 回传发送成功
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：等下一个晴天 - 和晚风捉迷藏 | --:--
+[PlayReportService] session 已保存: id=F31256EB698109AF44BEFA96ED9461DF, duration=0
+2026-05-03 01:36:38[PlayDataReportApi] 发送回传 biz={"id":"F31256EB698109AF44BEFA96ED9461DF","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777772198646}
+[PlayReportService] startplay 回传发送成功: id=F31256EB698109AF44BEFA96ED9461DF
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+[PlayReportService] 未找到有效 session，跳过回传
+[UnifiedPlayService] 30 秒无活动，自动退出
+[UnifiedPlayService] 已启动，等待命令...
+[_fetchUrl] 获取失败 D49220F4FC6D48603CEDEA4397DBF943 (D49220F4FC6D48603CEDEA4397DBF943): 该歌曲暂无音源或暂无播放权限
+已跳过：D49220F4FC6D48603CEDEA4397DBF943（获取链接失败）
+队列已播放完毕
+[UnifiedPlayService] 30 秒无活动，自动退出
+[UnifiedPlayService] 已启动，等待命令...
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：24 Preludes, Op. 28; No. 1 in C Major - No. 2 in A Minor - No. 3 in G Major - No. 4 in E Minor - No. 5 in D Major - No. 6 in B Minor - No. 7 in A Major - No. 8 In F-Sharp Minor - No. 9 in E Major: No. 10 in C-Sharp Minor - No. 11 in B Major - No. 12 G-Sha - Johnnie Ray | --:--
+[PlayReportService] session 已保存: id=D442006CDC2E33ACC15D95D670DF46A4, duration=0
+2026-05-03 01:39:39[PlayDataReportApi] 发送回传 biz={"id":"D442006CDC2E33ACC15D95D670DF46A4","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777772379320}
+[PlayReportService] startplay 回传发送成功: id=D442006CDC2E33ACC15D95D670DF46A4
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=D442006CDC2E33ACC15D95D670DF46A4, startLogTime=1777772379320, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=42693, pausedMs=0, netMs=42693, netSec=42, time=42
+[PlayReportService] 准备发送 play 回传: id=D442006CDC2E33ACC15D95D670DF46A4, time=42, end=ui
+2026-05-03 01:40:22[PlayDataReportApi] 发送回传 biz={"id":"D442006CDC2E33ACC15D95D670DF46A4","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777772379320,"time":42,"end":"ui"}
+[PlayReportService] play 回传发送成功
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：阳光快乐幸福时 (钢琴纯音乐) - 唐尼 | --:--
+[PlayReportService] session 已保存: id=2C0872870247051FCD11AE2361F173CC, duration=0
+2026-05-03 01:40:29[PlayDataReportApi] 发送回传 biz={"id":"2C0872870247051FCD11AE2361F173CC","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777772429486}
+[PlayReportService] startplay 回传发送成功: id=2C0872870247051FCD11AE2361F173CC
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=2C0872870247051FCD11AE2361F173CC, startLogTime=1777772429486, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=49412, pausedMs=0, netMs=49412, netSec=49, time=49
+[PlayReportService] 准备发送 play 回传: id=2C0872870247051FCD11AE2361F173CC, time=49, end=ui
+2026-05-03 01:41:18[PlayDataReportApi] 发送回传 biz={"id":"2C0872870247051FCD11AE2361F173CC","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777772429486,"time":49,"end":"ui"}
+[PlayReportService] session 加载成功: id=2C0872870247051FCD11AE2361F173CC, startLogTime=1777772429486, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=49414, pausedMs=0, netMs=49414, netSec=49, time=49
+[PlayReportService] 准备发送 play 回传: id=2C0872870247051FCD11AE2361F173CC, time=49, end=ui
+2026-05-03 01:41:18[PlayDataReportApi] 发送回传 biz={"id":"2C0872870247051FCD11AE2361F173CC","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777772429486,"time":49,"end":"ui"}
+[PlayReportService] play 回传发送成功
+[PlayReportService] play 回传发送成功
+[UnifiedPlayService] 30 秒无活动，自动退出
+[UnifiedPlayService] 已启动，等待命令...
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：24 Preludes, Op. 28; No. 1 in C Major - No. 2 in A Minor - No. 3 in G Major - No. 4 in E Minor - No. 5 in D Major - No. 6 in B Minor - No. 7 in A Major - No. 8 In F-Sharp Minor - No. 9 in E Major: No. 10 in C-Sharp Minor - No. 11 in B Major - No. 12 G-Sha - Johnnie Ray | --:--
+[PlayReportService] session 已保存: id=D442006CDC2E33ACC15D95D670DF46A4, duration=0
+2026-05-03 01:42:09[PlayDataReportApi] 发送回传 biz={"id":"D442006CDC2E33ACC15D95D670DF46A4","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777772529654}
+[PlayReportService] startplay 回传发送成功: id=D442006CDC2E33ACC15D95D670DF46A4
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+[_fetchUrl] 获取失败 87C60A0B1B1C95C0A945C40B384145ED (87C60A0B1B1C95C0A945C40B384145ED): 该歌曲暂无音源或暂无播放权限
+已跳过：87C60A0B1B1C95C0A945C40B384145ED（获取链接失败）
+队列已播放完毕
+[UnifiedPlayService] 30 秒无活动，自动退出
+[UnifiedPlayService] 已启动，等待命令...
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：骄傲的少年 - 南征北战NZBZ | --:--
+[PlayReportService] session 已保存: id=D72BBADEA210EAF6342202D57762AC47, duration=0
+2026-05-03 01:45:26[PlayDataReportApi] 发送回传 biz={"id":"D72BBADEA210EAF6342202D57762AC47","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777772726737}
+[PlayReportService] startplay 回传发送成功: id=D72BBADEA210EAF6342202D57762AC47
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=D72BBADEA210EAF6342202D57762AC47, startLogTime=1777772726737, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=260628, pausedMs=0, netMs=260628, netSec=260, time=260
+[PlayReportService] 准备发送 play 回传: id=D72BBADEA210EAF6342202D57762AC47, time=260, end=playend
+2026-05-03 01:49:47[PlayDataReportApi] 发送回传 biz={"id":"D72BBADEA210EAF6342202D57762AC47","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777772726737,"time":260,"end":"playend"}
+[PlayReportService] play 回传发送成功
+队列已播放完毕
+[UnifiedPlayService] 30 秒无活动，自动退出
+[UnifiedPlayService] 已启动，等待命令...
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：我们祝你圣诞快乐 - 贵族钢琴轻音乐 | --:--
+[PlayReportService] session 已保存: id=6FDCE0F1508CF4D77CF0EC6D6EE03F0D, duration=0
+2026-05-03 01:50:43[PlayDataReportApi] 发送回传 biz={"id":"6FDCE0F1508CF4D77CF0EC6D6EE03F0D","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777773043547}
+[PlayReportService] startplay 回传发送成功: id=6FDCE0F1508CF4D77CF0EC6D6EE03F0D
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=6FDCE0F1508CF4D77CF0EC6D6EE03F0D, startLogTime=1777773043547, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=228479, pausedMs=0, netMs=228479, netSec=228, time=228
+[PlayReportService] 准备发送 play 回传: id=6FDCE0F1508CF4D77CF0EC6D6EE03F0D, time=228, end=playend
+2026-05-03 01:54:32[PlayDataReportApi] 发送回传 biz={"id":"6FDCE0F1508CF4D77CF0EC6D6EE03F0D","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777773043547,"time":228,"end":"playend"}
+[PlayReportService] play 回传发送成功
+队列已播放完毕
+[UnifiedPlayService] 30 秒无活动，自动退出
+[UnifiedPlayService] 已启动，等待命令...
+[_fetchUrl] 获取失败 C99D5D6B2401D1564DDDC6E0FB69496B (C99D5D6B2401D1564DDDC6E0FB69496B): 该歌曲暂无音源或暂无播放权限
+已跳过：C99D5D6B2401D1564DDDC6E0FB69496B（获取链接失败）
+队列已播放完毕
+[UnifiedPlayService] 30 秒无活动，自动退出
+[UnifiedPlayService] 已启动，等待命令...
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：晴天 (吉他版) (原唱：周杰伦) - 郭衡 (Guo Heng) | --:--
+[PlayReportService] session 已保存: id=62011D149CC4D7ECEAFC4ABA4C038AB7, duration=0
+2026-05-03 02:04:29[PlayDataReportApi] 发送回传 biz={"id":"62011D149CC4D7ECEAFC4ABA4C038AB7","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777773869718}
+[PlayReportService] startplay 回传发送成功: id=62011D149CC4D7ECEAFC4ABA4C038AB7
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=62011D149CC4D7ECEAFC4ABA4C038AB7, startLogTime=1777773869718, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=186627, pausedMs=0, netMs=186627, netSec=186, time=186
+[PlayReportService] 准备发送 play 回传: id=62011D149CC4D7ECEAFC4ABA4C038AB7, time=186, end=playend
+2026-05-03 02:07:36[PlayDataReportApi] 发送回传 biz={"id":"62011D149CC4D7ECEAFC4ABA4C038AB7","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777773869718,"time":186,"end":"playend"}
+[PlayReportService] play 回传发送成功
+队列已播放完毕
+[UnifiedPlayService] 30 秒无活动，自动退出
+[UnifiedPlayService] 已启动，等待命令...
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：适合正在学习时髦的音乐 - 早晨咖啡音乐 | --:--
+[PlayReportService] session 已保存: id=E2860B0DF21F99BE25B082CCC5B3740A, duration=0
+2026-05-03 02:08:43[PlayDataReportApi] 发送回传 biz={"id":"E2860B0DF21F99BE25B082CCC5B3740A","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777774123558}
+[PlayReportService] startplay 回传发送成功: id=E2860B0DF21F99BE25B082CCC5B3740A
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=E2860B0DF21F99BE25B082CCC5B3740A, startLogTime=1777774123558, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=76500, pausedMs=0, netMs=76500, netSec=76, time=76
+[PlayReportService] 准备发送 play 回传: id=E2860B0DF21F99BE25B082CCC5B3740A, time=76, end=ui
+2026-05-03 02:10:00[PlayDataReportApi] 发送回传 biz={"id":"E2860B0DF21F99BE25B082CCC5B3740A","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777774123558,"time":76,"end":"ui"}
+[PlayReportService] session 加载成功: id=E2860B0DF21F99BE25B082CCC5B3740A, startLogTime=1777774123558, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=76503, pausedMs=0, netMs=76503, netSec=76, time=76
+[PlayReportService] 准备发送 play 回传: id=E2860B0DF21F99BE25B082CCC5B3740A, time=76, end=ui
+2026-05-03 02:10:00[PlayDataReportApi] 发送回传 biz={"id":"E2860B0DF21F99BE25B082CCC5B3740A","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777774123558,"time":76,"end":"ui"}
+[PlayReportService] play 回传发送成功
+[PlayReportService] play 回传发送成功
+[UnifiedPlayService] 30 秒无活动，自动退出
+[UnifiedPlayService] 已启动，等待命令...
+[_fetchUrl] 获取失败 62569E9BEC95C37ABB4F23C00270BF06 (62569E9BEC95C37ABB4F23C00270BF06): 该歌曲暂无音源或暂无播放权限
+已跳过：62569E9BEC95C37ABB4F23C00270BF06（获取链接失败）
+队列已播放完毕
+[UnifiedPlayService] 30 秒无活动，自动退出
+[UnifiedPlayService] 已启动，等待命令...
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：24 Preludes, Op. 28; No. 1 in C Major - No. 2 in A Minor - No. 3 in G Major - No. 4 in E Minor - No. 5 in D Major - No. 6 in B Minor - No. 7 in A Major - No. 8 In F-Sharp Minor - No. 9 in E Major: No. 10 in C-Sharp Minor - No. 11 in B Major - No. 12 G-Sha - Johnnie Ray | --:--
+[PlayReportService] session 已保存: id=D442006CDC2E33ACC15D95D670DF46A4, duration=0
+2026-05-03 02:15:30[PlayDataReportApi] 发送回传 biz={"id":"D442006CDC2E33ACC15D95D670DF46A4","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777774530444}
+[PlayReportService] startplay 回传发送成功: id=D442006CDC2E33ACC15D95D670DF46A4
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：The truth that you leave - Pianoboy高至豪 | --:--
+[PlayReportService] session 已保存: id=F69B01701DDF92F46951934EA978021B, duration=0
+2026-05-03 02:17:39[PlayDataReportApi] 发送回传 biz={"id":"F69B01701DDF92F46951934EA978021B","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777774659265}
+[PlayReportService] startplay 回传发送成功: id=F69B01701DDF92F46951934EA978021B
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=F69B01701DDF92F46951934EA978021B, startLogTime=1777774659265, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=131832, pausedMs=0, netMs=131832, netSec=131, time=131
+[PlayReportService] 准备发送 play 回传: id=F69B01701DDF92F46951934EA978021B, time=131, end=ui
+2026-05-03 02:19:51[PlayDataReportApi] 发送回传 biz={"id":"F69B01701DDF92F46951934EA978021B","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777774659265,"time":131,"end":"ui"}
+[PlayReportService] session 加载成功: id=F69B01701DDF92F46951934EA978021B, startLogTime=1777774659265, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=131835, pausedMs=0, netMs=131835, netSec=131, time=131
+[PlayReportService] 准备发送 play 回传: id=F69B01701DDF92F46951934EA978021B, time=131, end=ui
+2026-05-03 02:19:51[PlayDataReportApi] 发送回传 biz={"id":"F69B01701DDF92F46951934EA978021B","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777774659265,"time":131,"end":"ui"}
+[PlayReportService] play 回传发送成功
+[PlayReportService] play 回传发送成功
+[UnifiedPlayService] 30 秒无活动，自动退出
+[UnifiedPlayService] 已启动，等待命令...
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：遗忘的余温 - 专注音乐创作，曲风多元不设限，以真实情绪为内核，用旋律承载心 | --:--
+[PlayReportService] session 已保存: id=C1010287956FABAA6B5AC4795C1681BC, duration=0
+2026-05-03 02:20:54[PlayDataReportApi] 发送回传 biz={"id":"C1010287956FABAA6B5AC4795C1681BC","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777774854340}
+[PlayReportService] startplay 回传发送成功: id=C1010287956FABAA6B5AC4795C1681BC
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=C1010287956FABAA6B5AC4795C1681BC, startLogTime=1777774854340, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=74337, pausedMs=0, netMs=74337, netSec=74, time=74
+[PlayReportService] 准备发送 play 回传: id=C1010287956FABAA6B5AC4795C1681BC, time=74, end=ui
+2026-05-03 02:22:08[PlayDataReportApi] 发送回传 biz={"id":"C1010287956FABAA6B5AC4795C1681BC","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777774854340,"time":74,"end":"ui"}
+[PlayReportService] session 加载成功: id=C1010287956FABAA6B5AC4795C1681BC, startLogTime=1777774854340, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=74341, pausedMs=0, netMs=74341, netSec=74, time=74
+[PlayReportService] 准备发送 play 回传: id=C1010287956FABAA6B5AC4795C1681BC, time=74, end=ui
+2026-05-03 02:22:08[PlayDataReportApi] 发送回传 biz={"id":"C1010287956FABAA6B5AC4795C1681BC","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777774854340,"time":74,"end":"ui"}
+[PlayReportService] play 回传发送成功
+[PlayReportService] play 回传发送成功
+[UnifiedPlayService] 30 秒无活动，自动退出
+[UnifiedPlayService] 已启动，等待命令...
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：杀死那个石家庄人 - 万能青年旅店 | --:--
+[PlayReportService] session 已保存: id=9DF88F91228B49A5C5656AC272173EB9, duration=0
+2026-05-03 02:23:08[PlayDataReportApi] 发送回传 biz={"id":"9DF88F91228B49A5C5656AC272173EB9","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777774988597}
+[PlayReportService] startplay 回传发送成功: id=9DF88F91228B49A5C5656AC272173EB9
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+[PlayReportService] 未找到有效 session，跳过回传
+[_fetchUrl] 获取失败 1004A38FA0F6B18ED58184C05D2E774D (1004A38FA0F6B18ED58184C05D2E774D): 该歌曲暂无音源或暂无播放权限
+已跳过：1004A38FA0F6B18ED58184C05D2E774D（获取链接失败）
+队列已播放完毕
+[UnifiedPlayService] 30 秒无活动，自动退出
+[UnifiedPlayService] 已启动，等待命令...
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：24 Preludes, Op. 28; No. 1 in C Major - No. 2 in A Minor - No. 3 in G Major - No. 4 in E Minor - No. 5 in D Major - No. 6 in B Minor - No. 7 in A Major - No. 8 In F-Sharp Minor - No. 9 in E Major: No. 10 in C-Sharp Minor - No. 11 in B Major - No. 12 G-Sha - Johnnie Ray | --:--
+[PlayReportService] session 已保存: id=D442006CDC2E33ACC15D95D670DF46A4, duration=0
+2026-05-03 02:26:21[PlayDataReportApi] 发送回传 biz={"id":"D442006CDC2E33ACC15D95D670DF46A4","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777775181906}
+[PlayReportService] startplay 回传发送成功: id=D442006CDC2E33ACC15D95D670DF46A4
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：办公室工作抒情的爵士 - 快乐寒意音乐 | --:--
+[PlayReportService] session 已保存: id=920D76D766062193D8AFFE461519DB2D, duration=0
+2026-05-03 02:27:25[PlayDataReportApi] 发送回传 biz={"id":"920D76D766062193D8AFFE461519DB2D","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777775245511}
+[PlayReportService] startplay 回传发送成功: id=920D76D766062193D8AFFE461519DB2D
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=920D76D766062193D8AFFE461519DB2D, startLogTime=1777775245511, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=146483, pausedMs=0, netMs=146483, netSec=146, time=146
+[PlayReportService] 准备发送 play 回传: id=920D76D766062193D8AFFE461519DB2D, time=146, end=playend
+2026-05-03 02:29:51[PlayDataReportApi] 发送回传 biz={"id":"920D76D766062193D8AFFE461519DB2D","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777775245511,"time":146,"end":"playend"}
+[PlayReportService] play 回传发送成功
+队列已播放完毕
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：像 你 在 的 时 候 一 样 - 33 | --:--
+[PlayReportService] session 已保存: id=671DB7226FC588A13FF3DFBC615218AC, duration=0
+2026-05-03 02:30:15[PlayDataReportApi] 发送回传 biz={"id":"671DB7226FC588A13FF3DFBC615218AC","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777775415778}
+[PlayReportService] startplay 回传发送成功: id=671DB7226FC588A13FF3DFBC615218AC
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=671DB7226FC588A13FF3DFBC615218AC, startLogTime=1777775415778, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=166645, pausedMs=0, netMs=166645, netSec=166, time=166
+[PlayReportService] 准备发送 play 回传: id=671DB7226FC588A13FF3DFBC615218AC, time=166, end=playend
+2026-05-03 02:33:02[PlayDataReportApi] 发送回传 biz={"id":"671DB7226FC588A13FF3DFBC615218AC","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777775415778,"time":166,"end":"playend"}
+[PlayReportService] play 回传发送成功
+队列已播放完毕
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：24 Preludes, Op. 28; No. 1 in C Major - No. 2 in A Minor - No. 3 in G Major - No. 4 in E Minor - No. 5 in D Major - No. 6 in B Minor - No. 7 in A Major - No. 8 In F-Sharp Minor - No. 9 in E Major: No. 10 in C-Sharp Minor - No. 11 in B Major - No. 12 G-Sha - Johnnie Ray | --:--
+[PlayReportService] session 已保存: id=D442006CDC2E33ACC15D95D670DF46A4, duration=0
+2026-05-03 02:33:21[PlayDataReportApi] 发送回传 biz={"id":"D442006CDC2E33ACC15D95D670DF46A4","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777775601644}
+[PlayReportService] startplay 回传发送成功: id=D442006CDC2E33ACC15D95D670DF46A4
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+[_fetchUrl] 获取失败 148D2D1B811124EA810A8AB59B23D57F (148D2D1B811124EA810A8AB59B23D57F): 该歌曲暂无音源或暂无播放权限
+已跳过：148D2D1B811124EA810A8AB59B23D57F（获取链接失败）
+队列已播放完毕
+[UnifiedPlayService] 30 秒无活动，自动退出
+[UnifiedPlayService] 已启动，等待命令...
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：生日快乐歌 (爵士钢琴) - 贵族钢琴轻音乐 | --:--
+[PlayReportService] session 已保存: id=58CF0E0539D37B522E05FD095F140C24, duration=0
+2026-05-03 02:40:05[PlayDataReportApi] 发送回传 biz={"id":"58CF0E0539D37B522E05FD095F140C24","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777776005935}
+[PlayReportService] startplay 回传发送成功: id=58CF0E0539D37B522E05FD095F140C24
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=58CF0E0539D37B522E05FD095F140C24, startLogTime=1777776005935, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=277609, pausedMs=0, netMs=277609, netSec=277, time=277
+[PlayReportService] 准备发送 play 回传: id=58CF0E0539D37B522E05FD095F140C24, time=277, end=playend
+2026-05-03 02:44:43[PlayDataReportApi] 发送回传 biz={"id":"58CF0E0539D37B522E05FD095F140C24","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777776005935,"time":277,"end":"playend"}
+[PlayReportService] play 回传发送成功
+队列已播放完毕
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：贝多芬: 献给艾丽斯 (吉他版) - 贵族音乐 (Noble Music) | --:--
+[PlayReportService] session 已保存: id=8AD432F7F981F0091E86926789AA4746, duration=0
+2026-05-03 02:45:16[PlayDataReportApi] 发送回传 biz={"id":"8AD432F7F981F0091E86926789AA4746","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777776316117}
+[PlayReportService] startplay 回传发送成功: id=8AD432F7F981F0091E86926789AA4746
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=8AD432F7F981F0091E86926789AA4746, startLogTime=1777776316117, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=204481, pausedMs=0, netMs=204481, netSec=204, time=204
+[PlayReportService] 准备发送 play 回传: id=8AD432F7F981F0091E86926789AA4746, time=204, end=playend
+2026-05-03 02:48:40[PlayDataReportApi] 发送回传 biz={"id":"8AD432F7F981F0091E86926789AA4746","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777776316117,"time":204,"end":"playend"}
+[PlayReportService] play 回传发送成功
+队列已播放完毕
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+[_fetchUrl] 获取失败 1086F8ADD8460DC1B78BCD53EE65EC27 (1086F8ADD8460DC1B78BCD53EE65EC27): 该歌曲暂无音源或暂无播放权限
+已跳过：1086F8ADD8460DC1B78BCD53EE65EC27（获取链接失败）
+队列已播放完毕
+[UnifiedPlayService] 30 秒无活动，自动退出
+[UnifiedPlayService] 已启动，等待命令...
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：圣桑：动物狂欢节．天鹅(爵士钢琴) - 酷客音乐 | --:--
+[PlayReportService] session 已保存: id=392EB0CBFFC757CD04A068B1213B39A0, duration=0
+2026-05-03 02:50:12[PlayDataReportApi] 发送回传 biz={"id":"392EB0CBFFC757CD04A068B1213B39A0","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777776612200}
+[PlayReportService] startplay 回传发送成功: id=392EB0CBFFC757CD04A068B1213B39A0
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=392EB0CBFFC757CD04A068B1213B39A0, startLogTime=1777776612200, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=250419, pausedMs=0, netMs=250419, netSec=250, time=250
+[PlayReportService] 准备发送 play 回传: id=392EB0CBFFC757CD04A068B1213B39A0, time=250, end=playend
+2026-05-03 02:54:22[PlayDataReportApi] 发送回传 biz={"id":"392EB0CBFFC757CD04A068B1213B39A0","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777776612200,"time":250,"end":"playend"}
+[PlayReportService] play 回传发送成功
+队列已播放完毕
+[UnifiedPlayService] 30 秒无活动，自动退出
+[UnifiedPlayService] 已启动，等待命令...
+[_fetchUrl] 获取失败 E922C285FFC330E185A27416BC70A4E6 (E922C285FFC330E185A27416BC70A4E6): 该歌曲暂无音源或暂无播放权限
+已跳过：E922C285FFC330E185A27416BC70A4E6（获取链接失败）
+队列已播放完毕
+[UnifiedPlayService] 30 秒无活动，自动退出
+[UnifiedPlayService] 已启动，等待命令...
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：24 Preludes, Op. 28; No. 1 in C Major - No. 2 in A Minor - No. 3 in G Major - No. 4 in E Minor - No. 5 in D Major - No. 6 in B Minor - No. 7 in A Major - No. 8 In F-Sharp Minor - No. 9 in E Major: No. 10 in C-Sharp Minor - No. 11 in B Major - No. 12 G-Sha - Johnnie Ray | --:--
+[PlayReportService] session 已保存: id=D442006CDC2E33ACC15D95D670DF46A4, duration=0
+2026-05-03 02:57:25[PlayDataReportApi] 发送回传 biz={"id":"D442006CDC2E33ACC15D95D670DF46A4","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777777045443}
+[PlayReportService] startplay 回传发送成功: id=D442006CDC2E33ACC15D95D670DF46A4
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+[PlaybackQueue] 队列文件损坏，已重置为空队列
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：24 Preludes, Op. 28; No. 1 in C Major - No. 2 in A Minor - No. 3 in G Major - No. 4 in E Minor - No. 5 in D Major - No. 6 in B Minor - No. 7 in A Major - No. 8 In F-Sharp Minor - No. 9 in E Major: No. 10 in C-Sharp Minor - No. 11 in B Major - No. 12 G-Sha - Johnnie Ray | --:--
+[PlayReportService] session 已保存: id=D442006CDC2E33ACC15D95D670DF46A4, duration=0
+2026-05-03 02:58:13[PlayDataReportApi] 发送回传 biz={"id":"D442006CDC2E33ACC15D95D670DF46A4","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777777093496}
+[PlayReportService] startplay 回传发送成功: id=D442006CDC2E33ACC15D95D670DF46A4
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：专注（脑力训练） - 注意力 | --:--
+[PlayReportService] session 已保存: id=CDE5A489B107D30B01AF0CEB055F69D4, duration=0
+2026-05-03 03:06:32[PlayDataReportApi] 发送回传 biz={"id":"CDE5A489B107D30B01AF0CEB055F69D4","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777777592543}
+[PlayReportService] startplay 回传发送成功: id=CDE5A489B107D30B01AF0CEB055F69D4
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=CDE5A489B107D30B01AF0CEB055F69D4, startLogTime=1777777592543, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=45701, pausedMs=0, netMs=45701, netSec=45, time=45
+[PlayReportService] 准备发送 play 回传: id=CDE5A489B107D30B01AF0CEB055F69D4, time=45, end=ui
+2026-05-03 03:07:18[PlayDataReportApi] 发送回传 biz={"id":"CDE5A489B107D30B01AF0CEB055F69D4","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777777592543,"time":45,"end":"ui"}
+[PlayReportService] session 加载成功: id=CDE5A489B107D30B01AF0CEB055F69D4, startLogTime=1777777592543, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=45703, pausedMs=0, netMs=45703, netSec=45, time=45
+[PlayReportService] 准备发送 play 回传: id=CDE5A489B107D30B01AF0CEB055F69D4, time=45, end=ui
+2026-05-03 03:07:18[PlayDataReportApi] 发送回传 biz={"id":"CDE5A489B107D30B01AF0CEB055F69D4","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777777592543,"time":45,"end":"ui"}
+[PlayReportService] play 回传发送成功
+[PlayReportService] play 回传发送成功
+[UnifiedPlayService] 30 秒无活动，自动退出
+[UnifiedPlayService] 已启动，等待命令...
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：DB 9F 72 a8 B4 1C 62 8a 3C 96 22 8B 5B 03 23 6F 81 16 64 76 3E 0a D8 16 - RDS真实狠货 | --:--
+[PlayReportService] session 已保存: id=1C5AFCC991BC2719A6F45789231797EB, duration=0
+2026-05-03 03:08:39[PlayDataReportApi] 发送回传 biz={"id":"1C5AFCC991BC2719A6F45789231797EB","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777777719539}
+[PlayReportService] startplay 回传发送成功: id=1C5AFCC991BC2719A6F45789231797EB
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+[PlayReportService] 未找到有效 session，跳过回传
+[UnifiedPlayService] 30 秒无活动，自动退出
+[UnifiedPlayService] 已启动，等待命令...
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：读慢摇轻音乐 - 早晨咖啡音乐 | --:--
+[PlayReportService] session 已保存: id=3FFEA5D52BA1AAD02B7CA672E87FEF2E, duration=0
+2026-05-03 03:11:08[PlayDataReportApi] 发送回传 biz={"id":"3FFEA5D52BA1AAD02B7CA672E87FEF2E","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777777868659}
+[PlayReportService] startplay 回传发送成功: id=3FFEA5D52BA1AAD02B7CA672E87FEF2E
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=3FFEA5D52BA1AAD02B7CA672E87FEF2E, startLogTime=1777777868659, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=162037, pausedMs=0, netMs=162037, netSec=162, time=162
+[PlayReportService] 准备发送 play 回传: id=3FFEA5D52BA1AAD02B7CA672E87FEF2E, time=162, end=playend
+2026-05-03 03:13:50[PlayDataReportApi] 发送回传 biz={"id":"3FFEA5D52BA1AAD02B7CA672E87FEF2E","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777777868659,"time":162,"end":"playend"}
+[PlayReportService] play 回传发送成功
+队列已播放完毕
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：我们祝你圣诞快乐 - Noble Music Project | --:--
+[PlayReportService] session 已保存: id=7FE8162F0786C550FEA2C1BBCEB417BD, duration=0
+2026-05-03 03:14:15[PlayDataReportApi] 发送回传 biz={"id":"7FE8162F0786C550FEA2C1BBCEB417BD","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777778055816}
+[PlayReportService] startplay 回传发送成功: id=7FE8162F0786C550FEA2C1BBCEB417BD
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：安静的学习声音 - 快乐 专注音乐 | --:--
+[PlayReportService] session 已保存: id=CF71CFA96CFD4FEF47699D8BE3E72C2A, duration=0
+2026-05-03 03:16:56[PlayDataReportApi] 发送回传 biz={"id":"CF71CFA96CFD4FEF47699D8BE3E72C2A","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777778216696}
+[PlayReportService] startplay 回传发送成功: id=CF71CFA96CFD4FEF47699D8BE3E72C2A
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=CF71CFA96CFD4FEF47699D8BE3E72C2A, startLogTime=1777778216696, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=75293, pausedMs=0, netMs=75293, netSec=75, time=75
+[PlayReportService] 准备发送 play 回传: id=CF71CFA96CFD4FEF47699D8BE3E72C2A, time=75, end=ui
+2026-05-03 03:18:11[PlayDataReportApi] 发送回传 biz={"id":"CF71CFA96CFD4FEF47699D8BE3E72C2A","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777778216696,"time":75,"end":"ui"}
+[PlayReportService] session 加载成功: id=CF71CFA96CFD4FEF47699D8BE3E72C2A, startLogTime=1777778216696, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=75296, pausedMs=0, netMs=75296, netSec=75, time=75
+[PlayReportService] 准备发送 play 回传: id=CF71CFA96CFD4FEF47699D8BE3E72C2A, time=75, end=ui
+2026-05-03 03:18:11[PlayDataReportApi] 发送回传 biz={"id":"CF71CFA96CFD4FEF47699D8BE3E72C2A","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777778216696,"time":75,"end":"ui"}
+[PlayReportService] play 回传发送成功
+[PlayReportService] play 回传发送成功
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：集中注意力（专注学习） - 注意力 | --:--
+[PlayReportService] session 已保存: id=9CD50505EB7C94AE804F8E30F312D0F2, duration=0
+2026-05-03 03:18:45[PlayDataReportApi] 发送回传 biz={"id":"9CD50505EB7C94AE804F8E30F312D0F2","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777778325788}
+[PlayReportService] startplay 回传发送成功: id=9CD50505EB7C94AE804F8E30F312D0F2
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=9CD50505EB7C94AE804F8E30F312D0F2, startLogTime=1777778325788, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=41051, pausedMs=0, netMs=41051, netSec=41, time=41
+[PlayReportService] 准备发送 play 回传: id=9CD50505EB7C94AE804F8E30F312D0F2, time=41, end=ui
+2026-05-03 03:19:26[PlayDataReportApi] 发送回传 biz={"id":"9CD50505EB7C94AE804F8E30F312D0F2","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777778325788,"time":41,"end":"ui"}
+[PlayReportService] session 加载成功: id=9CD50505EB7C94AE804F8E30F312D0F2, startLogTime=1777778325788, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=41053, pausedMs=0, netMs=41053, netSec=41, time=41
+[PlayReportService] 准备发送 play 回传: id=9CD50505EB7C94AE804F8E30F312D0F2, time=41, end=ui
+2026-05-03 03:19:26[PlayDataReportApi] 发送回传 biz={"id":"9CD50505EB7C94AE804F8E30F312D0F2","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777778325788,"time":41,"end":"ui"}
+[PlayReportService] play 回传发送成功
+[PlayReportService] play 回传发送成功
+[UnifiedPlayService] 30 秒无活动，自动退出
+[UnifiedPlayService] 已启动，等待命令...
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：埃尔加：爱的礼赞，作品12(流水虫鸣鸟鸣) - 酷客音乐 | --:--
+[PlayReportService] session 已保存: id=B909E935CBEA368FD804C02BFEDE3D1E, duration=0
+2026-05-03 03:20:12[PlayDataReportApi] 发送回传 biz={"id":"B909E935CBEA368FD804C02BFEDE3D1E","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777778412022}
+[PlayReportService] startplay 回传发送成功: id=B909E935CBEA368FD804C02BFEDE3D1E
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+[PlayReportService] 未找到有效 session，跳过回传
+[UnifiedPlayService] 30 秒无活动，自动退出
+[UnifiedPlayService] 已启动，等待命令...
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：DB 9F 72 a8 B4 1C 62 8a 3C 96 22 8B 5B 03 23 6F 81 16 64 76 3E 0a D8 16 - RDS真实狠货 | --:--
+[PlayReportService] session 已保存: id=1C5AFCC991BC2719A6F45789231797EB, duration=0
+2026-05-03 03:24:26[PlayDataReportApi] 发送回传 biz={"id":"1C5AFCC991BC2719A6F45789231797EB","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777778666118}
+[PlayReportService] startplay 回传发送成功: id=1C5AFCC991BC2719A6F45789231797EB
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=1C5AFCC991BC2719A6F45789231797EB, startLogTime=1777778666118, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=39436, pausedMs=0, netMs=39436, netSec=39, time=39
+[PlayReportService] 准备发送 play 回传: id=1C5AFCC991BC2719A6F45789231797EB, time=39, end=ui
+2026-05-03 03:25:05[PlayDataReportApi] 发送回传 biz={"id":"1C5AFCC991BC2719A6F45789231797EB","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777778666118,"time":39,"end":"ui"}
+[PlayReportService] session 加载成功: id=1C5AFCC991BC2719A6F45789231797EB, startLogTime=1777778666118, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=39439, pausedMs=0, netMs=39439, netSec=39, time=39
+[PlayReportService] 准备发送 play 回传: id=1C5AFCC991BC2719A6F45789231797EB, time=39, end=ui
+2026-05-03 03:25:05[PlayDataReportApi] 发送回传 biz={"id":"1C5AFCC991BC2719A6F45789231797EB","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777778666118,"time":39,"end":"ui"}
+[PlayReportService] play 回传发送成功
+[PlayReportService] play 回传发送成功
+[UnifiedPlayService] 30 秒无活动，自动退出
+[UnifiedPlayService] 已启动，等待命令...
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：清新与纯净（放松纯音乐） - 疗愈音律 | --:--
+[PlayReportService] session 已保存: id=BEFE6544076235DB6EC3C00CA3FE584F, duration=0
+2026-05-03 03:25:46[PlayDataReportApi] 发送回传 biz={"id":"BEFE6544076235DB6EC3C00CA3FE584F","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777778746042}
+[PlayReportService] startplay 回传发送成功: id=BEFE6544076235DB6EC3C00CA3FE584F
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+[PlayReportService] session 加载成功: id=BEFE6544076235DB6EC3C00CA3FE584F, startLogTime=1777778746042, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=10485, pausedMs=0, netMs=10485, netSec=10, time=10
+[PlayReportService] 准备发送 play 回传: id=BEFE6544076235DB6EC3C00CA3FE584F, time=10, end=ui
+2026-05-03 03:25:56[PlayDataReportApi] 发送回传 biz={"id":"BEFE6544076235DB6EC3C00CA3FE584F","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777778746042,"time":10,"end":"ui"}
+[PlayReportService] play 回传发送成功
+[UnifiedPlayService] 30 秒无活动，自动退出
+[UnifiedPlayService] 已启动，等待命令...
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：优雅的服装店（轻音乐） - 聚能声创 | --:--
+[PlayReportService] session 已保存: id=7E22D309D479A4E8ACA40118AF714484, duration=0
+2026-05-03 03:27:57[PlayDataReportApi] 发送回传 biz={"id":"7E22D309D479A4E8ACA40118AF714484","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777778877635}
+[PlayReportService] startplay 回传发送成功: id=7E22D309D479A4E8ACA40118AF714484
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=7E22D309D479A4E8ACA40118AF714484, startLogTime=1777778877635, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=36353, pausedMs=0, netMs=36353, netSec=36, time=36
+[PlayReportService] 准备发送 play 回传: id=7E22D309D479A4E8ACA40118AF714484, time=36, end=ui
+2026-05-03 03:28:33[PlayDataReportApi] 发送回传 biz={"id":"7E22D309D479A4E8ACA40118AF714484","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777778877635,"time":36,"end":"ui"}
+[PlayReportService] session 加载成功: id=7E22D309D479A4E8ACA40118AF714484, startLogTime=1777778877635, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=36357, pausedMs=0, netMs=36357, netSec=36, time=36
+[PlayReportService] 准备发送 play 回传: id=7E22D309D479A4E8ACA40118AF714484, time=36, end=ui
+2026-05-03 03:28:33[PlayDataReportApi] 发送回传 biz={"id":"7E22D309D479A4E8ACA40118AF714484","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777778877635,"time":36,"end":"ui"}
+[PlayReportService] play 回传发送成功
+[PlayReportService] play 回传发送成功
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：逐风青春.wav - 专注音乐创作，曲风多元不设限，以真实情绪为内核，用旋律承载心 | --:--
+[PlayReportService] session 已保存: id=E37551EB8D89B618979933BAF9437370, duration=0
+2026-05-03 03:28:43[PlayDataReportApi] 发送回传 biz={"id":"E37551EB8D89B618979933BAF9437370","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777778923677}
+[PlayReportService] startplay 回传发送成功: id=E37551EB8D89B618979933BAF9437370
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=E37551EB8D89B618979933BAF9437370, startLogTime=1777778923677, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=118923, pausedMs=0, netMs=118923, netSec=118, time=118
+[PlayReportService] 准备发送 play 回传: id=E37551EB8D89B618979933BAF9437370, time=118, end=ui
+2026-05-03 03:30:42[PlayDataReportApi] 发送回传 biz={"id":"E37551EB8D89B618979933BAF9437370","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777778923677,"time":118,"end":"ui"}
+[PlayReportService] session 加载成功: id=E37551EB8D89B618979933BAF9437370, startLogTime=1777778923677, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=118925, pausedMs=0, netMs=118925, netSec=118, time=118
+[PlayReportService] 准备发送 play 回传: id=E37551EB8D89B618979933BAF9437370, time=118, end=ui
+2026-05-03 03:30:42[PlayDataReportApi] 发送回传 biz={"id":"E37551EB8D89B618979933BAF9437370","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777778923677,"time":118,"end":"ui"}
+[PlayReportService] play 回传发送成功
+[PlayReportService] play 回传发送成功
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：24 Preludes, Op. 28; No. 1 in C Major - No. 2 in A Minor - No. 3 in G Major - No. 4 in E Minor - No. 5 in D Major - No. 6 in B Minor - No. 7 in A Major - No. 8 In F-Sharp Minor - No. 9 in E Major: No. 10 in C-Sharp Minor - No. 11 in B Major - No. 12 G-Sha - Johnnie Ray | --:--
+[PlayReportService] session 已保存: id=D442006CDC2E33ACC15D95D670DF46A4, duration=0
+2026-05-03 03:31:12[PlayDataReportApi] 发送回传 biz={"id":"D442006CDC2E33ACC15D95D670DF46A4","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777779072774}
+[PlayReportService] startplay 回传发送成功: id=D442006CDC2E33ACC15D95D670DF46A4
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：放鬆古典大提琴 - 純正音源 | --:--
+[PlayReportService] session 已保存: id=98E2ABAB63F01374648137EBD902CB0E, duration=0
+2026-05-03 03:33:30[PlayDataReportApi] 发送回传 biz={"id":"98E2ABAB63F01374648137EBD902CB0E","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777779210396}
+[PlayReportService] startplay 回传发送成功: id=98E2ABAB63F01374648137EBD902CB0E
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+[PlayReportService] 未找到有效 session，跳过回传
+[_fetchUrl] 获取失败 C99D5D6B2401D1564DDDC6E0FB69496B (C99D5D6B2401D1564DDDC6E0FB69496B): 该歌曲暂无音源或暂无播放权限
+已跳过：C99D5D6B2401D1564DDDC6E0FB69496B（获取链接失败）
+队列已播放完毕
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：生日快乐歌(爵士钢琴) - 酷客音乐 | --:--
+[PlayReportService] session 已保存: id=E067C498226F24C5F616BEA4354A5929, duration=0
+2026-05-03 03:34:45[PlayDataReportApi] 发送回传 biz={"id":"E067C498226F24C5F616BEA4354A5929","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777779285163}
+[PlayReportService] startplay 回传发送成功: id=E067C498226F24C5F616BEA4354A5929
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=E067C498226F24C5F616BEA4354A5929, startLogTime=1777779285163, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=1918, pausedMs=0, netMs=1918, netSec=1, time=1
+[PlayReportService] 准备发送 play 回传: id=E067C498226F24C5F616BEA4354A5929, time=1, end=ui
+2026-05-03 03:34:47[PlayDataReportApi] 发送回传 biz={"id":"E067C498226F24C5F616BEA4354A5929","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777779285163,"time":1,"end":"ui"}
+[PlayReportService] play 回传发送成功
+正在播放：充满活力 - 唤醒大脑 | --:--
+[UnifiedPlayService] 忽略切歌产生的 trackEnd stop
+[PlayReportService] session 已保存: id=518BCF7B106F83A2FA54F04B756AC1A7, duration=0
+2026-05-03 03:34:47[PlayDataReportApi] 发送回传 biz={"id":"518BCF7B106F83A2FA54F04B756AC1A7","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777779287167}
+[PlayReportService] startplay 回传发送成功: id=518BCF7B106F83A2FA54F04B756AC1A7
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=518BCF7B106F83A2FA54F04B756AC1A7, startLogTime=1777779287167, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=582, pausedMs=0, netMs=582, netSec=0, time=0
+[PlayReportService] time=0，跳过回传
+正在播放：轻快活力小清新Vlog轻音乐 - 猴子音悦 | --:--
+[PlayReportService] session 已保存: id=A141657782672B70629BBAA8172DEBE9, duration=0
+2026-05-03 03:34:47[PlayDataReportApi] 发送回传 biz={"id":"A141657782672B70629BBAA8172DEBE9","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777779287751}
+[UnifiedPlayService] 忽略切歌产生的 trackEnd stop
+[PlayReportService] startplay 回传发送成功: id=A141657782672B70629BBAA8172DEBE9
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+[PlayReportService] 未找到有效 session，跳过回传
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：E5 42 CC 3C 83 3D a0 76 DE 90 E4 CB 49 99 C9 9F C5 48 7a a8 2F 34 1F BC - RDS真实狠货 | --:--
+[PlayReportService] session 已保存: id=6B80E78A9281B6EEC392A065E0D40D5B, duration=0
+2026-05-03 03:36:42[PlayDataReportApi] 发送回传 biz={"id":"6B80E78A9281B6EEC392A065E0D40D5B","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777779402373}
+[PlayReportService] startplay 回传发送成功: id=6B80E78A9281B6EEC392A065E0D40D5B
+[_fetchUrl] 获取失败 95F4DCE478D1FEEE7BF0E58845AABC01 (95F4DCE478D1FEEE7BF0E58845AABC01): 该歌曲暂无音源或暂无播放权限
+已跳过：95F4DCE478D1FEEE7BF0E58845AABC01（获取链接失败）
+队列已播放完毕
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=6B80E78A9281B6EEC392A065E0D40D5B, startLogTime=1777779402373, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=3773, pausedMs=0, netMs=3773, netSec=3, time=3
+[PlayReportService] 准备发送 play 回传: id=6B80E78A9281B6EEC392A065E0D40D5B, time=3, end=ui
+2026-05-03 03:36:46[PlayDataReportApi] 发送回传 biz={"id":"6B80E78A9281B6EEC392A065E0D40D5B","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777779402373,"time":3,"end":"ui"}
+[PlayReportService] play 回传发送成功
+正在播放：清新的空气 - 向晴 | --:--
+[UnifiedPlayService] 忽略切歌产生的 trackEnd stop
+[PlayReportService] session 已保存: id=84C6081C322F6846361D9BB793975EF4, duration=0
+2026-05-03 03:36:46[PlayDataReportApi] 发送回传 biz={"id":"84C6081C322F6846361D9BB793975EF4","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777779406223}
+[PlayReportService] startplay 回传发送成功: id=84C6081C322F6846361D9BB793975EF4
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=84C6081C322F6846361D9BB793975EF4, startLogTime=1777779406223, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=7404, pausedMs=0, netMs=7404, netSec=7, time=7
+[PlayReportService] 准备发送 play 回传: id=84C6081C322F6846361D9BB793975EF4, time=7, end=ui
+2026-05-03 03:36:53[PlayDataReportApi] 发送回传 biz={"id":"84C6081C322F6846361D9BB793975EF4","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777779406223,"time":7,"end":"ui"}
+[PlayReportService] session 加载成功: id=84C6081C322F6846361D9BB793975EF4, startLogTime=1777779406223, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=7406, pausedMs=0, netMs=7406, netSec=7, time=7
+[PlayReportService] 准备发送 play 回传: id=84C6081C322F6846361D9BB793975EF4, time=7, end=ui
+2026-05-03 03:36:53[PlayDataReportApi] 发送回传 biz={"id":"84C6081C322F6846361D9BB793975EF4","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777779406223,"time":7,"end":"ui"}
+[PlayReportService] play 回传发送成功
+[PlayReportService] play 回传发送成功
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：工作的音樂 - 轻音乐电台 | --:--
+[PlayReportService] session 已保存: id=7FC5C19D3DF4301D149B38873020FD68, duration=0
+2026-05-03 03:37:10[PlayDataReportApi] 发送回传 biz={"id":"7FC5C19D3DF4301D149B38873020FD68","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777779430594}
+[PlayReportService] startplay 回传发送成功: id=7FC5C19D3DF4301D149B38873020FD68
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+[PlayReportService] session 加载成功: id=7FC5C19D3DF4301D149B38873020FD68, startLogTime=1777779430594, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=64290, pausedMs=0, netMs=64290, netSec=64, time=64
+[PlayReportService] 准备发送 play 回传: id=7FC5C19D3DF4301D149B38873020FD68, time=64, end=ui
+2026-05-03 03:38:14[PlayDataReportApi] 发送回传 biz={"id":"7FC5C19D3DF4301D149B38873020FD68","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777779430594,"time":64,"end":"ui"}
+[PlayReportService] play 回传发送成功
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：适合正在学习流行的音乐 - 环境爵士乐 | --:--
+[PlayReportService] session 已保存: id=079BD349BA426C51CEF762BBA58DB691, duration=0
+2026-05-03 03:38:24[PlayDataReportApi] 发送回传 biz={"id":"079BD349BA426C51CEF762BBA58DB691","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777779504987}
+[PlayReportService] startplay 回传发送成功: id=079BD349BA426C51CEF762BBA58DB691
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=079BD349BA426C51CEF762BBA58DB691, startLogTime=1777779504987, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=46242, pausedMs=0, netMs=46242, netSec=46, time=46
+[PlayReportService] 准备发送 play 回传: id=079BD349BA426C51CEF762BBA58DB691, time=46, end=ui
+2026-05-03 03:39:11[PlayDataReportApi] 发送回传 biz={"id":"079BD349BA426C51CEF762BBA58DB691","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777779504987,"time":46,"end":"ui"}
+[PlayReportService] session 加载成功: id=079BD349BA426C51CEF762BBA58DB691, startLogTime=1777779504987, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=46244, pausedMs=0, netMs=46244, netSec=46, time=46
+[PlayReportService] 准备发送 play 回传: id=079BD349BA426C51CEF762BBA58DB691, time=46, end=ui
+2026-05-03 03:39:11[PlayDataReportApi] 发送回传 biz={"id":"079BD349BA426C51CEF762BBA58DB691","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777779504987,"time":46,"end":"ui"}
+[PlayReportService] play 回传发送成功
+[PlayReportService] play 回传发送成功
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+[_fetchUrl] 获取失败 E44BF381A174EDA42A8DA0A42986AADC (E44BF381A174EDA42A8DA0A42986AADC): 该歌曲暂无音源或暂无播放权限
+已跳过：E44BF381A174EDA42A8DA0A42986AADC（获取链接失败）
+队列已播放完毕
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：适合专注抒情的音乐 - 豪华餐厅音乐 | --:--
+[PlayReportService] session 已保存: id=DA02227387F064D083118E57D05E6B78, duration=0
+2026-05-03 03:39:23[PlayDataReportApi] 发送回传 biz={"id":"DA02227387F064D083118E57D05E6B78","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777779563022}
+[PlayReportService] startplay 回传发送成功: id=DA02227387F064D083118E57D05E6B78
+[_fetchUrl] 获取失败 E44BF381A174EDA42A8DA0A42986AADC (E44BF381A174EDA42A8DA0A42986AADC): 该歌曲暂无音源或暂无播放权限
+已跳过：E44BF381A174EDA42A8DA0A42986AADC（获取链接失败）
+队列已播放完毕
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=DA02227387F064D083118E57D05E6B78, startLogTime=1777779563022, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=1426, pausedMs=0, netMs=1426, netSec=1, time=1
+[PlayReportService] 准备发送 play 回传: id=DA02227387F064D083118E57D05E6B78, time=1, end=ui
+2026-05-03 03:39:24[PlayDataReportApi] 发送回传 biz={"id":"DA02227387F064D083118E57D05E6B78","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777779563022,"time":1,"end":"ui"}
+[PlayReportService] play 回传发送成功
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+[_fetchUrl] 获取失败 E44BF381A174EDA42A8DA0A42986AADC (E44BF381A174EDA42A8DA0A42986AADC): 该歌曲暂无音源或暂无播放权限
+已跳过：E44BF381A174EDA42A8DA0A42986AADC（获取链接失败）
+队列已播放完毕
+[_fetchUrl] 获取失败 E44BF381A174EDA42A8DA0A42986AADC (E44BF381A174EDA42A8DA0A42986AADC): 该歌曲暂无音源或暂无播放权限
+已跳过：E44BF381A174EDA42A8DA0A42986AADC（获取链接失败）
+队列已播放完毕
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+[_fetchUrl] 获取失败 E44BF381A174EDA42A8DA0A42986AADC (E44BF381A174EDA42A8DA0A42986AADC): 该歌曲暂无音源或暂无播放权限
+已跳过：E44BF381A174EDA42A8DA0A42986AADC（获取链接失败）
+队列已播放完毕
+[UnifiedPlayService] 30 秒无活动，自动退出
+[UnifiedPlayService] 已启动，等待命令...
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：24 Preludes, Op. 28; No. 1 in C Major - No. 2 in A Minor - No. 3 in G Major - No. 4 in E Minor - No. 5 in D Major - No. 6 in B Minor - No. 7 in A Major - No. 8 In F-Sharp Minor - No. 9 in E Major: No. 10 in C-Sharp Minor - No. 11 in B Major - No. 12 G-Sha - Johnnie Ray | --:--
+[PlayReportService] session 已保存: id=D442006CDC2E33ACC15D95D670DF46A4, duration=0
+2026-05-03 03:41:10[PlayDataReportApi] 发送回传 biz={"id":"D442006CDC2E33ACC15D95D670DF46A4","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777779670218}
+[PlayReportService] startplay 回传发送成功: id=D442006CDC2E33ACC15D95D670DF46A4
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：슬픈인연 - V.A. | --:--
+[PlayReportService] session 已保存: id=DC135D0FD343B2085174134864EB538A, duration=0
+2026-05-03 03:42:21[PlayDataReportApi] 发送回传 biz={"id":"DC135D0FD343B2085174134864EB538A","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777779741516}
+[PlayReportService] startplay 回传发送成功: id=DC135D0FD343B2085174134864EB538A
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=DC135D0FD343B2085174134864EB538A, startLogTime=1777779741516, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=20158, pausedMs=0, netMs=20158, netSec=20, time=20
+[PlayReportService] 准备发送 play 回传: id=DC135D0FD343B2085174134864EB538A, time=20, end=ui
+2026-05-03 03:42:41[PlayDataReportApi] 发送回传 biz={"id":"DC135D0FD343B2085174134864EB538A","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777779741516,"time":20,"end":"ui"}
+[PlayReportService] session 加载成功: id=DC135D0FD343B2085174134864EB538A, startLogTime=1777779741516, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=20161, pausedMs=0, netMs=20161, netSec=20, time=20
+[PlayReportService] 准备发送 play 回传: id=DC135D0FD343B2085174134864EB538A, time=20, end=ui
+2026-05-03 03:42:41[PlayDataReportApi] 发送回传 biz={"id":"DC135D0FD343B2085174134864EB538A","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777779741516,"time":20,"end":"ui"}
+[PlayReportService] play 回传发送成功
+[PlayReportService] play 回传发送成功
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：按摩有魅力的爵士 - 专注于工作 | --:--
+[PlayReportService] session 已保存: id=3AF4B636FF9CF5002C00A845A0B3904E, duration=0
+2026-05-03 03:42:53[PlayDataReportApi] 发送回传 biz={"id":"3AF4B636FF9CF5002C00A845A0B3904E","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777779773865}
+[PlayReportService] startplay 回传发送成功: id=3AF4B636FF9CF5002C00A845A0B3904E
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+[PlayReportService] 未找到有效 session，跳过回传
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：97 Ef 9C 12 87 06 57 D8 B3 2F 0B 11 21 C7 B2 97 77 91 26 48 27 0E 5D 74 - RDS真实狠货 | --:--
+[PlayReportService] session 已保存: id=E0966EBAA23422030C518F27BA06D708, duration=0
+2026-05-03 03:44:17[PlayDataReportApi] 发送回传 biz={"id":"E0966EBAA23422030C518F27BA06D708","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777779857352}
+[PlayReportService] startplay 回传发送成功: id=E0966EBAA23422030C518F27BA06D708
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=E0966EBAA23422030C518F27BA06D708, startLogTime=1777779857352, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=12699, pausedMs=0, netMs=12699, netSec=12, time=12
+[PlayReportService] 准备发送 play 回传: id=E0966EBAA23422030C518F27BA06D708, time=12, end=ui
+2026-05-03 03:44:30[PlayDataReportApi] 发送回传 biz={"id":"E0966EBAA23422030C518F27BA06D708","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777779857352,"time":12,"end":"ui"}
+[PlayReportService] session 加载成功: id=E0966EBAA23422030C518F27BA06D708, startLogTime=1777779857352, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=12701, pausedMs=0, netMs=12701, netSec=12, time=12
+[PlayReportService] 准备发送 play 回传: id=E0966EBAA23422030C518F27BA06D708, time=12, end=ui
+2026-05-03 03:44:30[PlayDataReportApi] 发送回传 biz={"id":"E0966EBAA23422030C518F27BA06D708","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777779857352,"time":12,"end":"ui"}
+[PlayReportService] play 回传发送成功
+[PlayReportService] play 回传发送成功
+[UnifiedPlayService] 30 秒无活动，自动退出
+[UnifiedPlayService] 已启动，等待命令...
+[_fetchUrl] 获取失败 C99D5D6B2401D1564DDDC6E0FB69496B (C99D5D6B2401D1564DDDC6E0FB69496B): 该歌曲暂无音源或暂无播放权限
+已跳过：C99D5D6B2401D1564DDDC6E0FB69496B（获取链接失败）
+队列已播放完毕
+[UnifiedPlayService] 30 秒无活动，自动退出
+[UnifiedPlayService] 已启动，等待命令...
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：卡农（经典钢琴版） - dylanf | --:--
+[PlayReportService] session 已保存: id=E5F827499A2CB130A4661F07E809A717, duration=0
+2026-05-03 03:46:58[PlayDataReportApi] 发送回传 biz={"id":"E5F827499A2CB130A4661F07E809A717","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777780018364}
+[PlayReportService] startplay 回传发送成功: id=E5F827499A2CB130A4661F07E809A717
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+[PlayReportService] 未找到有效 session，跳过回传
+[UnifiedPlayService] 30 秒无活动，自动退出
+[UnifiedPlayService] 已启动，等待命令...
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：24 Preludes, Op. 28; No. 1 in C Major - No. 2 in A Minor - No. 3 in G Major - No. 4 in E Minor - No. 5 in D Major - No. 6 in B Minor - No. 7 in A Major - No. 8 In F-Sharp Minor - No. 9 in E Major: No. 10 in C-Sharp Minor - No. 11 in B Major - No. 12 G-Sha - Johnnie Ray | --:--
+[PlayReportService] session 已保存: id=D442006CDC2E33ACC15D95D670DF46A4, duration=0
+2026-05-03 03:52:51[PlayDataReportApi] 发送回传 biz={"id":"D442006CDC2E33ACC15D95D670DF46A4","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777780371553}
+[PlayReportService] startplay 回传发送成功: id=D442006CDC2E33ACC15D95D670DF46A4
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：Happy Chinese - Jose Miguel Diez Perales | --:--
+[PlayReportService] session 已保存: id=255DCF054F3973F1644C88C6AE62CDAE, duration=0
+2026-05-03 03:55:45[PlayDataReportApi] 发送回传 biz={"id":"255DCF054F3973F1644C88C6AE62CDAE","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777780545955}
+[PlayReportService] startplay 回传发送成功: id=255DCF054F3973F1644C88C6AE62CDAE
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=255DCF054F3973F1644C88C6AE62CDAE, startLogTime=1777780545955, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=74019, pausedMs=0, netMs=74019, netSec=74, time=74
+[PlayReportService] 准备发送 play 回传: id=255DCF054F3973F1644C88C6AE62CDAE, time=74, end=ui
+2026-05-03 03:56:59[PlayDataReportApi] 发送回传 biz={"id":"255DCF054F3973F1644C88C6AE62CDAE","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777780545955,"time":74,"end":"ui"}
+[PlayReportService] session 加载成功: id=255DCF054F3973F1644C88C6AE62CDAE, startLogTime=1777780545955, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=74022, pausedMs=0, netMs=74022, netSec=74, time=74
+[PlayReportService] 准备发送 play 回传: id=255DCF054F3973F1644C88C6AE62CDAE, time=74, end=ui
+2026-05-03 03:56:59[PlayDataReportApi] 发送回传 biz={"id":"255DCF054F3973F1644C88C6AE62CDAE","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777780545955,"time":74,"end":"ui"}
+[PlayReportService] play 回传发送成功
+[PlayReportService] play 回传发送成功
+[UnifiedPlayService] 30 秒无活动，自动退出
+[UnifiedPlayService] 已启动，等待命令...
+[_fetchUrl] 获取失败 DA7BA3CEEEA95E543AA7B26D8735EEC1 (DA7BA3CEEEA95E543AA7B26D8735EEC1): 该歌曲暂无音源或暂无播放权限
+已跳过：DA7BA3CEEEA95E543AA7B26D8735EEC1（获取链接失败）
+队列已播放完毕
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：适合专注抒情的音乐 - 咖啡师爵士 | --:--
+[PlayReportService] session 已保存: id=A9982897CE0AE2E30CA25883DAD137AF, duration=0
+2026-05-03 03:57:50[PlayDataReportApi] 发送回传 biz={"id":"A9982897CE0AE2E30CA25883DAD137AF","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777780670528}
+[PlayReportService] startplay 回传发送成功: id=A9982897CE0AE2E30CA25883DAD137AF
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=A9982897CE0AE2E30CA25883DAD137AF, startLogTime=1777780670528, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=165328, pausedMs=0, netMs=165328, netSec=165, time=165
+[PlayReportService] 准备发送 play 回传: id=A9982897CE0AE2E30CA25883DAD137AF, time=165, end=playend
+2026-05-03 04:00:35[PlayDataReportApi] 发送回传 biz={"id":"A9982897CE0AE2E30CA25883DAD137AF","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777780670528,"time":165,"end":"playend"}
+[PlayReportService] play 回传发送成功
+队列已播放完毕
+[UnifiedPlayService] 30 秒无活动，自动退出
+[UnifiedPlayService] 已启动，等待命令...
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：奢香夫人 - 凤凰传奇 | --:--
+[PlayReportService] session 已保存: id=B7A86A8552ABFEB865F1AAE00F46818D, duration=0
+2026-05-03 04:01:21[PlayDataReportApi] 发送回传 biz={"id":"B7A86A8552ABFEB865F1AAE00F46818D","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777780881960}
+[PlayReportService] startplay 回传发送成功: id=B7A86A8552ABFEB865F1AAE00F46818D
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+[PlayReportService] 未找到有效 session，跳过回传
+[UnifiedPlayService] 30 秒无活动，自动退出
+[UnifiedPlayService] 已启动，等待命令...
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：适合咖啡店温柔的音乐 - 轻松爵士 | --:--
+[PlayReportService] session 已保存: id=1324A929AD268AE39063B76FE30F620A, duration=0
+2026-05-03 04:05:45[PlayDataReportApi] 发送回传 biz={"id":"1324A929AD268AE39063B76FE30F620A","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777781145900}
+[PlayReportService] startplay 回传发送成功: id=1324A929AD268AE39063B76FE30F620A
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=1324A929AD268AE39063B76FE30F620A, startLogTime=1777781145900, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=14043, pausedMs=0, netMs=14043, netSec=14, time=14
+[PlayReportService] 准备发送 play 回传: id=1324A929AD268AE39063B76FE30F620A, time=14, end=ui
+2026-05-03 04:05:59[PlayDataReportApi] 发送回传 biz={"id":"1324A929AD268AE39063B76FE30F620A","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777781145900,"time":14,"end":"ui"}
+[PlayReportService] session 加载成功: id=1324A929AD268AE39063B76FE30F620A, startLogTime=1777781145900, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=14045, pausedMs=0, netMs=14045, netSec=14, time=14
+[PlayReportService] 准备发送 play 回传: id=1324A929AD268AE39063B76FE30F620A, time=14, end=ui
+2026-05-03 04:05:59[PlayDataReportApi] 发送回传 biz={"id":"1324A929AD268AE39063B76FE30F620A","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777781145900,"time":14,"end":"ui"}
+[PlayReportService] play 回传发送成功
+[PlayReportService] play 回传发送成功
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：24 Preludes, Op. 28; No. 1 in C Major - No. 2 in A Minor - No. 3 in G Major - No. 4 in E Minor - No. 5 in D Major - No. 6 in B Minor - No. 7 in A Major - No. 8 In F-Sharp Minor - No. 9 in E Major: No. 10 in C-Sharp Minor - No. 11 in B Major - No. 12 G-Sha - Johnnie Ray | --:--
+[PlayReportService] session 已保存: id=D442006CDC2E33ACC15D95D670DF46A4, duration=0
+2026-05-03 04:06:07[PlayDataReportApi] 发送回传 biz={"id":"D442006CDC2E33ACC15D95D670DF46A4","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777781167768}
+[PlayReportService] startplay 回传发送成功: id=D442006CDC2E33ACC15D95D670DF46A4
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：Afro-Cuban Jazz Suite: A. Introduction - Cancion, B. Mambo, C. Transition, D. Introduction to 6/8, F. Transition and Jazz, G. Rhumba Abierta (Pt. 1), H. Coda - Charlie Parker | --:--
+[PlayReportService] session 已保存: id=474BA618861B5ED02D4CC82BD3407956, duration=0
+2026-05-03 04:07:04[PlayDataReportApi] 发送回传 biz={"id":"474BA618861B5ED02D4CC82BD3407956","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777781224920}
+[PlayReportService] startplay 回传发送成功: id=474BA618861B5ED02D4CC82BD3407956
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+[UnifiedPlayService] 30 秒无活动，自动退出
+[UnifiedPlayService] 已启动，等待命令...
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：追梦赤子心 - GALA | --:--
+[PlayReportService] session 已保存: id=AB5F36FE23102A90E78A65FE83925319, duration=0
+2026-05-03 04:11:09[PlayDataReportApi] 发送回传 biz={"id":"AB5F36FE23102A90E78A65FE83925319","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777781469846}
+[PlayReportService] startplay 回传发送成功: id=AB5F36FE23102A90E78A65FE83925319
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=AB5F36FE23102A90E78A65FE83925319, startLogTime=1777781469846, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=561, pausedMs=0, netMs=561, netSec=0, time=0
+[PlayReportService] time=0，跳过回传
+正在播放：图书馆专注休闲轻音乐 - 治愈学习时光 | --:--
+[UnifiedPlayService] 忽略切歌产生的 trackEnd stop
+[PlayReportService] session 已保存: id=7005125C6088E34F8C8DC70AE11FDA42, duration=0
+2026-05-03 04:11:10[PlayDataReportApi] 发送回传 biz={"id":"7005125C6088E34F8C8DC70AE11FDA42","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777781470410}
+[PlayReportService] startplay 回传发送成功: id=7005125C6088E34F8C8DC70AE11FDA42
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+[PlayReportService] session 加载成功: id=7005125C6088E34F8C8DC70AE11FDA42, startLogTime=1777781470410, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=4520, pausedMs=0, netMs=4520, netSec=4, time=4
+[PlayReportService] 准备发送 play 回传: id=7005125C6088E34F8C8DC70AE11FDA42, time=4, end=ui
+2026-05-03 04:11:14[PlayDataReportApi] 发送回传 biz={"id":"7005125C6088E34F8C8DC70AE11FDA42","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777781470410,"time":4,"end":"ui"}
+[PlayReportService] play 回传发送成功
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：适合学校学习轻快的音乐 - 专注于工作 | --:--
+[PlayReportService] session 已保存: id=1B166E2123E1B22DF6F17C94B93EA741, duration=0
+2026-05-03 04:11:25[PlayDataReportApi] 发送回传 biz={"id":"1B166E2123E1B22DF6F17C94B93EA741","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777781485588}
+[PlayReportService] startplay 回传发送成功: id=1B166E2123E1B22DF6F17C94B93EA741
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=1B166E2123E1B22DF6F17C94B93EA741, startLogTime=1777781485588, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=48972, pausedMs=0, netMs=48972, netSec=48, time=48
+[PlayReportService] 准备发送 play 回传: id=1B166E2123E1B22DF6F17C94B93EA741, time=48, end=ui
+2026-05-03 04:12:14[PlayDataReportApi] 发送回传 biz={"id":"1B166E2123E1B22DF6F17C94B93EA741","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777781485588,"time":48,"end":"ui"}
+[PlayReportService] session 加载成功: id=1B166E2123E1B22DF6F17C94B93EA741, startLogTime=1777781485588, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=48975, pausedMs=0, netMs=48975, netSec=48, time=48
+[PlayReportService] 准备发送 play 回传: id=1B166E2123E1B22DF6F17C94B93EA741, time=48, end=ui
+2026-05-03 04:12:14[PlayDataReportApi] 发送回传 biz={"id":"1B166E2123E1B22DF6F17C94B93EA741","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777781485588,"time":48,"end":"ui"}
+[PlayReportService] play 回传发送成功
+[PlayReportService] play 回传发送成功
+[UnifiedPlayService] 30 秒无活动，自动退出
+[UnifiedPlayService] 已启动，等待命令...
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：读轻快的轻音乐 - 轻松爵士音乐 | --:--
+[PlayReportService] session 已保存: id=023E1ACA8D59120AF0893AC94459BB3A, duration=0
+2026-05-03 04:16:35[PlayDataReportApi] 发送回传 biz={"id":"023E1ACA8D59120AF0893AC94459BB3A","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777781795816}
+[PlayReportService] startplay 回传发送成功: id=023E1ACA8D59120AF0893AC94459BB3A
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=023E1ACA8D59120AF0893AC94459BB3A, startLogTime=1777781795816, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=34054, pausedMs=0, netMs=34054, netSec=34, time=34
+[PlayReportService] 准备发送 play 回传: id=023E1ACA8D59120AF0893AC94459BB3A, time=34, end=ui
+2026-05-03 04:17:09[PlayDataReportApi] 发送回传 biz={"id":"023E1ACA8D59120AF0893AC94459BB3A","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777781795816,"time":34,"end":"ui"}
+[PlayReportService] session 加载成功: id=023E1ACA8D59120AF0893AC94459BB3A, startLogTime=1777781795816, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=34057, pausedMs=0, netMs=34057, netSec=34, time=34
+[PlayReportService] 准备发送 play 回传: id=023E1ACA8D59120AF0893AC94459BB3A, time=34, end=ui
+2026-05-03 04:17:09[PlayDataReportApi] 发送回传 biz={"id":"023E1ACA8D59120AF0893AC94459BB3A","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777781795816,"time":34,"end":"ui"}
+[PlayReportService] play 回传发送成功
+[PlayReportService] play 回传发送成功
+[UnifiedPlayService] 30 秒无活动，自动退出
+[UnifiedPlayService] 已启动，等待命令...
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：「拉海洛」之心 - 鸣潮先约电台 | --:--
+[PlayReportService] session 已保存: id=DE35363C48BEE5AAF1026C6623403B5C, duration=0
+2026-05-03 04:17:58[PlayDataReportApi] 发送回传 biz={"id":"DE35363C48BEE5AAF1026C6623403B5C","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777781878783}
+[PlayReportService] startplay 回传发送成功: id=DE35363C48BEE5AAF1026C6623403B5C
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=DE35363C48BEE5AAF1026C6623403B5C, startLogTime=1777781878783, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=8716, pausedMs=0, netMs=8716, netSec=8, time=8
+[PlayReportService] 准备发送 play 回传: id=DE35363C48BEE5AAF1026C6623403B5C, time=8, end=ui
+2026-05-03 04:18:07[PlayDataReportApi] 发送回传 biz={"id":"DE35363C48BEE5AAF1026C6623403B5C","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777781878783,"time":8,"end":"ui"}
+[PlayReportService] session 加载成功: id=DE35363C48BEE5AAF1026C6623403B5C, startLogTime=1777781878783, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=8719, pausedMs=0, netMs=8719, netSec=8, time=8
+[PlayReportService] 准备发送 play 回传: id=DE35363C48BEE5AAF1026C6623403B5C, time=8, end=ui
+2026-05-03 04:18:07[PlayDataReportApi] 发送回传 biz={"id":"DE35363C48BEE5AAF1026C6623403B5C","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777781878783,"time":8,"end":"ui"}
+[PlayReportService] play 回传发送成功
+[PlayReportService] play 回传发送成功
+[UnifiedPlayService] 30 秒无活动，自动退出
+[UnifiedPlayService] 已启动，等待命令...
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：抚慰的正在学习回忆 - 轻松的音乐 片刻 | --:--
+[PlayReportService] session 已保存: id=36D7E0DA655CC2CB352EC0C66FA99618, duration=0
+2026-05-03 04:19:22[PlayDataReportApi] 发送回传 biz={"id":"36D7E0DA655CC2CB352EC0C66FA99618","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777781962954}
+[PlayReportService] startplay 回传发送成功: id=36D7E0DA655CC2CB352EC0C66FA99618
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=36D7E0DA655CC2CB352EC0C66FA99618, startLogTime=1777781962954, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=149507, pausedMs=0, netMs=149507, netSec=149, time=149
+[PlayReportService] 准备发送 play 回传: id=36D7E0DA655CC2CB352EC0C66FA99618, time=149, end=playend
+2026-05-03 04:21:52[PlayDataReportApi] 发送回传 biz={"id":"36D7E0DA655CC2CB352EC0C66FA99618","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777781962954,"time":149,"end":"playend"}
+[PlayReportService] play 回传发送成功
+队列已播放完毕
+[UnifiedPlayService] 30 秒无活动，自动退出
+[UnifiedPlayService] 已启动，等待命令...
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：奢香夫人 - 凤凰传奇 | --:--
+[PlayReportService] session 已保存: id=B7A86A8552ABFEB865F1AAE00F46818D, duration=0
+2026-05-03 09:53:59[PlayDataReportApi] 发送回传 biz={"id":"B7A86A8552ABFEB865F1AAE00F46818D","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777802039484}
+[PlayReportService] startplay 回传发送成功: id=B7A86A8552ABFEB865F1AAE00F46818D
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：DB 9F 72 a8 B4 1C 62 8a 3C 96 22 8B 5B 03 23 6F 81 16 64 76 3E 0a D8 16 - RDS真实狠货 | --:--
+[PlayReportService] session 已保存: id=1C5AFCC991BC2719A6F45789231797EB, duration=0
+2026-05-03 09:54:10[PlayDataReportApi] 发送回传 biz={"id":"1C5AFCC991BC2719A6F45789231797EB","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777802050191}
+[PlayReportService] startplay 回传发送成功: id=1C5AFCC991BC2719A6F45789231797EB
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+[PlayReportService] session 加载成功: id=1C5AFCC991BC2719A6F45789231797EB, startLogTime=1777802050191, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=60605, pausedMs=0, netMs=60605, netSec=60, time=60
+[PlayReportService] 准备发送 play 回传: id=1C5AFCC991BC2719A6F45789231797EB, time=60, end=ui
+2026-05-03 09:55:10[PlayDataReportApi] 发送回传 biz={"id":"1C5AFCC991BC2719A6F45789231797EB","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777802050191,"time":60,"end":"ui"}
+[PlayReportService] play 回传发送成功
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：奢香夫人 - 凤凰传奇 | --:--
+[PlayReportService] session 已保存: id=B7A86A8552ABFEB865F1AAE00F46818D, duration=0
+2026-05-03 09:55:21[PlayDataReportApi] 发送回传 biz={"id":"B7A86A8552ABFEB865F1AAE00F46818D","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777802121816}
+[PlayReportService] startplay 回传发送成功: id=B7A86A8552ABFEB865F1AAE00F46818D
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+[PlayReportService] 未找到有效 session，跳过回传
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] 未找到有效 session，跳过回传
+正在播放：奢香夫人 - 凤凰传奇 | --:--
+[PlayReportService] session 已保存: id=B7A86A8552ABFEB865F1AAE00F46818D, duration=0
+2026-05-03 09:56:25[PlayDataReportApi] 发送回传 biz={"id":"B7A86A8552ABFEB865F1AAE00F46818D","action":"startplay","bitrate":128,"file":4,"type":"song","startLogTime":1777802185122}
+[PlayReportService] startplay 回传发送成功: id=B7A86A8552ABFEB865F1AAE00F46818D
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] reportEnd 被调用，准备加载 session
+[PlayReportService] session 加载成功: id=B7A86A8552ABFEB865F1AAE00F46818D, startLogTime=1777802185122, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=9103, pausedMs=0, netMs=9103, netSec=9, time=9
+[PlayReportService] 准备发送 play 回传: id=B7A86A8552ABFEB865F1AAE00F46818D, time=9, end=ui
+2026-05-03 09:56:34[PlayDataReportApi] 发送回传 biz={"id":"B7A86A8552ABFEB865F1AAE00F46818D","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777802185122,"time":9,"end":"ui"}
+[PlayReportService] session 加载成功: id=B7A86A8552ABFEB865F1AAE00F46818D, startLogTime=1777802185122, duration=0
+[PlayReportService] 计算播放时长: elapsedMs=9105, pausedMs=0, netMs=9105, netSec=9, time=9
+[PlayReportService] 准备发送 play 回传: id=B7A86A8552ABFEB865F1AAE00F46818D, time=9, end=ui
+2026-05-03 09:56:34[PlayDataReportApi] 发送回传 biz={"id":"B7A86A8552ABFEB865F1AAE00F46818D","action":"play","bitrate":128,"file":4,"type":"song","startLogTime":1777802185122,"time":9,"end":"ui"}
+[PlayReportService] play 回传发送成功
+[PlayReportService] play 回传发送成功
+[UnifiedPlayService] 30 秒无活动，自动退出
