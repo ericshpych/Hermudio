@@ -555,13 +555,7 @@ class MusicService {
           }
         } else if (playState.status === 'stopped' || playState.status === 'paused') {
           // 【临时修复】暂时不更新 isPlaying 为 false，避免 ncm-cli 误报导致频繁切歌
-          // 日志节流：只有状态变化或每10次才打印
-          this._statusCheckCount++;
-          const statusKey = `ncm-${playState.status}`;
-          if (statusKey !== this._lastReportedNcmStatus || this._statusCheckCount % 10 === 0) {
-            console.log(`[MusicService] Status check #${this._statusCheckCount}, ncm reports ${playState.status} (ignoring for now)`);
-            this._lastReportedNcmStatus = statusKey;
-          }
+          // 完全移除临时日志，避免刷屏
           // 暂时不更新 isPlaying，不重置计数器，避免误报影响体验
         }
       }
