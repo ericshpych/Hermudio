@@ -6063,8 +6063,8 @@
             },
 
             startStatusPolling() {
-                // 【修复】增加轮询间隔，从 2 秒改为 3 秒，平衡实时性和性能
-                this.statusPollInterval = setInterval(() => this.loadStatus(), 3000);
+                // 【优化】增加轮询间隔，从 3 秒改为 10 秒，减少日志刷屏
+                this.statusPollInterval = setInterval(() => this.loadStatus(), 10000);
                 // 【禁用】平滑进度动画，避免进度忽快忽慢，完全信任后端返回的进度
                 // this.startSmoothProgressAnimation();
             },
