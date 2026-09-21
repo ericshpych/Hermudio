@@ -936,8 +936,9 @@ class MusicService {
           this.isPlaying = true;
           this._ncmStoppedCount = 0;
         } else if (playState.status === 'stopped' || playState.status === 'paused') {
-          this.isPlaying = false;
-          this._isPlayingTracked = false;
+          // 【临时修复】暂时不更新 isPlaying 为 false，避免 ncm-cli 误报导致频繁切歌
+          // 完全移除临时日志，避免刷屏
+          // 暂时不更新 isPlaying，不重置计数器，避免误报影响体验
         }
       } else {
         this.isPlaying = false;
