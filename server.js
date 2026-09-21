@@ -5,8 +5,9 @@ const { exec, spawn } = require('child_process');
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
+const { filterPlayableCliSongs } = require('./cli-song-utils');
 const app = express();
-const PORT = 6588;
+const PORT = 6688;
 
 // CLI 播放器状态管理
 const cliPlayer = {
@@ -77,7 +78,7 @@ function executeCLICommand(command, args = []) {
       }
       return arg;
     });
-    const fullCommand = `npx @music163/ncm-cli ${command} ${escapedArgs.join(' ')}`;
+    const fullCommand = `ncm-cli ${command} ${escapedArgs.join(' ')}`;
     const startTime = Date.now();
     
     console.log(`[CLI执行] ${fullCommand}`);
@@ -98,7 +99,11 @@ function executeCLICommand(command, args = []) {
       env: env
     }, (error, stdout, stderr) => {
       // CLI输出到stderr也可能是正常输出
-      const output = stdout || stderr || '';
+      let output = stdout || stderr || '';
+      
+      // Clean output - remove update notifications and other non-JSON content
+      output = output.replace(/^│.*$/gm, '').trim();
+      
       const duration = Date.now() - startTime;
       
       console.log(`[CLI输出] ${output.substring(0, 500)}${output.length > 500 ? '...' : ''}`);
@@ -161,7 +166,7 @@ app.post('/api/cli/login', async (req, res) => {
     
     // 使用非阻塞方式执行登录命令
     const { exec } = require('child_process');
-    const fullCommand = `npx @music163/ncm-cli login`;
+    const fullCommand = `ncm-cli login`;
     
     const env = {
       ...process.env,
@@ -268,9 +273,8 @@ app.get('/api/cli/recommend/songs', async (req, res) => {
     const searchResults = await searchSongWithCLI(randomKeyword, 10);
     
     if (searchResults.length > 0) {
-      // 过滤出有播放权限的歌曲
-      const playableSongs = searchResults.filter(s => s.canPlay);
-      const finalSongs = playableSongs.length > 0 ? playableSongs : searchResults;
+      // 只返回明确可播放的歌曲，避免 VIP/版权受限歌曲进入推荐队列
+      const finalSongs = filterPlayableCliSongs(searchResults);
       
       cliPlayer.playlist = finalSongs;
       
@@ -278,23 +282,18 @@ app.get('/api/cli/recommend/songs', async (req, res) => {
         code: 200,
         success: true,
         data: finalSongs,
-        message: `获取推荐歌曲成功，共${finalSongs.length}首`
+        message: finalSongs.length > 0
+          ? `获取推荐歌曲成功，共${finalSongs.length}首`
+          : '未找到可播放推荐歌曲'
       });
     } else {
-      // 如果搜索失败，使用默认歌曲
-      const defaultSongs = [
-        { id: '3339230677', originalId: 3339230677, name: '晴天', artist: '周杰伦', album: '叶惠美', duration: 269, canPlay: false },
-        { id: '185811', originalId: 185811, name: '稻香', artist: '周杰伦', album: '魔杰座', duration: 223, canPlay: false },
-        { id: '186136', originalId: 186136, name: '夜曲', artist: '周杰伦', album: '十一月的萧邦', duration: 226, canPlay: false }
-      ];
-      
-      cliPlayer.playlist = defaultSongs;
+      cliPlayer.playlist = [];
       
       res.json({
         code: 200,
         success: true,
-        data: defaultSongs,
-        message: '使用默认推荐歌曲'
+        data: [],
+        message: '未找到可播放推荐歌曲'
       });
     }
   } catch (err) {
@@ -407,7 +406,9 @@ async function searchSongWithCLI(keyword, limit = 5) {
           album: song.album ? song.album.name : '',
           duration: Math.floor(song.duration / 1000),
           // 检查播放权限
-          canPlay: song.plLevel !== 'none' && song.userMaxBr > 0
+          canPlay: song.plLevel !== 'none' && song.userMaxBr > 0,
+          vipFlag: song.vipFlag || false,
+          playFlag: song.playFlag
         };
         return mapped;
       });

@@ -15,6 +15,7 @@ const fs = require('fs');
 const { exec } = require('child_process');
 const fetch = require('node-fetch');
 const { toVoice } = require('edge-tts-nodejs');
+require('dotenv').config({ path: path.join(__dirname, '.env') });
 
 // Import services
 const { RecommendationEngine } = require('./src/recommendation-engine');
@@ -24,14 +25,19 @@ const { HermesService } = require('./src/hermes-service');
 const { getCurrentScene, getSceneDescription } = require('./src/scene-analyzer');
 const { RadioHostService } = require('./src/radio-host-service');
 const { PlaylistService } = require('./src/playlist-service');
+const { ensureNcmLoginConfig } = require('./src/ncm-login-config');
+const { resolveAuthStatus } = require('./src/auth-status');
 
 const app = express();
 const PORT = process.env.PORT || 6688;
 
 // ==================== OAuth Login Setup ====================
 // 使用原始项目配置目录（包含已配置的API key和登录凭证）
-const PROJECT_HOME = path.join(__dirname, '..', '.ncm-home');
+const PROJECT_HOME = path.join(__dirname, '..', '.claudio');
 const PROJECT_CONFIG_DIR = path.join(PROJECT_HOME, '.config', 'ncm-cli');
+// Full path to local ncm-cli
+const NCM_CLI_PATH = path.join(__dirname, 'node_modules', '@music163', 'ncm-cli', 'dist', 'index.js');
+const NCM_CLI_CMD = `/opt/homebrew/bin/node "${NCM_CLI_PATH}"`;
 
 // 确保配置目录存在
 if (!fs.existsSync(PROJECT_CONFIG_DIR)) {
@@ -41,13 +47,21 @@ if (!fs.existsSync(PROJECT_CONFIG_DIR)) {
   console.log(`[配置] 使用已有配置目录: ${PROJECT_CONFIG_DIR}`);
 }
 
+const loginConfigState = ensureNcmLoginConfig({ configDir: PROJECT_CONFIG_DIR });
+if (loginConfigState.hydrated) {
+  console.log(`[配置] 已从环境变量补齐 ncm-cli 登录配置: ${loginConfigState.configPath}`);
+}
+const LOGIN_REQUEST_COOLDOWN_MS = 60000;
+
 // 存储登录会话
 let loginSession = {
   isLoggingIn: false,
   loginUrl: null,
   startTime: null,
   loginProcess: null,
-  loginCompleted: false
+  loginCompleted: false,
+  loginSuccessDetected: false,
+  lastLoginRequestAt: 0
 };
 
 // 执行 ncm-cli 命令的辅助函数
@@ -59,7 +73,7 @@ function executeCLICommand(command, args = [], timeout = 30000) {
       }
       return arg;
     });
-    const fullCommand = `npx @music163/ncm-cli ${command} ${escapedArgs.join(' ')}`;
+    const fullCommand = `${NCM_CLI_CMD} ${command} ${escapedArgs.join(' ')}`;
     
     console.log(`[CLI执行] ${fullCommand}`);
 
@@ -76,7 +90,10 @@ function executeCLICommand(command, args = [], timeout = 30000) {
       encoding: 'utf8',
       env: env
     }, (error, stdout, stderr) => {
-      const output = stdout || stderr || '';
+      let output = stdout || stderr || '';
+      
+      // Clean output - remove update notifications
+      output = output.replace(/^│.*$/gm, '').trim();
       
       if (error && error.code !== 0 && !output) {
         console.error(`[CLI错误] ${error.message}`);
@@ -210,7 +227,7 @@ function initializeServices() {
   console.log('Initializing services...');
   musicService = new MusicService(db);
   userProfile = new UserProfile(db);
-  recommendationEngine = new RecommendationEngine(db, userProfile);
+  recommendationEngine = new RecommendationEngine(db, userProfile, musicService);
   hermesService = new HermesService(recommendationEngine, musicService, userProfile);
   radioHostService = new RadioHostService(db, hermesService);
   playlistService = new PlaylistService(db, recommendationEngine, musicService, userProfile);
@@ -285,7 +302,7 @@ app.get('/api/recommend', async (req, res) => {
 
 // Play Song
 app.post('/api/play', async (req, res) => {
-  const { songId, encryptedId } = req.body;
+  const { songId, encryptedId, song } = req.body;
   const userId = req.body.userId || 'default';
   
   if (!songId) {
@@ -293,7 +310,7 @@ app.post('/api/play', async (req, res) => {
   }
 
   try {
-    const result = await musicService.playSong(songId, encryptedId);
+    const result = await musicService.playSong(songId, encryptedId, song);
     
     if (result.success) {
       // Get song details and record play
@@ -394,6 +411,18 @@ app.post('/api/resume', async (req, res) => {
   } catch (error) {
     console.error('Resume error:', error);
     res.status(500).json({ error: 'Resume failed' });
+  }
+});
+
+// Audio mute state
+app.post('/api/audio/mute', async (req, res) => {
+  try {
+    const { muted = true } = req.body || {};
+    const result = await musicService.setMuted(muted);
+    res.json(result);
+  } catch (error) {
+    console.error('Audio mute error:', error);
+    res.status(500).json({ error: 'Audio mute failed', message: error.message });
   }
 });
 
@@ -575,10 +604,21 @@ app.post('/api/chat', async (req, res) => {
   }
 
   try {
+    const text = message.trim();
+
+    // 【聊天控队列 - 最小版】三类队列指令在走 Hermes 通用对话之前拦截，
+    // 直接操作 playlistService 的队列。不依赖经常 401 的 Hermes AI，
+    // 且复用已经修好的 /api/playlist/next 播放链路（前端收到 action:'queue_next'
+    // 后调用 playlistNext，走的是今天验证过的单次播放路径）。
+    const queueIntentResponse = await handleQueueChatIntent(text);
+    if (queueIntentResponse) {
+      return res.json(queueIntentResponse);
+    }
+
     // Get current playing song and scene for context
-    const status = musicService.getStatus();
+    const status = await musicService.getStatus();
     const scene = await getCurrentScene();
-    
+
     const context = {
       userId,
       currentSong: status.currentSong,
@@ -589,13 +629,83 @@ app.post('/api/chat', async (req, res) => {
       },
       blockedSongs: blockedSongs || [] // 被屏蔽的歌曲ID列表
     };
-    
+
     const response = await hermesService.chat(userId, message, context);
     res.json({ success: true, ...response });
   } catch (error) {
     console.error('Chat error:', error);
     res.status(500).json({ error: 'Chat failed' });
   }
+});
+
+/**
+ * 识别"换一批 / 安静点 / 热闹点 / 播放·想听 XX 的歌"这三类队列控制指令。
+ * 命中则直接操作 playlistService 并返回 { action: 'queue_next' } 让前端拉取播放；
+ * 不命中返回 null，交给 hermesService 走原有的通用聊天/单曲推荐逻辑。
+ */
+async function handleQueueChatIntent(text) {
+  if (/^(换一批|换批歌|换一批歌|重新推荐|不想听这些|都不想听)/.test(text)) {
+    const result = await playlistService.shuffleQueue();
+    if (result.success && result.playlist.length > 0) {
+      const first = result.playlist[0];
+      return { success: true, message: `换了一批新的，接下来是《${first.name}》 - ${first.artist}`, action: 'queue_next' };
+    }
+    return { success: true, message: '换一批失败了，稍后再试试吧', action: 'none' };
+  }
+
+  if (/(安静点|安静一点|小声点|来点安静的|轻柔点|舒缓点)/.test(text)) {
+    const result = await playlistService.setMoodQueue('quiet');
+    if (result.success && result.playlist.length > 0) {
+      const first = result.playlist[0];
+      return { success: true, message: `为你切成安静一点的曲风，接下来是《${first.name}》 - ${first.artist}`, action: 'queue_next' };
+    }
+    return { success: true, message: '没找到合适的安静曲子', action: 'none' };
+  }
+
+  if (/(热闹点|热闹一点|嗨点|嗨一点|有劲点|带感点|燃一点)/.test(text)) {
+    const result = await playlistService.setMoodQueue('energetic');
+    if (result.success && result.playlist.length > 0) {
+      const first = result.playlist[0];
+      return { success: true, message: `给你换点带劲的，接下来是《${first.name}》 - ${first.artist}`, action: 'queue_next' };
+    }
+    return { success: true, message: '没找到合适的带感曲子', action: 'none' };
+  }
+
+  // "播放/想听 XX 的歌"：只在能明确拿到「艺人+曲名」或「《曲名》」时才拦截，
+  // 避免跟"想听爵士"这类风格/心情指令（走原有 style_request/mood_request）冲突。
+  const bracketMatch = text.match(/《([^》]+)》/);
+  const heuristic = hermesService.extractIntentHeuristically(text);
+  const hasPlayStartWord = /^(播放|我想听|我要听|想听|来一首|放)/.test(text);
+
+  let nameQuery = null;
+  let artistQuery = '';
+  if (bracketMatch) {
+    nameQuery = bracketMatch[1].trim();
+    if (heuristic.artistHint && heuristic.keyword === nameQuery) {
+      artistQuery = heuristic.artistHint;
+    }
+  } else if (hasPlayStartWord && heuristic.artistHint && heuristic.keyword) {
+    nameQuery = heuristic.keyword;
+    artistQuery = heuristic.artistHint;
+  }
+
+  if (nameQuery) {
+    const result = await playlistService.queueSpecificSong(nameQuery, artistQuery);
+    if (result.success) {
+      return { success: true, message: `好，接下来播放《${result.song.name}》 - ${result.song.artist}`, action: 'queue_next' };
+    }
+    return { success: true, message: `没找到「${nameQuery}」这首歌，换一首试试？`, action: 'none' };
+  }
+
+  return null;
+}
+
+app.get('/api/internal/watchdog', (req, res) => {
+  res.json({
+    success: true,
+    stats: musicService.getWatchdogStats(),
+    timestamp: Date.now()
+  });
 });
 
 // Get Chat History
@@ -748,7 +858,7 @@ app.post('/api/playlist/next', async (req, res) => {
     }
 
     // enrichment 已在 getNextSong() 内部完成，song.encryptedId 已填充
-    const playResult = await musicService.playSong(song.id, song.encryptedId);
+    const playResult = await musicService.playSong(song.originalId || song.id, song.encryptedId, song);
     if (playResult.loginRequired) {
       return res.json({ success: false, loginRequired: true, song });
     }
@@ -756,6 +866,26 @@ app.post('/api/playlist/next', async (req, res) => {
     res.json({ success: true, song, playResult });
   } catch (error) {
     console.error('[API] playlist/next error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Get previous song and play (回退到上一首并播放，跟 /api/playlist/next 对称)
+app.post('/api/playlist/previous', async (req, res) => {
+  try {
+    const song = await playlistService.getPreviousSong();
+    if (!song) {
+      return res.json({ success: false, error: '没有可回退的上一首' });
+    }
+
+    const playResult = await musicService.playSong(song.originalId || song.id, song.encryptedId, song);
+    if (playResult.loginRequired) {
+      return res.json({ success: false, loginRequired: true, song });
+    }
+
+    res.json({ success: true, song, playResult });
+  } catch (error) {
+    console.error('[API] playlist/previous error:', error);
     res.status(500).json({ success: false, error: error.message });
   }
 });
@@ -776,7 +906,11 @@ app.post('/api/playlist/request-batch', async (req, res) => {
 // Get queue status (获取队列状态)
 app.get('/api/playlist/status', async (req, res) => {
   try {
-    res.json({ success: true, ...playlistService.getQueueStatus() });
+    // 【修复】前端所有 6 处调用点（队列面板、失败重试记录、完整播放记录、
+    // outro 下一首查询等）统一按嵌套的 response.status.xxx 读取，
+    // 但这里之前是平铺 spread，导致 response.status 恒为 undefined，
+    // 这些逻辑一直在静默失效（不报错，只是走兜底/空跳过）。
+    res.json({ success: true, status: playlistService.getQueueStatus() });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
@@ -913,7 +1047,7 @@ app.post('/api/auth/login', async (req, res) => {
     console.log('[登录] 开始生成新的登录链接...');
     
     // 使用非阻塞方式执行登录命令
-    const fullCommand = `npx @music163/ncm-cli login`;
+    const fullCommand = `${NCM_CLI_CMD} login`;
     
     const env = {
       ...process.env,
@@ -929,7 +1063,7 @@ app.post('/api/auth/login', async (req, res) => {
       env: env
     }, (error, stdout, stderr) => {
       loginSession.isLoggingIn = false;
-      loginSession.loginCompleted = true;
+      loginSession.loginCompleted = loginSession.loginSuccessDetected;
       console.log('[登录] CLI登录进程结束');
     });
     
@@ -938,6 +1072,7 @@ app.post('/api/auth/login', async (req, res) => {
     // 监听输出以提取登录链接
     let outputBuffer = '';
     let loginUrlFound = false;
+    let lastErrorMessage = '';
     
     const extractInfo = (data) => {
       outputBuffer += data;
@@ -951,10 +1086,25 @@ app.post('/api/auth/login', async (req, res) => {
         console.log('[登录] 获取到登录链接:', loginSession.loginUrl);
       }
       
-      // 检测登录成功
-      if (data.includes('登录成功') || data.includes('logged in') || data.includes('success')) {
+      // 提取错误信息
+      try {
+        const jsonMatch = data.match(/\{.*\}/);
+        if (jsonMatch) {
+          const jsonData = JSON.parse(jsonMatch[0]);
+          if (jsonData.message) {
+            lastErrorMessage = jsonData.message;
+          }
+        }
+      } catch (e) {}
+      
+      // 只有明确出现登录完成语义时才标记成功；生成登录链接时的 {"success": true}
+      // 仅表示二维码/轮询已创建，不能当作用户已完成登录。
+      const successMessage = /登录成功|logged in|login successful/i.test(outputBuffer);
+      if (successMessage) {
         console.log('[登录] 检测到登录成功信息');
         loginSession.loginCompleted = true;
+        loginSession.loginSuccessDetected = true;
+        musicService?.markLoginSuccess?.();
       }
     };
     
@@ -984,9 +1134,12 @@ app.post('/api/auth/login', async (req, res) => {
       try {
         child.kill();
       } catch (e) {}
+      
+      // 返回更详细的错误信息
+      const errorMsg = lastErrorMessage || '获取登录链接失败，请重试';
       res.status(500).json({
         success: false,
-        message: '获取登录链接失败，请重试'
+        message: errorMsg
       });
     }
   } catch (err) {
@@ -1008,27 +1161,23 @@ app.get('/api/auth/status', async (req, res) => {
     // Use login --check to verify actual login status
     const output = await executeCLICommand('login', ['--check']);
     console.log('[登录检查] CLI输出:', output);
-
-    let isLoggedIn = false;
-    try {
-      const jsonOutput = JSON.parse(output);
-      // success 为 true 表示已登录
-      isLoggedIn = jsonOutput.success === true;
-    } catch (e) {
-      // 如果解析失败，检查输出内容
-      isLoggedIn = output.includes('"success": true') || output.includes('logged in');
+    const authStatus = resolveAuthStatus({ loginSession, cliOutput: output });
+    console.log('[登录检查] 登录状态:', authStatus.isLoggedIn, 'sessionSignal=', loginSession.loginSuccessDetected);
+    if (authStatus.isLoggedIn) {
+      musicService?.markLoginSuccess?.();
     }
-
-    console.log('[登录检查] 登录状态:', isLoggedIn);
-
-    res.json({
-      success: true,
-      isLoggedIn: isLoggedIn,
-      message: isLoggedIn ? '已登录' : '未登录'
-    });
+    res.json(authStatus);
   } catch (err) {
     console.error('[登录检查] 检查失败：', err);
-    // 如果执行出错，可能是未登录状态
+    if (loginSession.loginSuccessDetected) {
+      console.log('[登录检查] 使用登录成功信号兜底返回已登录');
+      musicService?.markLoginSuccess?.();
+      return res.json({
+        success: true,
+        isLoggedIn: true,
+        message: '已登录'
+      });
+    }
     res.json({
       success: true,
       isLoggedIn: false,
@@ -1041,6 +1190,10 @@ app.get('/api/auth/status', async (req, res) => {
 app.post('/api/auth/logout', async (req, res) => {
   try {
     await executeCLICommand('logout');
+    loginSession.isLoggingIn = false;
+    loginSession.loginCompleted = false;
+    loginSession.loginSuccessDetected = false;
+    loginSession.loginUrl = null;
     res.json({ success: true, message: '已退出登录' });
   } catch (err) {
     console.error('退出登录失败：', err);
@@ -1055,11 +1208,28 @@ app.post('/api/auth/logout', async (req, res) => {
 // 4. 获取登录链接 (GET 方式，供前端直接调用)
 app.get('/api/login-url', async (req, res) => {
   try {
+    const now = Date.now();
+    if (now - loginSession.lastLoginRequestAt < LOGIN_REQUEST_COOLDOWN_MS) {
+      return res.status(429).json({
+        success: false,
+        message: '登录请求过于频繁，请稍后再试'
+      });
+    }
+    loginSession.lastLoginRequestAt = now;
+    const loginConfig = ensureNcmLoginConfig({ configDir: PROJECT_CONFIG_DIR });
+    if (!loginConfig.hasCredentials) {
+      return res.status(500).json({
+        success: false,
+        message: '缺少网易云登录凭证，请配置 NCM_APP_ID 和 NCM_PRIVATE_KEY'
+      });
+    }
+
     // 重置登录会话
     loginSession.isLoggingIn = true;
     loginSession.startTime = Date.now();
     loginSession.loginUrl = null;
     loginSession.loginCompleted = false;
+    loginSession.loginSuccessDetected = false;
     
     // 如果之前有登录进程，终止它
     if (loginSession.loginProcess) {
@@ -1071,7 +1241,7 @@ app.get('/api/login-url', async (req, res) => {
     console.log('[登录] 开始生成新的登录链接...');
     
     // 使用非阻塞方式执行登录命令
-    const fullCommand = `npx @music163/ncm-cli login`;
+    const fullCommand = `${NCM_CLI_CMD} login`;
     
     const env = {
       ...process.env,
@@ -1096,6 +1266,7 @@ app.get('/api/login-url', async (req, res) => {
     // 监听输出以提取登录链接
     let outputBuffer = '';
     let loginUrlFound = false;
+    let lastErrorMessage = '';
     
     const extractInfo = (data) => {
       outputBuffer += data;
@@ -1109,10 +1280,25 @@ app.get('/api/login-url', async (req, res) => {
         console.log('[登录] 获取到登录链接:', loginSession.loginUrl);
       }
       
-      // 检测登录成功
-      if (data.includes('登录成功') || data.includes('logged in') || data.includes('success')) {
+      // 提取错误信息
+      try {
+        const jsonMatch = data.match(/\{.*\}/);
+        if (jsonMatch) {
+          const jsonData = JSON.parse(jsonMatch[0]);
+          if (jsonData.message) {
+            lastErrorMessage = jsonData.message;
+          }
+        }
+      } catch (e) {}
+      
+      // 只有明确出现登录完成语义时才标记成功；生成登录链接时的 {"success": true}
+      // 仅表示二维码/轮询已创建，不能当作用户已完成登录。
+      const successMessage = /登录成功|logged in|login successful/i.test(outputBuffer);
+      if (successMessage) {
         console.log('[登录] 检测到登录成功信息');
         loginSession.loginCompleted = true;
+        loginSession.loginSuccessDetected = true;
+        musicService?.markLoginSuccess?.();
       }
     };
     
@@ -1142,9 +1328,12 @@ app.get('/api/login-url', async (req, res) => {
       try {
         child.kill();
       } catch (e) {}
+      
+      // 返回更详细的错误信息
+      const errorMsg = lastErrorMessage || '获取登录链接失败，请重试';
       res.status(500).json({
         success: false,
-        message: '获取登录链接失败，请重试'
+        message: errorMsg
       });
     }
   } catch (err) {
@@ -1430,10 +1619,19 @@ app.listen(PORT, () => {
   `);
 });
 
-// Graceful shutdown
-process.on('SIGINT', () => {
-  console.log('\nShutting down...');
-  db.close(() => {
-    process.exit(0);
+const cleanup = (signal) => {
+  console.log(`\n[Server] received ${signal}, cleaning up...`);
+  try {
+    musicService.watchdog?.stop();
+  } catch (error) {
+    console.error('[Server] Failed to stop watchdog:', error.message);
+  }
+  exec('pkill -9 -x mpv', () => {
+    db.close(() => {
+      process.exit(0);
+    });
   });
-});
+};
+
+process.on('SIGINT', () => cleanup('SIGINT'));
+process.on('SIGTERM', () => cleanup('SIGTERM'));

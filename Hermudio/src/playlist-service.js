@@ -11,6 +11,7 @@
  */
 
 const fetch = require('node-fetch');
+const { VERIFIED_SONGS, getSongsForMood } = require('./verified-catalog');
 
 class PlaylistService {
   constructor(db, recommendationEngine, musicService, userProfile) {
@@ -26,7 +27,7 @@ class PlaylistService {
 
     // 推荐配置
     this.config = {
-      triggerThreshold: 5, // 剩余 ≤5 首时触发补给
+      triggerThreshold: 8, // 剩余 ≤8 首时触发补给（提高阈值避免网络慢时断档）
       keepRecentPlayed: 5, // 保留最近 5 首已播放
       fallbackThreshold: 5, // Hermes 不可用时，本地兜底生成歌单
       hermesTimeout: 60000, // Hermes 请求超时 60 秒
@@ -206,7 +207,7 @@ curl "http://localhost:6688/api/search?keyword=%E5%91%8A%E4%BA%94%E4%BA%BA&limit
       }
     }
     
-    this.queuedSongs = [...this.queuedSongs, ...enrichedSongs];
+    this.appendToQueueDeduped(enrichedSongs);
     
     // 剩下的后台继续 enrichment
     if (playlist.length > count) {
@@ -277,49 +278,165 @@ curl "http://localhost:6688/api/search?keyword=%E5%91%8A%E4%BA%94%E4%BA%BA&limit
     }
   }
 
+  isTruthyFlag(value) {
+    return value === true || value === 1 || value === '1' || value === 'true';
+  }
+
+  isFalsyFlag(value) {
+    return value === false || value === 0 || value === '0' || value === 'false';
+  }
+
+  isPlayableCandidate(song) {
+    if (!song) return false;
+
+    const hasPlayFlag = song.playFlag !== undefined && song.playFlag !== null;
+    const hasCanPlay = song.canPlay !== undefined && song.canPlay !== null;
+    const hasVipFlag = song.vipFlag !== undefined && song.vipFlag !== null;
+
+    if (hasPlayFlag && this.isFalsyFlag(song.playFlag)) return false;
+    if (hasCanPlay && this.isFalsyFlag(song.canPlay)) return false;
+    if (hasVipFlag && this.isTruthyFlag(song.vipFlag)) return false;
+
+    if (hasPlayFlag) return this.isTruthyFlag(song.playFlag);
+    if (hasCanPlay) return this.isTruthyFlag(song.canPlay);
+    if (hasVipFlag) return this.isFalsyFlag(song.vipFlag);
+
+    // 如果没有任何标记，默认允许（用于硬编码的推荐歌曲）
+    return true;
+  }
+
+  async resolvePlayableSong(song) {
+    if (!song) return null;
+
+    // 【修复】已带真实可播 ID 的歌（如已验证歌单）直接信任，不再按歌名搜索——
+    // 否则会被搜到的翻唱/remix 覆盖成错误的 ID（"显示A放B"根因）。
+    const hasValidIds = song.originalId && /^\d+$/.test(String(song.originalId)) &&
+      song.encryptedId && /^[A-F0-9]{32}$/i.test(String(song.encryptedId));
+    if ((song.verified || hasValidIds) && this.isPlayableCandidate(song)) {
+      return {
+        id: String(song.originalId),
+        encryptedId: song.encryptedId,
+        originalId: String(song.originalId),
+        name: song.name,
+        artist: song.artist,
+        album: song.album,
+        duration: song.duration,
+        reason: song.reason,
+        scene_tags: song.scene_tags,
+        style: song.style,
+        canPlay: song.canPlay !== false
+      };
+    }
+
+    const query = [song.name, song.artist].filter(Boolean).join(' ').trim();
+    if (query && this.musicService?.searchSongs) {
+      const results = await this.musicService.searchSongs(query, 8);
+      const validResults = results.filter(s =>
+        s &&
+        s.originalId &&
+        /^\d+$/.test(String(s.originalId)) &&
+        s.encryptedId &&
+        /^[A-F0-9]{32}$/i.test(String(s.encryptedId))
+      );
+
+      const playableResults = validResults.filter(s => this.isPlayableCandidate(s));
+      const artistToken = song.artist?.split(/[,\s、/]+/).find(Boolean);
+      // 【修复】排除翻唱/remix/现场等非官方版本，优先曲名+艺人都匹配的原版
+      const BAD_VERSION = /remix|cover|翻唱|翻自|伴奏|纯音乐|dj|live|现场|女声|男声|童声|加速|慢摇/i;
+      const cleanResults = playableResults.filter(s => !BAD_VERSION.test(s.name || ''));
+      const exactMatch = cleanResults.find(s =>
+        s.name === song.name &&
+        (!artistToken || s.artist?.includes(artistToken))
+      );
+      const artistMatch = cleanResults.find(s => artistToken && s.artist?.includes(artistToken));
+      const nameMatch = cleanResults.find(s => s.name === song.name);
+      const match = exactMatch || artistMatch || nameMatch || cleanResults[0];
+
+      if (match) {
+        return {
+          id: String(match.originalId),
+          encryptedId: match.encryptedId,
+          originalId: String(match.originalId),
+          name: match.name,
+          artist: match.artist,
+          album: match.album,
+          duration: match.duration,
+          reason: song.reason,
+          scene_tags: song.scene_tags,
+          style: song.style,
+          canPlay: !!match.canPlay,
+          recommendedName: song.name,
+          recommendedArtist: song.artist
+        };
+      }
+    }
+
+    const originalId = song.originalId || (/^\d+$/.test(String(song.id)) ? song.id : null);
+    const encryptedId = song.encryptedId || (/^[A-F0-9]{32}$/i.test(String(song.id)) ? song.id : null);
+    if (!originalId || !encryptedId || !this.isPlayableCandidate(song)) return null;
+
+    return {
+      id: String(originalId),
+      encryptedId,
+      originalId: String(originalId),
+      name: song.name,
+      artist: song.artist,
+      album: song.album,
+      duration: song.duration,
+      reason: song.reason,
+      scene_tags: song.scene_tags,
+      style: song.style,
+      canPlay: !!song.canPlay
+    };
+  }
+
   /**
-   * 只 merge 前 N 首歌（快速模式）
+   * 只 merge 前 N 首歌（快速模式）- 入队前用 ncm-cli search 校验真实可播放 ID
    */
+  /**
+   * 追加到待播队列，并去重（跳过已经在队列里、或就是当前播放歌曲的重复项）。
+   * mergeNewBatch / mergeNewBatchFast / mergeNewBatchBackground 三处各自独立
+   * 向 queuedSongs 追加，互相不知道对方已经加过什么——不去重的话，多批推荐
+   * 各自独立抽中同一首歌时，队列里就会堆出好几份一样的条目。
+   */
+  appendToQueueDeduped(newSongs) {
+    const existingIds = new Set(this.queuedSongs.map(s => s.id));
+    if (this.currentSong?.id) existingIds.add(this.currentSong.id);
+    const deduped = [];
+    for (const song of newSongs) {
+      if (existingIds.has(song.id)) {
+        console.log(`[PlaylistService] 跳过重复歌曲（已在队列/正在播放）: ${song.name}`);
+        continue;
+      }
+      existingIds.add(song.id);
+      deduped.push(song);
+    }
+    this.queuedSongs = [...this.queuedSongs, ...deduped];
+  }
+
   async mergeNewBatchFast(newSongs, count = 2) {
     if (!newSongs || newSongs.length === 0) {
       return;
     }
 
-    // 只 enrichment 前 N 首
-    const songsToEnrich = newSongs.slice(0, count);
-    console.log(`[PlaylistService] 快速模式：enrich 前 ${count} 首`);
+    // 只取前 N 首，直接用传入的信息
+    const songsToAdd = newSongs.slice(0, count);
+    console.log(`[PlaylistService] 快速模式：直接添加前 ${count} 首`);
 
     const enrichedSongs = [];
-    for (const song of songsToEnrich) {
+    for (const song of songsToAdd) {
       try {
-        const results = await this.musicService.searchSongs(song.name, 5);
-        const match = results.find(s =>
-          s.name === song.name ||
-          (song.artist && s.artist.includes(song.artist.split(',')[0]))
-        ) || results[0];
-
-        if (match && match.originalId && match.encryptedId) {
-          enrichedSongs.push({
-            id: match.originalId,            // 【修复】存 originalId（数字ID）用于搜索
-            encryptedId: match.encryptedId,  // 保留 encryptedId 用于播放
-            originalId: match.originalId,
-            name: song.name,
-            artist: song.artist || match.artist,
-            album: song.album || match.album,
-            duration: song.duration || match.duration,
-            reason: song.reason,
-            scene_tags: song.scene_tags,
-            style: song.style,
-            canPlay: match.canPlay
-          });
-          console.log(`[PlaylistService] Fast Enriched: ${song.name} → originalId=${match.originalId}, encryptedId=${match.encryptedId}`);
+        const resolvedSong = await this.resolvePlayableSong(song);
+        if (resolvedSong) {
+          enrichedSongs.push(resolvedSong);
+          console.log(`[PlaylistService] Fast Added: ${resolvedSong.name} → originalId=${resolvedSong.originalId}, encryptedId=${resolvedSong.encryptedId}`);
         }
       } catch (err) {
-        console.error(`[PlaylistService] Fast Enrich 异常 for ${song.name}:`, err.message);
+        console.error(`[PlaylistService] Fast Add 异常 for ${song.name}:`, err.message);
       }
     }
 
-    this.queuedSongs = [...this.queuedSongs, ...enrichedSongs];
+    this.appendToQueueDeduped(enrichedSongs);
     console.log('[PlaylistService] 快速队列已更新:', {
       已播放: this.playedSongs.length,
       待播放: this.queuedSongs.length
@@ -327,47 +444,30 @@ curl "http://localhost:6688/api/search?keyword=%E5%91%8A%E4%BA%94%E4%BA%BA&limit
   }
 
   /**
-   * 后台继续 enrichment 剩下的歌曲
+   * 后台继续添加剩下的歌曲 - 入队前校验真实可播放 ID
    */
   async mergeNewBatchBackground(remainingSongs) {
     if (!remainingSongs || remainingSongs.length === 0) {
       return;
     }
 
-    console.log(`[PlaylistService] 后台开始 enrichment 剩余 ${remainingSongs.length} 首歌`);
+    console.log(`[PlaylistService] 后台开始添加剩余 ${remainingSongs.length} 首歌`);
     const enrichedSongs = [];
 
     for (const song of remainingSongs) {
       try {
-        const results = await this.musicService.searchSongs(song.name, 5);
-        const match = results.find(s =>
-          s.name === song.name ||
-          (song.artist && s.artist.includes(song.artist.split(',')[0]))
-        ) || results[0];
-
-        if (match && match.originalId && match.encryptedId) {
-          enrichedSongs.push({
-            id: match.originalId,            // 【修复】存 originalId（数字ID）用于搜索
-            encryptedId: match.encryptedId,  // 保留 encryptedId 用于播放
-            originalId: match.originalId,
-            name: song.name,
-            artist: song.artist || match.artist,
-            album: song.album || match.album,
-            duration: song.duration || match.duration,
-            reason: song.reason,
-            scene_tags: song.scene_tags,
-            style: song.style,
-            canPlay: match.canPlay
-          });
-          console.log(`[PlaylistService] Background Enriched: ${song.name} → originalId=${match.originalId}, encryptedId=${match.encryptedId}`);
+        const resolvedSong = await this.resolvePlayableSong(song);
+        if (resolvedSong) {
+          enrichedSongs.push(resolvedSong);
+          console.log(`[PlaylistService] Background Added: ${resolvedSong.name} → originalId=${resolvedSong.originalId}, encryptedId=${resolvedSong.encryptedId}`);
         }
       } catch (err) {
-        console.error(`[PlaylistService] Background Enrich 异常 for ${song.name}:`, err.message);
+        console.error(`[PlaylistService] Background Add 异常 for ${song.name}:`, err.message);
       }
     }
 
-    this.queuedSongs = [...this.queuedSongs, ...enrichedSongs];
-    console.log('[PlaylistService] 后台 enrichment 完成，队列更新:', {
+    this.appendToQueueDeduped(enrichedSongs);
+    console.log('[PlaylistService] 后台添加完成，队列更新:', {
       已播放: this.playedSongs.length,
       待播放: this.queuedSongs.length
     });
@@ -556,9 +656,13 @@ curl "http://localhost:6688/api/search?keyword=%E5%91%8A%E4%BA%94%E4%BA%BA&limit
       const playlist = recommendations
         .filter(r => r && r.song)
         .map(r => ({
-          id: r.song.encryptedId || r.song.id,
+          id: r.song.originalId || r.song.id,
+          originalId: r.song.originalId || r.song.id,
+          encryptedId: r.song.encryptedId,
           name: r.song.name,
           artist: r.song.artist,
+          album: r.song.album,
+          duration: r.song.duration,
           reason: r.reason || '根据你的喜好推荐',
           scene_tags: [scene?.timeOfDay || '日常'],
           style: '推荐'
@@ -578,54 +682,28 @@ curl "http://localhost:6688/api/search?keyword=%E5%91%8A%E4%BA%94%E4%BA%BA&limit
   }
 
   /**
-   * 合并新批次到队列（带歌曲 enrichment）
+   * 合并新批次到队列 - 入队前校验真实可播放 ID
    */
   async mergeNewBatch(newSongs) {
     if (!newSongs || newSongs.length === 0) {
       return;
     }
 
-    // Enrich 每首歌曲：用真实搜索获取 encryptedId
     const enrichedSongs = [];
     for (const song of newSongs) {
       try {
-        // 用歌名搜索获取真实 encryptedId
-        const results = await this.musicService.searchSongs(song.name, 5);
-
-        // 找匹配的歌（按歌名 + 艺术家匹配）
-        const match = results.find(s =>
-          s.name === song.name ||
-          (song.artist && s.artist.includes(song.artist.split(',')[0]))
-        ) || results[0];
-
-        if (match && match.originalId && match.encryptedId) {
-          enrichedSongs.push({
-            id: match.originalId,            // 【修复】存 originalId（数字ID）用于搜索
-            encryptedId: match.encryptedId,  // 保留 encryptedId 用于播放
-            originalId: match.originalId,
-            name: song.name,
-            artist: song.artist || match.artist,
-            album: song.album || match.album,
-            duration: song.duration || match.duration,
-            reason: song.reason,
-            scene_tags: song.scene_tags,
-            style: song.style,
-            canPlay: match.canPlay
-          });
-          console.log(`[PlaylistService] Enriched: ${song.name} → originalId=${match.originalId}, encryptedId=${match.encryptedId}`);
-        } else {
-          // 搜索失败，丢弃，不入队
-          console.warn(`[PlaylistService] 丢弃无法 enrichment 的歌曲: ${song.name}`);
-          // 不入队
+        const resolvedSong = await this.resolvePlayableSong(song);
+        if (resolvedSong) {
+          enrichedSongs.push(resolvedSong);
+          console.log(`[PlaylistService] Added: ${resolvedSong.name} → originalId=${resolvedSong.originalId}, encryptedId=${resolvedSong.encryptedId}`);
         }
       } catch (err) {
-        console.error(`[PlaylistService] Enrich 异常 for ${song.name}:`, err.message);
-        // 丢弃，不入队
+        console.error(`[PlaylistService] Add 异常 for ${song.name}:`, err.message);
       }
     }
 
     // 追加到队列
-    this.queuedSongs = [...this.queuedSongs, ...enrichedSongs];
+    this.appendToQueueDeduped(enrichedSongs);
 
     // 裁剪已播放歌曲
     if (this.playedSongs.length > this.config.keepRecentPlayed) {
@@ -639,6 +717,92 @@ curl "http://localhost:6688/api/search?keyword=%E5%91%8A%E4%BA%94%E4%BA%BA&limit
   }
 
   /**
+   * Fisher-Yates 洗牌，取前 n 个
+   */
+  pickRandom(arr, n) {
+    const copy = [...arr];
+    for (let i = copy.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [copy[i], copy[j]] = [copy[j], copy[i]];
+    }
+    return copy.slice(0, n);
+  }
+
+  /**
+   * 【聊天控队列】清空并重新生成待播队列（"换一批"）。
+   * 直接从已验证可播歌单（verified-catalog）取歌，不依赖不稳定的 Hermes / 通用搜索，
+   * 保证换出来的歌真实可播、显示与播放一致。
+   */
+  async shuffleQueue(scene = null) {
+    const currentScene = scene || await this.getCurrentScene();
+    const excludeIds = new Set(this.playedSongs.slice(-15).map(s => s.id));
+    const pool = VERIFIED_SONGS.filter(s => !excludeIds.has(s.originalId));
+    const picked = this.pickRandom(pool.length >= 6 ? pool : VERIFIED_SONGS, 6);
+
+    this.queuedSongs = [];
+    // 【修复】reason 是每首歌自己的推荐理由（面板里逐条展示），不能塞"换一批"这种
+    // 批次级说明——那样会导致队列里每一首都显示同一句话。批次说明只在聊天回复里说一次即可，
+    // 这里复用跟普通推荐一致的单曲理由生成逻辑。
+    await this.mergeNewBatch(picked.map(s => ({
+      ...s,
+      reason: this.recommendationEngine.generateReason(currentScene || {}, s),
+      scene_tags: [currentScene?.timeOfDay || '日常']
+    })));
+
+    console.log('[PlaylistService] 换一批完成，新队列长度:', this.queuedSongs.length);
+    return { success: true, playlist: this.queuedSongs };
+  }
+
+  /**
+   * 【聊天控队列】按心情（'quiet'安静 | 'energetic'热闹）重新生成待播队列。
+   */
+  async setMoodQueue(mood, scene = null) {
+    const currentScene = scene || await this.getCurrentScene();
+    const pool = getSongsForMood(mood, currentScene?.timeOfDay);
+    const picked = this.pickRandom(pool, 6);
+
+    this.queuedSongs = [];
+    // 同上：每首歌用各自的推荐理由，心情切换的说明由聊天回复统一交代一次
+    await this.mergeNewBatch(picked.map(s => ({
+      ...s,
+      reason: this.recommendationEngine.generateReason(currentScene || {}, s),
+      scene_tags: [currentScene?.timeOfDay || '日常']
+    })));
+
+    console.log('[PlaylistService] 心情队列已更新 mood=', mood, '新队列长度:', this.queuedSongs.length);
+    return { success: true, playlist: this.queuedSongs, mood };
+  }
+
+  /**
+   * 【聊天控队列】把用户点的歌插到队首，作为"下一首"播放（"播放/想听 XX"）。
+   * 优先在 verified-catalog 里精确匹配（可靠），找不到再走通用搜索兜底
+   * （通用搜索质量不稳定，见 resolvePlayableSong 里的翻唱过滤逻辑）。
+   */
+  async queueSpecificSong(nameQuery, artistQuery = '') {
+    if (!nameQuery) return { success: false, error: '没有指定歌名' };
+
+    const exact = VERIFIED_SONGS.find(s =>
+      s.name === nameQuery && (!artistQuery || s.artist.includes(artistQuery))
+    );
+    const partial = exact || VERIFIED_SONGS.find(s => s.name.includes(nameQuery) || nameQuery.includes(s.name));
+
+    const resolved = await this.resolvePlayableSong(
+      partial || { name: nameQuery, artist: artistQuery }
+    );
+
+    if (!resolved) {
+      return { success: false, error: '没有找到这首歌' };
+    }
+
+    // 去重：如果队列里已经有这首歌，先移除旧位置，再插到队首
+    this.queuedSongs = this.queuedSongs.filter(s => s.id !== resolved.id);
+    this.queuedSongs.unshift(resolved);
+
+    console.log('[PlaylistService] 已将指定歌曲插入队首:', resolved.name, '-', resolved.artist);
+    return { success: true, song: resolved };
+  }
+
+  /**
    * 获取下一首歌曲
    */
   async getNextSong(userId = 'default') {
@@ -647,6 +811,19 @@ curl "http://localhost:6688/api/search?keyword=%E5%91%8A%E4%BA%94%E4%BA%BA&limit
     // 如果当前有歌曲，标记为已播放
     if (this.currentSong) {
       this.playedSongs.push(this.currentSong);
+      // 同时标记到 recommendation engine，避免重复推荐
+      if (this.currentSong.id) {
+        this.recommendationEngine.markSongAsPlayed(this.currentSong.id);
+      }
+      if (this.currentSong.originalId) {
+        this.recommendationEngine.markSongAsPlayed(this.currentSong.originalId);
+      }
+    }
+
+    // 【修复】如果 queue 为空，强制调用 requestNewBatchFast 补充
+    if (this.queuedSongs.length === 0) {
+      console.log('[PlaylistService] 队列为空，强制快速补给');
+      await this.requestNewBatchFast(userId);
     }
 
     // 检查是否需要补给，但刚初始化后第一次获取时不触发（因为后台还在 enrichment）
@@ -663,8 +840,33 @@ curl "http://localhost:6688/api/search?keyword=%E5%91%8A%E4%BA%94%E4%BA%BA&limit
       return this.currentSong;
     }
 
-    console.warn('[PlaylistService] 队列为空');
+    console.warn('[PlaylistService] 队列为空（尝试补给后仍为空）');
     return null;
+  }
+
+  /**
+   * 获取上一首歌曲（回退到 playedSongs 里最近播放的一首）
+   * 跟 getNextSong() 对称：next 是"当前入 played，从 queued 头部取一首"；
+   * previous 是"当前塞回 queued 头部，从 played 尾部取一首"，
+   * 这样退回去的这首歌下次点"下一首"还能正常接上，不会丢。
+   */
+  async getPreviousSong() {
+    console.log('[PlaylistService] 获取上一首歌曲');
+
+    if (this.playedSongs.length === 0) {
+      console.warn('[PlaylistService] 没有可回退的上一首');
+      return null;
+    }
+
+    const previousSong = this.playedSongs.pop();
+
+    if (this.currentSong) {
+      this.queuedSongs.unshift(this.currentSong);
+    }
+
+    this.currentSong = previousSong;
+    console.log('[PlaylistService] 上一首:', this.currentSong.name, '-', this.currentSong.artist);
+    return this.currentSong;
   }
 
   /**
@@ -754,10 +956,23 @@ curl "http://localhost:6688/api/search?keyword=%E5%91%8A%E4%BA%94%E4%BA%BA&limit
    * 获取当前队列状态
    */
   getQueueStatus() {
+    // 【修复】展示层去重：
+    // ① 当前播放的歌不应该同时又出现在"已播"列表里（会显示成同一首歌重复两次）；
+    // ② 待播队列里同一首歌可能因为多批推荐各自独立抽中而堆出好几份重复条目。
+    // 这里只做展示层兜底去重，源头去重见 mergeNewBatch。
+    const currentId = this.currentSong?.id;
+    const dedupedPlayed = this.playedSongs.filter(s => s.id !== currentId);
+    const seenQueuedIds = new Set();
+    const dedupedQueued = this.queuedSongs.filter(s => {
+      if (seenQueuedIds.has(s.id)) return false;
+      seenQueuedIds.add(s.id);
+      return true;
+    });
+
     return {
-      played: this.playedSongs.map(s => ({ 
-        id: s.id, 
-        name: s.name, 
+      played: dedupedPlayed.map(s => ({
+        id: s.id,
+        name: s.name,
         artist: s.artist,
         album: s.album,
         duration: s.duration,
@@ -768,9 +983,9 @@ curl "http://localhost:6688/api/search?keyword=%E5%91%8A%E4%BA%94%E4%BA%BA&limit
         style: s.style,
         scene_tags: s.scene_tags
       })),
-      queued: this.queuedSongs.map(s => ({ 
-        id: s.id, 
-        name: s.name, 
+      queued: dedupedQueued.map(s => ({
+        id: s.id,
+        name: s.name,
         artist: s.artist,
         album: s.album,
         duration: s.duration,

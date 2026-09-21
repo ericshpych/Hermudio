@@ -6,6 +6,7 @@
  */
 
 const { getCurrentScene, getSceneDescription } = require('./scene-analyzer');
+const { djValidator } = require('./dj-validator');
 
 class RadioHostService {
   constructor(db, hermesService) {
@@ -16,6 +17,105 @@ class RadioHostService {
     this.isPlaying = false;
     this.usedIntros = new Set(); // 追踪已使用的intro，避免重复
     this.usedOutros = new Set(); // 追踪已使用的outro，避免重复
+    this.recentScripts = []; // 近期生成的台词，用于质量校验（开头重复检测等）
+    this.maxRecentScripts = 5; // 最多保留5条近期台词
+  }
+
+  /**
+   * 校验台词并记录到历史
+   * @param {string} script - 待校验的台词
+   * @param {Object} options - 校验选项
+   * @returns {Object} 校验结果
+   */
+  validateScript(script, options = {}) {
+    const result = djValidator.validate(script, {
+      ...options,
+      recentScripts: this.recentScripts,
+    });
+
+    console.log('[RadioHost][Validator]', result.valid ? '✓ 通过' : '✗ 失败', {
+      score: result.score,
+      errors: result.errors.map(e => e.type),
+      warnings: result.warnings.map(w => w.type),
+    });
+
+    return result;
+  }
+
+  /**
+   * 记录台词到历史（用于后续的重复检测）
+   */
+  recordScript(script) {
+    if (!script) return;
+    this.recentScripts.push(script);
+    if (this.recentScripts.length > this.maxRecentScripts) {
+      this.recentScripts.shift();
+    }
+  }
+
+  /**
+   * 带校验的AI生成：生成 → 校验 → 不通过则重试 → 仍失败则走fallback
+   * @param {Function} aiGenerateFn - AI生成函数（返回 {success, script}）
+   * @param {Function} fallbackFn - 兜底函数
+   * @param {Object} validateOptions - 校验选项
+   * @param {number} maxRetries - 最大重试次数
+   * @returns {Promise<string>} 最终台词
+   */
+  async generateWithValidation(aiGenerateFn, fallbackFn, validateOptions = {}, maxRetries = 2) {
+    let lastResult = null;
+    let lastScript = null;
+
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        const aiResult = await aiGenerateFn(attempt);
+
+        if (aiResult.success && aiResult.script && aiResult.script.length > 10) {
+          let script = aiResult.script;
+
+          // 清理乱码
+          script = this.cleanScriptText(script);
+
+          // 质量校验
+          const validation = this.validateScript(script, validateOptions);
+
+          if (validation.valid) {
+            console.log(`[RadioHost] ✓ 第${attempt + 1}次生成通过校验，长度：${script.length}`);
+            this.recordScript(script);
+            return script;
+          }
+
+          lastResult = validation;
+          lastScript = script;
+          console.log(`[RadioHost] ✗ 第${attempt + 1}次生成未通过校验：${validation.errors.map(e => e.type).join(', ')}`);
+
+          // 如果是最后一次重试，且分数还可以（>=60），就用这个（比fallback好）
+          if (attempt === maxRetries && validation.score >= 60) {
+            console.log(`[RadioHost] 最后一次重试分数${validation.score}，采用该结果（有警告但可用）`);
+            this.recordScript(script);
+            return script;
+          }
+        } else {
+          console.log(`[RadioHost] ✗ 第${attempt + 1}次AI生成失败或结果无效`);
+        }
+      } catch (error) {
+        console.log(`[RadioHost] ✗ 第${attempt + 1}次生成异常：${error.message}`);
+      }
+    }
+
+    // 所有重试都失败，走fallback
+    console.log('[RadioHost] → 所有重试失败，使用本地兜底文案');
+    const fallback = fallbackFn();
+    this.recordScript(fallback);
+    return fallback;
+  }
+
+  /**
+   * 清理乱码字符
+   */
+  cleanScriptText(text) {
+    return text.replace(/[^\u4e00-\u9fff\u0000-\u007f\u3000-\u303f\uff00-\uffef\n\r，。、！？：；""''（）【】《》…—–.?!,;:'"()[\] ]/g, (m) => {
+      return /[ \t]/.test(m) ? m : '';
+    });
   }
 
   /**
@@ -50,65 +150,60 @@ class RadioHostService {
       sceneDesc = this.getDefaultSceneDesc(hour);
     }
 
-    // 首先尝试使用Hermes AI生成高质量文案（带超时）
-    if (this.hermes && this.hermes.generateRadioScript) {
-      try {
+    // 使用带校验的生成机制
+    return this.generateWithValidation(
+      // AI生成函数
+      async (attempt) => {
+        if (!this.hermes || !this.hermes.generateRadioScript) {
+          return { success: false, script: '', error: 'Hermes not available' };
+        }
+
+        // 不同重试次数用略有差异的prompt，增加多样性
+        const attemptHints = [
+          '',
+          '【注意】换一个角度和表达方式，不要用常见的套路开头。',
+          '【重要】用更平实、更具体的细节，避免抽象形容词和广播腔。',
+        ];
+
         const prompt = `${timeGreeting}。${sceneDesc}。
 
-请用温暖、亲切的中文生成一段电台欢迎语。
-不要自我介绍，直接开始说。
-结合当前的时间和氛围，让听众感到"这就是为我说的"。
-邀请听众放松心情，享受接下来的音乐时光。
+【字数限制】40-90字，简短精炼。
 
-【重要】字数限制：严格控制在100个汉字以内（包括标点），越短越好，要精炼有力。
+【禁止】：
+- 禁止"只有你"、禁止"——只有你"
+- 禁止"不用想明天的事，不用管昨天的人"等套话
+- 禁止喊口号、禁止"这半小时只属于你"
+- 禁止广播腔："欢迎收听"、"为您带来"、"亲爱的听众"等
+- 禁止套路开头："你知道吗"、"接下来"等
+- 禁止空洞形容词："太美了"、"令人难忘"、"触动人心"等
 
 要求：
-- 口语化、自然、有感染力
-- 像真实电台DJ一样，有画面感
-- 不要机械地罗列信息
-- 简短有力，控制在100字以内`;
+- 直接开始说，不要自我介绍
+- 口语化，有具体画面感
+- 用真实细节营造氛围：比如"窗边透进来的光"、"街道安静下来"
+- 结尾自然落下
+${attemptHints[attempt] || ''}`;
 
-        console.log('[RadioHost] Calling Hermes AI for welcome message...');
-        
-        // 【优化】AI调用添加8秒超时
         const result = await Promise.race([
           this.hermes.generateRadioScript(prompt, {
             type: 'welcome',
             context: { scene, timeGreeting }
           }),
-          new Promise((_, reject) => setTimeout(() => reject(new Error('AI timeout')), 8000))
+          new Promise((_, reject) => setTimeout(() => reject(new Error('AI timeout')), 15000))
         ]);
 
-        console.log('[RadioHost] Hermes AI result:', { 
-          success: result.success, 
-          scriptLength: result.script?.length,
-          hasScript: !!result.script
-        });
-
-        if (result.success && result.script && result.script.length > 10) {
-          // 如果超过100字，截断
-          let script = result.script;
-          if (script.length > 100) {
-            script = script.substring(0, 100);
-            console.log('[RadioHost] Welcome message truncated to 100 chars');
-          }
-          console.log('[RadioHost] ✓ Generated welcome message using Hermes AI, length:', script.length);
-          return script;
-        } else {
-          console.log('[RadioHost] ✗ Hermes AI returned invalid result, using fallback. Reason:', 
-            !result.success ? 'API failed' : 
-            !result.script ? 'no script' : 
-            'script too short (' + result.script.length + ' chars)');
-        }
-      } catch (error) {
-        console.log('[RadioHost] ✗ Hermes AI failed for welcome, using fallback:', error.message);
-      }
-    } else {
-      console.log('[RadioHost] ✗ Hermes service not available, using fallback. hermes:', !!this.hermes, 'generateRadioScript:', !!this.hermes?.generateRadioScript);
-    }
-
-    // 兜底：使用本地模板（也限制在100字以内）
-    return this.getRandomFallbackWelcome(timeGreeting, sceneDesc);
+        return result;
+      },
+      // Fallback函数
+      () => this.getRandomFallbackWelcome(timeGreeting, sceneDesc),
+      // 校验选项
+      {
+        scriptType: 'welcome',
+        weatherContext: { condition: scene.weather, temperature: scene.temperature },
+      },
+      // 最大重试次数
+      2
+    );
   }
 
   /**
@@ -126,70 +221,92 @@ class RadioHostService {
   /**
    * Generate song introduction with rich context
    * 优先使用Hermes AI生成，失败时使用本地兜底
+   * 【新增】集成质量校验器，自动重试
    */
   async generateSongIntro(song, scene, previousSong = null) {
     const sceneDesc = getSceneDescription(scene);
-    const hour = new Date().getHours();
-    
-    // 构建丰富的上下文信息
-    const context = {
-      timeOfDay: scene.timeOfDay,
-      weather: scene.weather,
-      mood: scene.mood,
-      previousSong: previousSong ? `${previousSong.artist}的《${previousSong.name}》` : null
-    };
 
-    // 首先尝试使用Hermes AI生成高质量文案
-    if (this.hermes && this.hermes.generateRadioScript) {
-      try {
+    // 判断是否纯音乐（简单判断：歌名包含"纯音乐"、"演奏"、"piano"、"instrumental"等，或歌手为"未知"）
+    const isInstrumental = this.isInstrumentalSong(song);
+
+    return this.generateWithValidation(
+      // AI生成函数
+      async (attempt) => {
+        if (!this.hermes || !this.hermes.generateRadioScript) {
+          return { success: false, script: '', error: 'Hermes not available' };
+        }
+
         const previousInfo = previousSong ? `刚刚播放完${previousSong.artist}的《${previousSong.name}》，意犹未尽。` : '';
-        
+
+        // 不同重试次数用略有差异的prompt
+        const attemptHints = [
+          '',
+          '【注意】换一个完全不同的切入角度，不要用常见的套路。',
+          '【重要】用更具体的细节，避免抽象形容词和广播腔，开头要新颖。',
+        ];
+
         const prompt = `${previousInfo}现在${sceneDesc}，${scene.mood}正浓。
 
 即将播放${song.artist}的《${song.name}》。
 
-请用中文生成一段15-20秒的歌曲intro：
-- 自然地引入这首歌，不要说"接下来这首歌是..."这种机械的开场
-- 结合当前的时间和氛围，说说为什么现在听这首歌很合适
-- 可以引用歌词、分享感受、或者描述画面
-- 让听众对这首歌产生期待
+【字数限制】50-100字，简短精炼。
+
+【禁止】：
+- 禁止"你知道吗"开头
+- 禁止"闭上眼睛"命令式结尾
+- 禁止用"那句..."后接空洞形容词
+- 禁止"这首歌太美了"、"令人难忘"、"触动人心"、"太好听了"等空洞词
+- 禁止重复上一首的句式和意象——每首歌必须用全新的切入角度
+- 禁止广播腔："欢迎收听"、"为您带来"、"亲爱的听众"等
+- 禁止书面语："氛围感"、"层次感"、"画面感"、"听感"等
+${isInstrumental ? '- 【纯音乐】禁止提及"歌词"、"人声"、"声线"、"演唱"等' : ''}
 
 要求：
-- 像电台DJ一样自然、有感染力
+- 直接开始说，不要自我介绍
+- 引用歌词时，必须接具体画面或动作，不接空洞感受
 - 口语化，有画面感
-- 不要罗列信息
-- 直接开始说，不要自我介绍`;
+- 每首歌的切入点必须不同：可以是从歌词意象、从编曲乐器、从歌手声线、从个人记忆等不同角度切入
+${attemptHints[attempt] || ''}`;
 
-        console.log('[RadioHost] Calling Hermes AI for song intro:', song.name);
-        const result = await this.hermes.generateRadioScript(prompt, {
-          type: 'intro',
-          context: { song, scene, previousSong }
-        });
+        const result = await Promise.race([
+          this.hermes.generateRadioScript(prompt, {
+            type: 'intro',
+            context: { song, scene, previousSong }
+          }),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('AI timeout')), 12000))
+        ]);
 
-        console.log('[RadioHost] Hermes AI intro result:', { 
-          success: result.success, 
-          scriptLength: result.script?.length,
-          hasScript: !!result.script
-        });
+        return result;
+      },
+      // Fallback函数
+      () => this.getRandomFallbackIntro(song, scene),
+      // 校验选项
+      {
+        scriptType: 'intro',
+        isInstrumental,
+        weatherContext: { condition: scene.weather, temperature: scene.temperature },
+      },
+      // 最大重试次数
+      2
+    );
+  }
 
-        if (result.success && result.script && result.script.length > 20) {
-          console.log('[RadioHost] ✓ Generated song intro using Hermes AI, length:', result.script.length);
-          return result.script;
-        } else {
-          console.log('[RadioHost] ✗ Hermes AI returned invalid intro, using fallback. Reason:', 
-            !result.success ? 'API failed' : 
-            !result.script ? 'no script' : 
-            'script too short (' + result.script.length + ' chars)');
-        }
-      } catch (error) {
-        console.log('[RadioHost] ✗ Hermes AI failed for intro, using fallback:', error.message);
-      }
-    } else {
-      console.log('[RadioHost] ✗ Hermes service not available for intro, using fallback');
-    }
+  /**
+   * 判断是否纯音乐
+   */
+  isInstrumentalSong(song) {
+    if (!song) return false;
+    const name = (song.name || '').toLowerCase();
+    const artist = (song.artist || '').toLowerCase();
 
-    // 兜底：使用本地模板
-    return this.getRandomFallbackIntro(song, scene);
+    const instrumentalKeywords = [
+      '纯音乐', '演奏', '钢琴曲', '钢琴', 'instrumental', 'piano',
+      '伴奏', 'bgm', '背景音乐', '纯享', '轻音乐',
+    ];
+
+    return instrumentalKeywords.some(keyword =>
+      name.includes(keyword) || artist.includes(keyword)
+    );
   }
 
   /**
@@ -272,65 +389,79 @@ ${song.artist}的《${song.name}》即将响起...
    * Generate outro after song finishes with rich context
    * 优先使用Hermes AI生成，失败时使用本地兜底
    * 【修改】合并上首总结和下首推荐，总字数不超过60字
+   * 【重要】确保文案必须包含两首歌的名称
+   * 【新增】集成质量校验器，自动重试
    */
   async generateSongOutro(song, nextSong = null, userReaction = null) {
-    // 首先尝试使用Hermes AI生成高质量文案
-    if (this.hermes && this.hermes.generateRadioScript) {
-      try {
+    const isInstrumental = this.isInstrumentalSong(song);
+
+    return this.generateWithValidation(
+      // AI生成函数
+      async (attempt) => {
+        if (!this.hermes || !this.hermes.generateRadioScript) {
+          return { success: false, script: '', error: 'Hermes not available' };
+        }
+
         const nextInfo = nextSong ? `下一首：${nextSong.artist}《${nextSong.name}》` : '音乐继续';
-        
+
+        const attemptHints = [
+          '',
+          '【注意】确保提到两首歌的名字，换一种表达方式。',
+          '【重要】更简短、更自然，不要用套路过渡词。',
+        ];
+
         const prompt = `刚刚播放完${song.artist}的《${song.name}》，${nextInfo}。
 
-请用中文生成一段简短的过渡文案：
-- 简单回应刚才这首歌（一句话）
-- 自然引入下一首歌（一句话）
-- 保持温暖、轻松的语气
+【字数限制】30-80字，简短精炼。
 
-【重要】字数限制：总字数严格控制在60个汉字以内（包括标点），越短越好。
+【禁止】：
+- 禁止"你知道吗"
+- 禁止用"这首歌太美了"、"令人难忘"等空洞词
+- 禁止说"让我们..."、"让XX把你带回..."
+- 禁止广播腔："欢迎收听"、"为您带来"等
+- 禁止套路过渡："好了"、"接下来"等开头
+${isInstrumental ? '- 【纯音乐】禁止提及"歌词"、"人声"、"声线"等' : ''}
 
-【重要】表达方式要求：
-- 开头多样化：不要用"这首歌"开头，尝试用"刚才"、"刚刚"、"这一曲"等
-- 结尾过渡多样化：不要用"好了"开头，可以用"接下来"、"下面"、"让"等
-- 简短、自然，像真实的电台DJ
-- 口语化，不要机械
-- 直接开始说，不要自我介绍`;
+要求：
+- 直接开始说，不要自我介绍
+- 必须明确提到"${song.name}"或"${song.artist}"
+- 如果有下一首歌，必须明确提到"${nextSong?.name || ''}"或"${nextSong?.artist || ''}"
+- 说上一首歌时，引用一个具体细节
+- 说下一首歌时，用简短具体的一句话带过
+- 口语化，自然
+${attemptHints[attempt] || ''}`;
 
-        console.log('[RadioHost] Calling Hermes AI for song outro:', song.name);
-        const result = await this.hermes.generateRadioScript(prompt, {
-          type: 'outro',
-          context: { song, nextSong }
-        });
+        const result = await Promise.race([
+          this.hermes.generateRadioScript(prompt, {
+            type: 'outro',
+            context: { song, nextSong }
+          }),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('AI timeout')), 12000))
+        ]);
 
-        console.log('[RadioHost] Hermes AI outro result:', { 
-          success: result.success, 
-          scriptLength: result.script?.length,
-          hasScript: !!result.script
-        });
+        // 额外校验：必须包含歌名
+        if (result.success && result.script) {
+          const hasSongName = result.script.includes(song.name) || result.script.includes(song.artist);
+          const hasNextSongName = !nextSong || result.script.includes(nextSong.name) || result.script.includes(nextSong.artist);
 
-        if (result.success && result.script && result.script.length > 5) {
-          // 如果超过60字，截断
-          let script = result.script;
-          if (script.length > 60) {
-            script = script.substring(0, 60);
-            console.log('[RadioHost] Outro message truncated to 60 chars');
+          if (!hasSongName || !hasNextSongName) {
+            console.log('[RadioHost] ✗ Outro缺少歌名，标记为失败。hasSongName:', hasSongName, 'hasNextSongName:', hasNextSongName);
+            return { success: false, script: '', error: 'missing song names' };
           }
-          console.log('[RadioHost] ✓ Generated song outro using Hermes AI, length:', script.length);
-          return script;
-        } else {
-          console.log('[RadioHost] ✗ Hermes AI returned invalid outro, using fallback. Reason:', 
-            !result.success ? 'API failed' : 
-            !result.script ? 'no script' : 
-            'script too short (' + result.script.length + ' chars)');
         }
-      } catch (error) {
-        console.log('[RadioHost] ✗ Hermes AI failed for outro, using fallback:', error.message);
-      }
-    } else {
-      console.log('[RadioHost] ✗ Hermes service not available for outro, using fallback');
-    }
 
-    // 兜底：使用本地模板（也限制在60字以内）
-    return this.getRandomFallbackOutro(song, nextSong);
+        return result;
+      },
+      // Fallback函数
+      () => this.getRandomFallbackOutro(song, nextSong),
+      // 校验选项
+      {
+        scriptType: 'outro',
+        isInstrumental,
+      },
+      // 最大重试次数
+      2
+    );
   }
 
   /**

@@ -5,7 +5,9 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "node server.js"
+    "dev": "node server.js",
+    "dashboard:agent": "node scripts/dashboard-agent.js",
+    "dashboard:install": "bash scripts/install-dashboard-integration.sh"
   },
   "keywords": [
     "music",
@@ -16,12 +18,13 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "dotenv": "^16.4.5",
     "edge-tts-nodejs": "^1.0.6",
     "express": "^4.18.2",
     "node-fetch": "^2.7.0",
     "sqlite3": "^5.1.6"
   },
   "devDependencies": {
-    "@music163/ncm-cli": "^0.1.3"
+    "@music163/ncm-cli": "^0.1.6"
   }
 }

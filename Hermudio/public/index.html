@@ -4,7 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Hermudio — Nightfall Ember</title>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<link rel="icon" href="/icon-32x32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="/icon-16x16.png" sizes="16x16" type="image/png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#0d0802">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Noto+Serif+SC:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
     --ember-hue: 22;
@@ -163,6 +169,16 @@
     font-size: 16px;
     box-shadow: 0 0 16px rgba(255,140,60,0.3);
     border: 1px solid rgba(255,180,80,0.2);
+    transition: background 220ms ease, box-shadow 220ms ease, transform 220ms ease;
+  }
+  .brand-avatar[data-time-of-day="day"] {
+    background: linear-gradient(135deg, rgba(255, 215, 122, 0.95), rgba(255, 166, 77, 0.92));
+    box-shadow: 0 0 18px rgba(255, 190, 92, 0.38);
+    transform: translateY(-1px);
+  }
+  .brand-avatar[data-time-of-day="night"] {
+    background: linear-gradient(135deg, oklch(0.82 0.14 var(--ember-hue)), oklch(0.70 0.16 calc(var(--ember-hue) - 10)));
+    box-shadow: 0 0 16px rgba(255,140,60,0.3);
   }
   .brand-name {
     font-size: 24px; font-weight: 600;
@@ -229,6 +245,7 @@
     flex: 1 1 auto;
     display: flex;
     flex-direction: column;
+    min-height: 0;
     background: rgba(10, 6, 2, 0.85);
     border-radius: 24px 24px 0 0;
     margin-top: -16px;
@@ -312,17 +329,19 @@
 
   /* Transcript */
   .transcript-wrap {
-    flex: 1 1 auto;
+    flex: 1 1 0;
+    min-height: 0;
     margin: 0 16px;
     background: rgba(255,200,100,0.02);
     border: 1px solid rgba(255,160,60,0.06);
     border-radius: 18px; overflow: hidden;
-    position: relative; min-height: 180px; max-height: 320px;
+    position: relative;
     display: flex;
     flex-direction: column;
   }
   .transcript-scroll {
     flex: 1 1 auto;
+    min-height: 0;
     overflow-y: auto;
     padding: 18px 18px 40px;
     scroll-behavior: smooth;
@@ -438,6 +457,27 @@
     border-color: rgba(255,160,60,0.3);
     background: rgba(255,160,60,0.06);
   }
+  /* LOGIN 按钮样式 - 与其他 sleep-preset 按钮保持一致 */
+  #bottomLoginBtn {
+    font-size: 10px;
+    color: #ffb86c;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    border-color: rgba(255,160,60,0.35);
+    background: rgba(255,160,60,0.08);
+    padding: 3px 8px;
+    border-radius: 999px;
+    border-width: 1px;
+    border-style: solid;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  #bottomLoginBtn:hover {
+    color: #ffcc80;
+    border-color: rgba(255,160,60,0.6);
+    background: rgba(255,160,60,0.15);
+    transform: scale(1.05);
+  }
 
   /* Tweaks */
   .tweaks-toggle {
@@ -513,7 +553,7 @@
   }
   /* Radio Mode and Chat Mode */
   .radio-mode {
-    display: flex;
+    display: none;
     flex-direction: column;
     flex: 1 1 auto;
   }
@@ -784,14 +824,14 @@
     transition: max-height 0.3s ease;
   }
   .queue-list.expanded {
-    max-height: 150px;
+    max-height: 240px;
     overflow-y: auto;
   }
   .queue-item {
     display: flex;
     align-items: center;
-    padding: 4px 12px;
-    gap: 6px;
+    padding: 9px 14px;
+    gap: 10px;
     cursor: pointer;
     transition: background 0.2s;
   }
@@ -802,18 +842,19 @@
     background: oklch(0.82 0.14 var(--ember-hue) / 0.15);
   }
   .queue-number {
-    font-size: 8px;
+    font-size: 10px;
     color: rgba(255,200,100,0.35);
-    width: 14px;
+    width: 16px;
+    flex-shrink: 0;
     text-align: center;
   }
   .queue-item.active .queue-number {
     color: oklch(0.82 0.14 var(--ember-hue));
   }
   .queue-play-icon {
-    width: 14px;
+    width: 16px;
     text-align: center;
-    font-size: 7px;
+    font-size: 9px;
     color: oklch(0.82 0.14 var(--ember-hue));
     display: none;
   }
@@ -823,17 +864,30 @@
   .queue-item.active .queue-number {
     display: none;
   }
-  .queue-track-name {
+  .queue-track-info {
     flex: 1;
-    font-size: 10px;
-    color: rgba(255,255,255,0.9);
+    min-width: 0;
+  }
+  .queue-track-name {
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.3;
+    color: rgba(255,255,255,0.92);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .queue-item.active .queue-track-name {
     color: oklch(0.82 0.14 var(--ember-hue));
   }
   .queue-track-artist {
-    font-size: 8px;
-    color: rgba(255,200,100,0.5);
+    font-size: 11px;
+    line-height: 1.3;
+    margin-top: 2px;
+    color: rgba(255,200,100,0.55);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   /* Queue Footer with Hermudio indicator - Nightfall Ember */
@@ -1058,6 +1112,28 @@
     border: none;
     box-shadow: 0 0 12px oklch(0.82 0.14 var(--ember-hue) / 0.4);
   }
+  .chat-player-input {
+    padding: 12px 18px 18px;
+    gap: 10px;
+  }
+  .chat-player-input .chat-input {
+    min-width: 0;
+    border-radius: 999px;
+    padding: 10px 14px;
+  }
+  .chat-player-input .input-actions {
+    flex: 0 0 auto;
+  }
+  .chat-player-input .input-btn.send {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    box-shadow: 0 0 16px oklch(0.82 0.14 var(--ember-hue) / 0.4);
+    font-size: 16px;
+  }
+  .chat-mode .header-date {
+    text-transform: uppercase;
+  }
 
   /* App Footer */
   .app-footer {
@@ -1127,12 +1203,232 @@
     .card { border-radius: 0; height: 100vh; }
     .header, .body, .player { border-radius: 0; margin-top: 0; }
   }
+
+  /* ========== 皮肤系统：容器显隐 + 切换菜单 ========== */
+  .skin-root { display: none; }
+  body.skin-cinema #defaultSkinStage,
+  body.skin-cinema .design-label,
+  body.skin-cinema #tweaksToggle,
+  body.skin-magazine #defaultSkinStage,
+  body.skin-magazine .design-label,
+  body.skin-magazine #tweaksToggle { display: none; }
+  /* #playCounterDiv 自带内联 style="display:flex"，普通规则盖不掉内联样式，这里用 !important */
+  body.skin-cinema #playCounterDiv,
+  body.skin-magazine #playCounterDiv { display: none !important; }
+  body.skin-cinema .skin-cinema-root { display: block; }
+  body.skin-magazine .skin-magazine-root { display: block; }
+  /* 【修复】基础页面给 html/body 设了 overflow:hidden（默认皮肤是固定卡片布局，
+     自己有内部滚动区，不需要整页滚动）。但 Cinema/Magazine 是长页面滚动布局，
+     继承这条规则会导致内容超出一屏时用户完全没法滚动到下面的内容。
+     html 不是 body 的后代，选择器选不到，所以 JS 里同时给 <html> 也打了
+     skin-cinema/skin-magazine class（见 SkinRenderer.apply），这里两个都选。 */
+  html.skin-cinema, body.skin-cinema,
+  html.skin-magazine, body.skin-magazine { overflow-y: auto !important; height: auto !important; min-height: 100%; }
+
+  .skin-switch-wrap { position: relative; display: inline-block; }
+  .skin-switch-menu {
+    position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%);
+    background: rgba(16, 10, 4, 0.96); border: 1px solid rgba(255, 160, 60, 0.15);
+    border-radius: 12px; padding: 6px; min-width: 176px; z-index: 2000;
+    box-shadow: 0 12px 32px -8px rgba(0,0,0,0.6);
+    display: none; flex-direction: column; gap: 2px;
+    backdrop-filter: blur(20px);
+  }
+  .skin-switch-menu.open { display: flex; }
+  /* Cinema/Magazine 的切换按钮放在顶部导航里，往上弹会飞出视口，改成往下弹；
+     且按钮贴着右边缘，居中弹出会溢出屏幕，改成右对齐弹出。 */
+  .skin-switch-menu.drop-down { bottom: auto; top: calc(100% + 8px); }
+  .skin-switch-menu.align-right { left: auto; right: 0; transform: none; }
+  .topnav-right { display: flex; align-items: center; gap: 12px; }
+  .skin-switch-option {
+    background: transparent; border: none; color: rgba(255,255,255,0.85);
+    font-size: 12px; line-height: 1.4; padding: 9px 12px; border-radius: 8px; text-align: left;
+    cursor: pointer; transition: background 0.15s; font-family: inherit;
+    white-space: nowrap;
+  }
+  .skin-switch-option:hover { background: rgba(255,160,60,0.12); }
+  .skin-switch-option.active { color: oklch(0.82 0.14 22); font-weight: 600; }
+  /* Magazine 里这个菜单不能用默认皮肤的深色玻璃风——纸面报头上冒出一块
+     深色圆角泡泡非常突兀，改成跟 DARK/皮肤 按钮同语言的纸面+墨线样式。 */
+  .skin-magazine-root .skin-switch-menu {
+    background: var(--bg-paper); border: 1px solid var(--ink);
+    border-radius: 3px; padding: 4px; min-width: 200px;
+    box-shadow: 0 10px 28px -12px rgba(0, 0, 0, 0.35);
+    backdrop-filter: none; gap: 0;
+  }
+  .skin-magazine-root .skin-switch-option {
+    font-family: 'Space Grotesk', sans-serif; font-size: 11px; letter-spacing: 0.08em;
+    color: var(--ink); border-radius: 0; padding: 10px 12px;
+  }
+  .skin-magazine-root .skin-switch-option + .skin-switch-option { border-top: 1px solid var(--rule-light, #dddbd4); }
+  .skin-magazine-root .skin-switch-option:hover { background: var(--bg-paper-2); }
+  .skin-magazine-root .skin-switch-option.active { color: var(--accent); font-weight: 500; }
+  .skin-magazine-root.dark .skin-switch-menu { background: #1e1e21; border-color: rgba(244, 243, 239, 0.25); }
+  .skin-magazine-root.dark .skin-switch-option { color: rgba(244, 243, 239, 0.85); }
+  .skin-magazine-root.dark .skin-switch-option + .skin-switch-option { border-top-color: rgba(244, 243, 239, 0.1); }
+  .skin-magazine-root.dark .skin-switch-option:hover { background: rgba(244, 243, 239, 0.08); }
+
+  /* ========== Cinema 皮肤 (option-A-cinema) ========== */
+ .skin-cinema-root{
+  --bg-deep: #0d0802;
+  --bg-stage: radial-gradient(ellipse at 50% 80%, #1a0e02 0%, #0d0802 60%, #050200 100%);
+  --ember-hue: 22;
+  --ember-core: oklch(0.85 0.16 22);
+  --ember-mid: oklch(0.70 0.18 26);
+  --ember-fade: oklch(0.45 0.12 30 / 0);
+  --rose-core: oklch(0.72 0.14 352);
+  --gold-core: oklch(0.80 0.13 42);
+  --text-primary: rgba(255, 255, 255, 0.95);
+  --text-secondary: rgba(255, 200, 100, 0.6);
+  --text-muted: rgba(255, 255, 255, 0.55);
+  --text-dim: rgba(255, 200, 100, 0.35);
+  --surface-card: rgba(16, 10, 4, 0.88);
+  --surface-glass: rgba(16, 10, 4, 0.65);
+  --border-subtle: rgba(255, 160, 60, 0.12);
+  --accent: oklch(0.78 0.14 22);
+} .skin-cinema-root *{ margin: 0; padding: 0; box-sizing: border-box; } .skin-cinema-root{
+  background: var(--bg-deep);
+  font-family: 'Space Grotesk', -apple-system, sans-serif;
+  color: var(--text-primary);
+  min-height: 100vh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ===== Ember Orb 背景（DESIGN.md 核心元素，保留） ===== */ .skin-cinema-root .ember-stage{ position: fixed; inset: 0; z-index: 0; overflow: hidden; background: var(--bg-stage); } .skin-cinema-root .ember-orb{ position: absolute; border-radius: 50%; filter: blur(110px) saturate(1.4); mix-blend-mode: screen; will-change: transform; } .skin-cinema-root .orb-central{ top: 30%; left: 50%; transform: translate(-50%, -50%); width: 480px; height: 480px; background: radial-gradient(circle, var(--ember-core) 0%, var(--ember-mid) 40%, var(--ember-fade) 70%); animation: float-central 22s ease-in-out infinite; } .skin-cinema-root .orb-left{ top: 40%; left: 15%; width: 380px; height: 380px; background: radial-gradient(circle, var(--rose-core) 0%, oklch(0.55 0.16 346) 40%, var(--ember-fade) 70%); animation: float-left 30s ease-in-out infinite; } .skin-cinema-root .orb-right{ top: 45%; right: 12%; width: 360px; height: 360px; background: radial-gradient(circle, var(--gold-core) 0%, oklch(0.65 0.14 39) 40%, var(--ember-fade) 70%); animation: float-right 26s ease-in-out infinite; } .skin-cinema-root .orb-ground{ bottom: -10%; left: 50%; transform: translateX(-50%); width: 700px; height: 200px; background: radial-gradient(ellipse, oklch(0.50 0.12 22) 0%, var(--ember-fade) 70%); animation: float-ground 18s ease-in-out infinite; }
+@keyframes float-central { .skin-cinema-root 0%, .skin-cinema-root 100%{ transform: translate(-50%, -50%) scale(1); } .skin-cinema-root 50%{ transform: translate(-50%, -50%) scale(1.08); } }
+@keyframes float-left { .skin-cinema-root 0%, .skin-cinema-root 100%{ transform: scale(1); } .skin-cinema-root 50%{ transform: scale(1.10); } }
+@keyframes float-right { .skin-cinema-root 0%, .skin-cinema-root 100%{ transform: scale(1); } .skin-cinema-root 50%{ transform: scale(1.12); } }
+@keyframes float-ground { .skin-cinema-root 0%, .skin-cinema-root 100%{ transform: translateX(-50%) scaleX(1); } .skin-cinema-root 50%{ transform: translateX(-45%) scaleX(1.15); } } .skin-cinema-root .vignette{ position: fixed; inset: 0; z-index: 1; pointer-events: none; background: radial-gradient(ellipse at 50% 50%, transparent 30%, rgba(0,0,0,0.55) 90%); }
+
+/* ===== 主舞台 ===== */
+/* 【修复】默认皮肤有同名 .stage 规则（position:fixed + 不透明 background），未被这里显式覆盖的属性会
+   按 CSS 层叠规则透出，其中 background 是不透明深色渐变，正好盖住下面 z-index 更低的 ember-stage 光晕层，
+   导致 Cinema 皮肤看起来一片死黑、没有设计稿里的暖色光晕。这里显式声明 background:none / overflow:visible 切断透传。 */
+.skin-cinema-root .stage{ position: relative; z-index: 2; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 40px 24px 180px; gap: 28px; background: none; overflow: visible; } .skin-cinema-root .topnav{ position: static; width: 100%; max-width: 760px; display: flex; justify-content: space-between; align-items: center; pointer-events: auto; } .skin-cinema-root .brand{ display: flex; align-items: center; gap: 10px; } .skin-cinema-root .brand-avatar{ width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, var(--ember-core), oklch(0.70 0.16 12)); box-shadow: 0 0 16px rgba(255, 140, 60, 0.3), inset 0 0 0 1px rgba(255, 180, 80, 0.2); } .skin-cinema-root .brand-name{ font-size: 18px; font-weight: 600; letter-spacing: -0.02em; } .skin-cinema-root .brand-sub{ font-size: 10px; color: var(--text-dim); letter-spacing: 0.12em; text-transform: uppercase; margin-top: 2px; } .skin-cinema-root .now-time{ font-size: 13px; color: var(--text-secondary); font-variant-numeric: tabular-nums; letter-spacing: 0.04em; } .skin-cinema-root .mode-toggle{ display: flex; align-items: center; gap: 4px; padding: 4px; background: var(--surface-glass); border: 1px solid var(--border-subtle); border-radius: 999px; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); } .skin-cinema-root .mode-btn{ padding: 8px 18px; border-radius: 999px; font-size: 12px; font-weight: 500; letter-spacing: 0.04em; color: var(--text-muted); background: transparent; border: none; cursor: pointer; transition: all 0.3s ease; } .skin-cinema-root .mode-btn:hover{ color: var(--text-primary); } .skin-cinema-root .mode-btn:focus-visible{ outline: 2px solid var(--accent); outline-offset: 2px; } .skin-cinema-root .mode-btn.active{ color: #1a0a02; background: linear-gradient(135deg, var(--ember-core), var(--accent)); box-shadow: 0 0 16px oklch(0.82 0.14 22 / 0.5); }
+/* 【修复】皮肤切换按钮不能用 .mode-btn 类：默认皮肤有一段全局未加作用域的 JS
+   (initEventListeners 里 document.querySelectorAll('.mode-btn').forEach(...))，
+   会给页面里所有 .mode-btn 元素挂 click 监听器并调用 switchMode(btn.dataset.mode)，
+   没有 data-mode 就会 switchMode(undefined)，把电台/聊天两个面板都判不中、直接隐藏。
+   这里单独起一个视觉上完全一致、但类名不冲突的按钮样式。 */
+.skin-cinema-root .util-btn{ padding: 8px 14px; border-radius: 999px; font-size: 12px; font-weight: 500; letter-spacing: 0.04em; color: var(--text-muted); background: transparent; border: none; cursor: pointer; transition: all 0.3s ease; }
+.skin-cinema-root .skin-switch-icon-btn{ padding: 8px; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; }
+.skin-cinema-root .skin-switch-icon-btn:hover{ background: var(--surface-glass); }
+/* DJ 历史播报：填充 host-card 下方的留白，跟默认皮肤的历史文案区对应 */
+.skin-cinema-root .host-history{ display: flex; flex-direction: column; gap: 12px; margin-top: 16px; }
+.skin-cinema-root .host-history:empty{ display: none; }
+.skin-cinema-root .host-history-item{ border-top: 1px solid var(--border-subtle); padding-top: 12px; }
+.skin-cinema-root .host-history-time{ display: block; font-size: 10px; letter-spacing: 0.12em; color: var(--text-dim); margin-bottom: 4px; }
+.skin-cinema-root .host-history-text{ font-family: 'Cormorant Garamond', serif; font-size: 16px; line-height: 1.55; color: rgba(255, 255, 255, 0.45); }
+/* 电台面板里主播放器已经有完整播放控制，mini-player 纯属重复；只在聊天面板
+   （没有别的音乐控制入口）时显示。杂志皮肤不适用此规则——它的 mini-player
+   是全皮肤唯一的音乐控制，必须常驻。 */
+.skin-cinema-root:not(.chat-active) .mini-player{ display: none; }
+.skin-cinema-root .util-btn:hover{ color: var(--text-primary); }
+.skin-cinema-root .util-btn:focus-visible{ outline: none; box-shadow: 0 0 0 2px var(--accent); }
+/* 【修复】.brand-avatar 也被默认皮肤全局 JS (updateBrandAvatars) 用 querySelectorAll('.brand-avatar')
+   塞进日/夜 emoji 图标，设计稿里这只是个纯装饰的渐变圆点，改名避开碰撞。 */
+.skin-cinema-root .cinema-brand-avatar{ width: 34px; height: 34px; border-radius: 50%; overflow: hidden; box-shadow: 0 0 16px rgba(255, 140, 60, 0.3), inset 0 0 0 1px rgba(255, 180, 80, 0.2); }
+.skin-cinema-root .cinema-brand-avatar img{ width: 100%; height: 100%; display: block; } .skin-cinema-root .mode-stage{ width: 100%; max-width: 760px; position: relative; } .skin-cinema-root .mode-pane{ display: none; } .skin-cinema-root .mode-pane.active{ display: block; animation: curtain-reveal 0.7s cubic-bezier(0.16, 1, 0.3, 1); }
+@keyframes curtain-reveal { .skin-cinema-root 0%{ opacity: 0; transform: scale(0.96) perspective(1200px) rotateY(-8deg); filter: blur(8px); } .skin-cinema-root 100%{ opacity: 1; transform: none; filter: none; } }
+
+/* ===== 电台模式：专辑封面是主角 ===== */ .skin-cinema-root .radio-stage{ display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 32px; align-items: center; } .skin-cinema-root .album-cover{ position: relative; aspect-ratio: 1 / 1; border-radius: 12px; overflow: hidden; background: linear-gradient(135deg, #1a0e02 0%, #2d1810 50%, #1a0e02 100%); box-shadow: 0 40px 80px -20px rgba(0,0,0,0.8), 0 0 0 1px rgba(255, 180, 80, 0.15); } .skin-cinema-root .album-cover::before{ content: ''; position: absolute; inset: 0; background: radial-gradient(circle at 30% 30%, rgba(255, 180, 80, 0.15), transparent 60%); } .skin-cinema-root .album-cover-art{ position: absolute; inset: 24px; display: flex; align-items: center; justify-content: center; font-family: 'Cormorant Garamond', serif; font-size: 96px; font-style: italic; color: rgba(255, 220, 160, 0.85); letter-spacing: -0.04em; text-align: center; line-height: 0.9; } .skin-cinema-root .album-cover-meta{ position: absolute; bottom: 0; left: 0; right: 0; padding: 32px 24px 20px; background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.85) 80%); color: rgba(255, 220, 160, 0.9); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; } .skin-cinema-root .album-cover-glow{ position: absolute; inset: -20px; z-index: -1; background: radial-gradient(circle, oklch(0.70 0.18 26 / 0.4), transparent 70%); filter: blur(40px); } .skin-cinema-root .radio-meta{ display: flex; flex-direction: column; gap: 22px; } .skin-cinema-root .radio-meta-song{ font-family: 'Cormorant Garamond', serif; font-size: 36px; font-weight: 500; line-height: 1.05; letter-spacing: -0.02em; color: var(--text-primary); } .skin-cinema-root .radio-meta-artist{ font-size: 14px; font-weight: 300; color: var(--text-secondary); margin-top: 8px; } .skin-cinema-root .radio-meta-album{ font-size: 11px; color: var(--text-dim); letter-spacing: 0.08em; text-transform: uppercase; margin-top: 4px; } .skin-cinema-root .progress{ display: flex; gap: 2px; height: 2px; border-radius: 999px; overflow: hidden; } .skin-cinema-root .progress-cell{ flex: 1; background: rgba(255, 200, 100, 0.12); transition: background 0.2s; } .skin-cinema-root .progress-cell.filled{ background: oklch(0.80 0.14 22); box-shadow: 0 0 4px oklch(0.80 0.14 22 / 0.6); } .skin-cinema-root .progress-time{ display: flex; justify-content: space-between; font-size: 11px; color: var(--text-dim); font-variant-numeric: tabular-nums; letter-spacing: 0.06em; } .skin-cinema-root .player-controls{ display: flex; align-items: center; justify-content: center; gap: 24px; margin-top: 4px; } .skin-cinema-root .ctrl{ background: transparent; border: none; color: var(--text-muted); cursor: pointer; padding: 8px; transition: color 0.2s, transform 0.15s; display: flex; align-items: center; justify-content: center; } .skin-cinema-root .ctrl:hover{ color: var(--text-primary); } .skin-cinema-root .ctrl:focus-visible{ outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 4px; } .skin-cinema-root .ctrl.play{ width: 68px; height: 68px; border-radius: 50%; background: linear-gradient(135deg, var(--ember-core), var(--accent)); color: #1a0a02; box-shadow: 0 0 32px oklch(0.82 0.14 22 / 0.6), 0 0 0 4px rgba(255, 200, 100, 0.08); } .skin-cinema-root .ctrl.play:hover{ transform: scale(1.05); } .skin-cinema-root .ctrl.play:active{ transform: scale(0.94); } .skin-cinema-root .ctrl svg{ width: 20px; height: 20px; fill: currentColor; } .skin-cinema-root .ctrl.play svg{ width: 22px; height: 22px; }
+
+/* 电台主持人 TTS 文案（DESIGN.md 核心） */ .skin-cinema-root .host-card{ background: linear-gradient(135deg, rgba(255, 200, 100, 0.06) 0%, rgba(16, 10, 4, 0.85) 50%, rgba(255, 160, 60, 0.04) 100%); border: 1px solid var(--border-subtle); border-radius: 18px; padding: 22px 24px; backdrop-filter: blur(40px) saturate(1.2); -webkit-backdrop-filter: blur(40px) saturate(1.2); margin-top: 28px; position: relative; box-shadow: 0 20px 40px -16px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255, 200, 100, 0.06); } .skin-cinema-root .host-card::before{ content: ''; position: absolute; top: -1px; left: 24px; right: 24px; height: 1px; background: linear-gradient(90deg, transparent, oklch(0.75 0.15 22 / 0.4), transparent); } .skin-cinema-root .host-label{ display: flex; align-items: center; gap: 8px; font-size: 10px; color: var(--text-dim); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 12px; } .skin-cinema-root .host-dot{ width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: pulse 1.4s ease-in-out infinite; box-shadow: 0 0 8px oklch(0.80 0.14 22 / 0.6); }
+@keyframes pulse { .skin-cinema-root 0%, .skin-cinema-root 100%{ opacity: 0.5; transform: scale(0.85); } .skin-cinema-root 50%{ opacity: 1; transform: scale(1.1); } } .skin-cinema-root .host-text{ font-family: 'Cormorant Garamond', serif; font-size: 19px; line-height: 1.55; color: var(--text-primary); font-weight: 400; } .skin-cinema-root .host-text .current{ color: rgba(255, 240, 200, 1); background: rgba(255, 180, 80, 0.18); border-radius: 4px; padding: 0 3px; margin: 0 -1px; box-shadow: 0 0 0 1px rgba(255, 180, 80, 0.2); } .skin-cinema-root .host-text .said{ color: rgba(255, 255, 255, 0.65); } .skin-cinema-root .host-text .future{ color: rgba(255, 255, 255, 0.22); }
+
+/* ===== 聊天模式 ===== */ .skin-cinema-root .chat-stage{ display: flex; flex-direction: column; height: 540px; background: var(--surface-glass); border: 1px solid var(--border-subtle); border-radius: 24px; overflow: hidden; backdrop-filter: blur(40px) saturate(1.2); -webkit-backdrop-filter: blur(40px) saturate(1.2); } .skin-cinema-root .chat-header{ padding: 18px 24px; border-bottom: 1px solid var(--border-subtle); display: flex; align-items: center; gap: 12px; } .skin-cinema-root .chat-avatar-ai{ width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, var(--ember-core), oklch(0.70 0.16 12)); display: flex; align-items: center; justify-content: center; font-size: 13px; color: #1a0a02; font-weight: 600; } .skin-cinema-root .chat-title{ font-size: 14px; font-weight: 500; } .skin-cinema-root .chat-status{ font-size: 11px; color: var(--text-dim); margin-top: 1px; } .skin-cinema-root .chat-messages{ flex: 1; padding: 20px 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; } .skin-cinema-root .chat-msg{ display: flex; gap: 10px; max-width: 80%; } .skin-cinema-root .chat-msg.user{ align-self: flex-end; flex-direction: row-reverse; } .skin-cinema-root .chat-msg-avatar{ width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; } .skin-cinema-root .chat-msg.ai .chat-msg-avatar{ background: linear-gradient(135deg, var(--ember-core), oklch(0.70 0.16 12)); color: #1a0a02; } .skin-cinema-root .chat-msg.user .chat-msg-avatar{ background: rgba(255, 200, 100, 0.12); color: var(--text-secondary); } .skin-cinema-root .chat-bubble{ padding: 10px 14px; border-radius: 16px; font-size: 14px; line-height: 1.5; } .skin-cinema-root .chat-msg.ai .chat-bubble{ background: rgba(255, 200, 100, 0.08); border: 1px solid var(--border-subtle); color: var(--text-primary); border-bottom-left-radius: 4px; } .skin-cinema-root .chat-msg.user .chat-bubble{ background: oklch(0.35 0.05 22); color: var(--text-primary); border-bottom-right-radius: 4px; } .skin-cinema-root .chat-input-area{ padding: 14px 18px 18px; border-top: 1px solid var(--border-subtle); display: flex; gap: 10px; align-items: center; } .skin-cinema-root .chat-input{ flex: 1; background: rgba(0,0,0,0.4); border: 1px solid var(--border-subtle); border-radius: 22px; padding: 10px 16px; color: var(--text-primary); font: inherit; font-size: 14px; outline: none; } .skin-cinema-root .chat-input:focus{ border-color: oklch(0.65 0.12 22 / 0.4); } .skin-cinema-root .chat-input::placeholder{ color: var(--text-dim); } .skin-cinema-root .send-btn{ width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, var(--ember-core), var(--accent)); border: none; color: #1a0a02; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 0 12px oklch(0.82 0.14 22 / 0.4); transition: transform 0.15s; } .skin-cinema-root .send-btn:hover{ transform: scale(1.05); } .skin-cinema-root .send-btn:focus-visible{ outline: 2px solid var(--ember-core); outline-offset: 3px; } .skin-cinema-root .send-btn svg{ width: 16px; height: 16px; fill: current-color; } .skin-cinema-root .send-btn svg{ width: 16px; height: 16px; fill: currentColor; }
+
+/* 底部 mini player */ .skin-cinema-root .mini-player{ position: fixed; left: 24px; right: 24px; bottom: 24px; z-index: 10; display: flex; align-items: center; gap: 14px; padding: 12px 18px; background: var(--surface-card); border: 1px solid var(--border-subtle); border-radius: 999px; backdrop-filter: blur(40px) saturate(1.2); -webkit-backdrop-filter: blur(40px) saturate(1.2); box-shadow: 0 20px 40px -12px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255, 200, 100, 0.06); max-width: 712px; margin: 0 auto; } .skin-cinema-root .mini-cover{ width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, #2d1810, #1a0e02); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-family: 'Cormorant Garamond', serif; font-size: 14px; font-style: italic; color: rgba(255, 200, 100, 0.6); } .skin-cinema-root .mini-info{ flex: 1; min-width: 0; } .skin-cinema-root .mini-song{ font-size: 13px; font-weight: 500; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .skin-cinema-root .mini-artist{ font-size: 11px; color: var(--text-dim); } .skin-cinema-root .mini-play{ width: 32px; height: 32px; border-radius: 50%; background: oklch(0.82 0.14 22); border: none; color: #1a0a02; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 12px oklch(0.82 0.14 22 / 0.4); } .skin-cinema-root .mini-play svg{ width: 14px; height: 14px; fill: currentColor; } .skin-cinema-root .mini-play:focus-visible{ outline: 2px solid var(--ember-core); outline-offset: 3px; }
+
+@media (max-width: 640px) { .skin-cinema-root .radio-stage{ grid-template-columns: 1fr; gap: 20px; } .skin-cinema-root .album-cover-art{ font-size: 72px; } .skin-cinema-root .radio-meta-song{ font-size: 28px; } .skin-cinema-root .host-card{ margin-top: 20px; } .skin-cinema-root .mini-player{ left: 12px; right: 12px; }
+  /* 【修复】移动端加了皮肤切换按钮后 topnav 右侧变宽，挤压左侧 brand 区域，
+     "CINEMA · NIGHTFALL EMBER" 这行字放不下会硬换行成两行，把整个顶栏撑高、
+     跟设计稿的单行 tag 效果不一致。改成单行省略号，宁可截断也不换行。 */
+  .skin-cinema-root .brand > div:last-child{ min-width: 0; }
+  .skin-cinema-root .brand-sub{ white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  /* 【修复】移动端下 .radio-stage 变单栏后内容会很高，float 悬浮的 mini-player
+     （position:fixed）不管加多少 padding 都无法保证不挡住内容——padding 加在
+     文档末尾，不会把前面已经排好版的内容"推"上去。这里改成跟随正常文档流
+     （做法参考 Magazine 皮肤本来就用的 sticky 方案），从根本上避免重叠，
+     不依赖“猜一个够用的间距数字”。 */
+  .skin-cinema-root .mini-player{ position: static; margin: 24px auto 0; max-width: none; }
+}
+  /* ========== Magazine 皮肤 (option-C-magazine) ========== */
+ .skin-magazine-root{
+  /* 杂志派——冷灰 + 深色 + 单色 accent，故意避开 cream 暖米默认值（huashu §6.5） */
+  --bg-paper: #f4f3ef;          /* 暖白纸面，但避开了 cream #F4F1EA 的精确值 */
+  --bg-paper-2: #ebeae5;
+  --bg-dark: #1a1a1d;
+  --ink: #1a1a1d;
+  --ink-soft: #3a3a40;
+  --ink-muted: #78787f;
+  --ink-faint: #b0b0b5;
+  --rule: #1a1a1d;
+  --accent: #b8341a;            /* 暗红，不是 terracotta 暖橘 */
+  --accent-soft: #f0e0db;
+} .skin-magazine-root *{ margin: 0; padding: 0; box-sizing: border-box; } .skin-magazine-root{
+  background: var(--bg-paper);
+  font-family: 'Noto Serif SC', Georgia, serif;
+  color: var(--ink);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+} .skin-magazine-root.dark{ background: var(--bg-dark); color: var(--bg-paper); } .skin-magazine-root.dark .magazine-page{ background: var(--bg-dark); } .skin-magazine-root.dark .article-title{ color: var(--bg-paper); } .skin-magazine-root.dark .article-body{ color: rgba(244, 243, 239, 0.82); } .skin-magazine-root.dark .article-body em{ color: rgba(240, 224, 219, 0.9); } .skin-magazine-root.dark .masthead-rule{ background: rgba(244, 243, 239, 0.12); } .skin-magazine-root.dark .meta{ color: var(--ink-faint); }
+
+/* 顶栏 masthead — 杂志报头 */ .skin-magazine-root .masthead{ max-width: 760px; margin: 0 auto; padding: 28px 32px 18px; } .skin-magazine-root .masthead-row{ display: flex; justify-content: space-between; align-items: center; } .skin-magazine-root .masthead-brand{ display: flex; align-items: center; gap: 12px; } .skin-magazine-root .masthead-mark{ width: 32px; height: 32px; border-radius: 50%; background: var(--ink); color: var(--bg-paper); display: flex; align-items: center; justify-content: center; font-family: 'Cormorant Garamond', serif; font-size: 16px; font-style: italic; font-weight: 500; } .skin-magazine-root .masthead-name{ font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 500; letter-spacing: -0.01em; } .skin-magazine-root .masthead-issue{ font-family: 'Space Grotesk', sans-serif; font-size: 10px; color: var(--ink-muted); letter-spacing: 0.18em; text-transform: uppercase; margin-top: 1px; } .skin-magazine-root .masthead-meta{ display: flex; align-items: center; gap: 14px; font-family: 'Space Grotesk', sans-serif; font-size: 10px; color: var(--ink-muted); letter-spacing: 0.12em; text-transform: uppercase; } .skin-magazine-root .theme-toggle{ background: transparent; border: 1px solid var(--ink); color: var(--ink); padding: 4px 10px; border-radius: 999px; font: inherit; font-size: 9px; letter-spacing: 0.12em; cursor: pointer; } .skin-magazine-root .theme-toggle:hover{ background: var(--ink); color: var(--bg-paper); } .skin-magazine-root .theme-toggle:focus-visible{ outline: none; box-shadow: 0 0 0 2px var(--accent); } .skin-magazine-root .masthead-rule{ height: 1px; background: var(--rule); margin-top: 18px; position: relative; } .skin-magazine-root .masthead-rule::before{ content: ''; position: absolute; top: 4px; left: 0; right: 0; height: 1px; background: var(--rule); } .skin-magazine-root .masthead-rule::after{ content: ''; position: absolute; top: 8px; left: 0; right: 0; height: 1px; background: var(--rule); }
+
+/* 模式切换：主题切换（不是布局切换） */ .skin-magazine-root .mode-tab{ max-width: 760px; margin: 20px auto 0; padding: 0 32px; display: flex; gap: 24px; } .skin-magazine-root .mode-tab-btn{ font-family: 'Space Grotesk', sans-serif; font-size: 11px; font-weight: 500; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-muted); background: transparent; border: none; border-radius: 0; appearance: none; -webkit-appearance: none; padding: 8px 0; cursor: pointer; border-bottom: 1px solid transparent; transition: all 0.2s; } .skin-magazine-root .mode-tab-btn:hover{ color: var(--ink); } .skin-magazine-root .mode-tab-btn:focus-visible{ outline: none; box-shadow: 0 0 0 2px var(--accent); } .skin-magazine-root .mode-tab-btn.active{ color: var(--accent); border-bottom-color: var(--accent); background: transparent; box-shadow: none; }
+.skin-magazine-root .mode-tab-btn.active:focus-visible{ box-shadow: 0 0 0 2px var(--accent); }
+
+/* 主内容：单栏文章流 */ .skin-magazine-root .magazine-page{ max-width: 760px; margin: 24px auto 0; padding: 0 32px 60px; }
+
+/* 杂志封面（电台模式：本期封面） */ .skin-magazine-root .cover{ padding: 24px 0 32px; border-bottom: 1px solid var(--ink); } .skin-magazine-root .cover-kicker{ font-family: 'Space Grotesk', sans-serif; font-size: 10px; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: var(--accent); margin-bottom: 16px; } .skin-magazine-root .cover-title{ font-family: 'Cormorant Garamond', serif; font-size: 56px; font-weight: 500; line-height: 1.02; letter-spacing: -0.025em; margin-bottom: 18px; } .skin-magazine-root .cover-deck{ font-size: 18px; font-weight: 300; font-style: italic; color: var(--ink-soft); line-height: 1.45; margin-bottom: 24px; max-width: 600px; } .skin-magazine-root .cover-byline{ font-family: 'Space Grotesk', sans-serif; font-size: 10px; color: var(--ink-muted); letter-spacing: 0.16em; text-transform: uppercase; display: flex; gap: 16px; align-items: center; } .skin-magazine-root .cover-byline-dot{ width: 4px; height: 4px; border-radius: 50%; background: var(--accent); display: inline-block; }
+
+/* 文章主体 */ .skin-magazine-root .article{ padding: 28px 0 24px; } .skin-magazine-root .article-meta{ font-family: 'Space Grotesk', sans-serif; font-size: 10px; color: var(--ink-muted); letter-spacing: 0.16em; text-transform: uppercase; margin-bottom: 14px; display: flex; gap: 14px; align-items: center; } .skin-magazine-root .article-title{ font-family: 'Cormorant Garamond', serif; font-size: 32px; font-weight: 500; line-height: 1.1; letter-spacing: -0.02em; margin-bottom: 14px; } .skin-magazine-root .article-deck{ font-size: 16px; font-weight: 300; color: var(--ink-soft); line-height: 1.55; font-style: italic; margin-bottom: 22px; padding-bottom: 18px; border-bottom: 1px solid var(--ink); } .skin-magazine-root .article-body{ font-size: 17px; line-height: 1.85; color: var(--ink); } .skin-magazine-root .article-body p{ margin-bottom: 18px; } .skin-magazine-root .article-body p:first-of-type::first-line{ font-variant: small-caps; letter-spacing: 0.04em; } .skin-magazine-root .article-body em{ font-style: italic; color: var(--accent); } .skin-magazine-root .article-body .pullquote{ font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 500; font-style: italic; line-height: 1.3; color: var(--ink); padding: 16px 0 16px 24px; border-left: 3px solid var(--accent); margin: 28px 0; letter-spacing: -0.01em; } .skin-magazine-root .article-body .dropcap::first-letter{ font-family: 'Cormorant Garamond', serif; font-size: 72px; font-weight: 500; float: left; line-height: 0.85; padding: 4px 10px 0 0; color: var(--accent); }
+/* DJ 历史播报：往期文案按杂志正文的样式排在当前播报下面，颜色淡一档 */
+.skin-magazine-root .article-history:empty{ display: none; }
+.skin-magazine-root .article-history{ margin-top: 24px; border-top: 1px solid var(--rule); padding-top: 18px; }
+.skin-magazine-root .article-history-item{ margin-bottom: 18px; }
+.skin-magazine-root .article-history-time{ display: block; font-family: 'Space Grotesk', sans-serif; font-size: 10px; letter-spacing: 0.14em; color: var(--ink-muted); margin-bottom: 4px; }
+.skin-magazine-root .article-history-text{ font-size: 15px; line-height: 1.8; color: var(--ink-soft); }
+.skin-magazine-root.dark .article-history-text{ color: rgba(244, 243, 239, 0.6); }
+.skin-magazine-root.dark .article-history{ border-top-color: rgba(244, 243, 239, 0.12); }
+
+/* 翻页/下一首 */ .skin-magazine-root .next-section{ padding: 32px 0; border-top: 1px solid var(--ink); margin-top: 28px; } .skin-magazine-root .next-label{ font-family: 'Space Grotesk', sans-serif; font-size: 10px; color: var(--ink-muted); letter-spacing: 0.18em; text-transform: uppercase; margin-bottom: 12px; } .skin-magazine-root .next-title{ font-family: 'Cormorant Garamond', serif; font-size: 24px; font-weight: 500; line-height: 1.15; margin-bottom: 8px; } .skin-magazine-root .next-artist{ font-size: 13px; color: var(--ink-muted); font-style: italic; margin-bottom: 14px; } .skin-magazine-root .next-hint{ font-size: 12px; color: var(--ink-muted); font-style: italic; }
+
+/* 聊天模式：把对话做成"读者来信" */ .skin-magazine-root .letters{ padding: 28px 0; } .skin-magazine-root .letters-header{ font-family: 'Space Grotesk', sans-serif; font-size: 10px; color: var(--ink-muted); letter-spacing: 0.18em; text-transform: uppercase; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--ink); } .skin-magazine-root .letter{ padding: 20px 0; border-bottom: 1px solid rgba(26, 26, 29, 0.12); } .skin-magazine-root .letter:last-child{ border-bottom: none; } .skin-magazine-root .letter-meta{ display: flex; align-items: center; gap: 10px; font-family: 'Space Grotesk', sans-serif; font-size: 9px; color: var(--ink-muted); letter-spacing: 0.14em; text-transform: uppercase; margin-bottom: 10px; } .skin-magazine-root .letter-meta .role{ padding: 2px 8px; border: 1px solid var(--ink); border-radius: 2px; } .skin-magazine-root .letter-meta .role.ai{ background: var(--ink); color: var(--bg-paper); border-color: var(--ink); } .skin-magazine-root .letter-body{ font-size: 16px; line-height: 1.7; color: var(--ink); } .skin-magazine-root .letter-body p{ margin-bottom: 12px; } .skin-magazine-root .letter-body p:last-child{ margin-bottom: 0; } .skin-magazine-root .letter-body strong{ font-weight: 600; } .skin-magazine-root .letter-tool{ font-family: 'JetBrains Mono', 'Space Grotesk', monospace; font-size: 11px; color: var(--ink-muted); padding: 8px 12px; background: rgba(26, 26, 29, 0.04); border-left: 2px solid var(--ink-faint); margin: 10px 0; } .skin-magazine-root .letter-input{ padding: 24px 0 0; display: flex; gap: 12px; align-items: center; } .skin-magazine-root .letter-input input{ flex: 1; background: transparent; border: none; border-bottom: 1px solid var(--ink); padding: 12px 0; font: inherit; font-size: 16px; color: var(--ink); outline: none; } .skin-magazine-root .letter-input input::placeholder{ color: var(--ink-faint); font-style: italic; } .skin-magazine-root .letter-input input:focus{ border-bottom-color: var(--accent); } .skin-magazine-root .letter-input button{ background: var(--ink); color: var(--bg-paper); border: none; padding: 10px 18px; font-family: 'Space Grotesk', sans-serif; font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; cursor: pointer; } .skin-magazine-root .letter-input button:hover{ background: var(--accent); } .skin-magazine-root .letter-input button:focus-visible{ outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* 底部：第几页/共几页 */ .skin-magazine-root .pagination{ max-width: 760px; margin: 24px auto 0; padding: 18px 32px 100px; display: flex; justify-content: space-between; align-items: center; font-family: 'Space Grotesk', sans-serif; font-size: 10px; color: var(--ink-muted); letter-spacing: 0.18em; text-transform: uppercase; border-top: 3px double var(--ink); } .skin-magazine-root .page-num{ font-family: 'Cormorant Garamond', serif; font-size: 20px; font-style: italic; letter-spacing: 0; text-transform: none; color: var(--ink); } .skin-magazine-root.dark .pagination{ border-top-color: var(--bg-paper); } .skin-magazine-root.dark .page-num{ color: var(--bg-paper); }
+
+/* 底部 mini player — sticky bottom，避免 fixed 在 long-page 模式下脱位遮字 */ .skin-magazine-root .mini-player{ position: sticky; bottom: 16px; z-index: 10; display: flex; align-items: center; gap: 14px; padding: 10px 18px; margin: 32px auto 24px; background: var(--bg-paper-2); border: 1px solid var(--ink); border-radius: 4px; max-width: 696px; box-shadow: 0 8px 24px -8px rgba(0,0,0,0.2); } .skin-magazine-root.dark .mini-player{ background: var(--bg-dark); border-color: rgba(244, 243, 239, 0.2); } .skin-magazine-root .mini-marker{ width: 4px; height: 28px; background: var(--accent); flex-shrink: 0; } .skin-magazine-root .mini-info{ flex: 1; min-width: 0; } .skin-magazine-root .mini-song{ font-family: 'Cormorant Garamond', serif; font-size: 15px; font-style: italic; font-weight: 500; } .skin-magazine-root .mini-artist{ font-family: 'Space Grotesk', sans-serif; font-size: 10px; color: var(--ink-muted); letter-spacing: 0.12em; text-transform: uppercase; margin-top: 1px; } .skin-magazine-root .mini-time{ font-family: 'Space Grotesk', sans-serif; font-size: 10px; color: var(--ink-muted); font-variant-numeric: tabular-nums; letter-spacing: 0.08em; } .skin-magazine-root .mini-play{ width: 32px; height: 32px; border-radius: 50%; background: var(--ink); border: none; color: var(--bg-paper); cursor: pointer; display: flex; align-items: center; justify-content: center; } .skin-magazine-root.dark .mini-play{ background: var(--bg-paper); color: var(--bg-dark); } .skin-magazine-root .mini-play svg{ width: 12px; height: 12px; fill: currentColor; } .skin-magazine-root .mini-play:focus-visible{ outline: 2px solid var(--accent); outline-offset: 3px; }
+
+@media (max-width: 640px) { .skin-magazine-root .cover-title{ font-size: 38px; } .skin-magazine-root .article-title{ font-size: 24px; } .skin-magazine-root .article-body{ font-size: 16px; } .skin-magazine-root .article-body .dropcap::first-letter{ font-size: 56px; } .skin-magazine-root .article-body .pullquote{ font-size: 22px; } .skin-magazine-root .masthead, .skin-magazine-root .mode-tab, .skin-magazine-root .magazine-page, .skin-magazine-root .pagination{ padding-left: 20px; padding-right: 20px; } .skin-magazine-root .mini-player{ left: 12px; right: 12px; }
+}
+
+  /* ========== DJ 逐字稿高亮：默认皮肤的 .word/.said/.current/.future 是全局未加作用域的
+     规则（白色文字配深色背景），Magazine 是浅色纸面背景，直接复用会导致文字几乎看不见
+     （白色 22% 透明度糊在米白底上）。这里显式给 Magazine 定义一套跟自己配色匹配的版本；
+     Cinema 背景是深色，理论上跟默认皮肤撞色能勉强凑合，但同样显式定义，不依赖巧合。 ========== */
+  .skin-magazine-root .word { transition: color 0.2s; }
+  .skin-magazine-root .word.said { color: var(--ink-soft); }
+  .skin-magazine-root .word.current { color: var(--accent); font-weight: 600; }
+  .skin-magazine-root .word.future { color: var(--ink-faint); }
+  .skin-magazine-root.dark .word.said { color: rgba(244, 243, 239, 0.75); }
+  .skin-magazine-root.dark .word.current { color: #f0a08a; }
+  .skin-magazine-root.dark .word.future { color: rgba(244, 243, 239, 0.3); }
+
+  .skin-cinema-root .word { transition: color 0.2s; }
+  .skin-cinema-root .word.said { color: rgba(255, 255, 255, 0.65); }
+  .skin-cinema-root .word.current { color: rgba(255, 240, 200, 1); background: rgba(255, 180, 80, 0.18); border-radius: 4px; padding: 0 2px; }
+  .skin-cinema-root .word.future { color: rgba(255, 255, 255, 0.22); }
+
 </style>
 </head>
 <body>
 <span class="design-label">Nightfall Ember · 深夜暖巢</span>
 
-<div class="stage">
+<div class="stage" id="defaultSkinStage">
   <div class="ember central"></div>
   <div class="ember left"></div>
   <div class="ember right"></div>
@@ -1146,7 +1442,7 @@
       <div class="header">
         <div class="header-top">
           <div class="header-brand">
-            <div class="brand-avatar">🌙</div>
+            <div class="brand-avatar" data-time-of-day="night" aria-label="夜晚图标" title="夜晚">🌙</div>
             <div>
               <div class="brand-name">Hermudio</div>
               <div class="brand-sub">杨晨辉的深夜电台</div>
@@ -1203,6 +1499,18 @@
           </div>
         </div>
 
+        <!-- 播放队列：显示接下来播放的歌曲，点击展开/收起 -->
+        <div class="queue-section">
+          <div class="queue-header">
+            <div class="queue-title">▾ 接下来播放</div>
+            <div style="display:flex;align-items:center;gap:6px">
+              <span class="queue-count">0 TRACKS</span>
+              <span class="queue-toggle-icon">▾</span>
+            </div>
+          </div>
+          <div class="queue-list"></div>
+        </div>
+
         <div class="transcript-wrap">
           <div class="transcript-scroll" id="transcriptScroll"></div>
           <div class="transcript-fade"></div>
@@ -1222,97 +1530,323 @@
           </button>
         </div>
 
-        <div class="sleep-row">
-          <div class="sleep-label">🌙 模式切换</div>
-          <div class="sleep-timer">
-            <button class="sleep-preset" id="bottomLoginBtn">LOGIN</button>
-            <button class="sleep-preset active" data-mode="radio" id="bottomRadioBtn">电台</button>
-            <button class="sleep-preset" data-mode="chat" id="bottomChatBtn">聊天</button>
-          </div>
-        </div>
       </div>
     </div>
 
     <!-- Chat Mode -->
     <div class="chat-mode" id="chatMode">
-      <div class="clock-section">
-        <div class="live-badge">LIVE</div>
-        <div class="clock-bg"></div>
-        <div class="time-large" id="clockTime">21:11</div>
-        <div class="date-info" id="clockDate">Monday, 28 APR 2026</div>
-        <div class="on-air">
-          <div class="on-air-dot"></div>
-          <span id="sceneText">ON AIR</span>
-        </div>
-      </div>
-
-      <div class="top-player-bar">
-        <div class="player-main">
-          <div class="track-info-mini">
-            <div class="track-icon">
-              <span>🎵</span>
-              <div class="star">★</div>
-            </div>
-            <div class="track-details">
-              <div class="track-name-mini" id="topTrackName">Waiting for music...</div>
-              <div class="track-artist-mini" id="topTrackArtist">--</div>
+      <div class="header">
+        <div class="header-top">
+          <div class="header-brand">
+            <div class="brand-avatar" data-time-of-day="night" aria-label="夜晚图标" title="夜晚">🌙</div>
+            <div>
+              <div class="brand-name">Hermudio</div>
+              <div class="brand-sub">杨晨辉的深夜电台</div>
             </div>
           </div>
-          <div class="player-controls-top">
-            <button class="control-btn" id="topPrevBtn">⏮</button>
-            <button class="control-btn play" id="topPlayBtn">▶</button>
-            <button class="control-btn" id="topNextBtn">⏭</button>
-            <button class="control-btn" id="topLikeBtn">♥</button>
-            <button class="control-btn" id="topListBtn">☰</button>
+          <div class="header-time-wrap">
+            <div class="header-time" id="clockTime">21:11</div>
+            <div class="header-date" id="clockDate">MONDAY, 28 APR 2026</div>
           </div>
         </div>
-        <div class="player-progress">
-          <span class="time-current" id="currentTime">0:00</span>
-          <div class="progress-track">
-            <div class="progress-fill-track" id="topProgressFill" style="width: 0%;"></div>
-          </div>
-          <span class="time-total" id="totalTime">0:00</span>
+        <div class="header-status">
+          <div class="status-dot"></div>
+          <div class="status-text" id="sceneText">Hermes · 聊天模式</div>
+        </div>
+        <div class="wave-wrap">
+          <canvas id="chatWaveCanvas" width="460" height="140"></canvas>
         </div>
       </div>
 
-      <div class="queue-section">
-        <div class="queue-header" id="queueHeader">
-          <span class="queue-title">
-            <span>Queue</span>
-          </span>
-          <div style="display: flex; align-items: center; gap: 8px;">
-            <span class="queue-count" id="queueCount">0 TRACKS</span>
-            <span class="queue-toggle-icon" id="queueToggleIcon">▼</span>
+      <div class="body">
+        <div class="track-meta">
+          <div class="track-song" id="topTrackName">等待音乐</div>
+          <div class="track-artist" id="topTrackArtist">Hermes 陪你聊聊</div>
+          <div class="mini-player" style="margin-top:12px">
+            <button class="mp-btn mp-nav-btn" id="topPrevBtn" title="上一曲">
+              <svg width="6" height="6" viewBox="0 0 14 14" fill="currentColor">
+                <path d="M11 11L4 7l7-4v8Z"></path>
+                <rect x="2" y="2" width="2.5" height="10" rx="0.5"></rect>
+              </svg>
+            </button>
+            <button class="mp-btn" id="topPlayBtn" title="播放或暂停">
+              <svg id="topIconPlay" width="7" height="7" viewBox="0 0 14 14" fill="currentColor">
+                <path d="M3.5 2.2 L11.5 7 L3.5 11.8 Z"></path>
+              </svg>
+              <svg id="topIconPause" width="7" height="7" viewBox="0 0 14 14" fill="currentColor" style="display:none">
+                <rect x="3" y="2" width="2.5" height="10" rx="0.8"></rect>
+                <rect x="8.5" y="2" width="2.5" height="10" rx="0.8"></rect>
+              </svg>
+            </button>
+            <button class="mp-btn mp-nav-btn" id="topNextBtn" title="下一曲">
+              <svg width="6" height="6" viewBox="0 0 14 14" fill="currentColor">
+                <path d="M3 3l7 4-7 4V3Z"></path>
+                <rect x="9.5" y="2" width="2.5" height="10" rx="0.5"></rect>
+              </svg>
+            </button>
+            <div class="mp-line"><div class="mp-fill" id="topProgressFill"></div></div>
+            <div class="mp-time"><span id="currentTime">0:00</span> / <span id="totalTime">0:00</span></div>
           </div>
         </div>
-        <div class="queue-list" id="queueList"></div>
-        <div class="queue-footer">
-          <div class="queue-dj">
-            <div class="dj-dot"></div>
-            <span>Hermes</span>
+
+        <!-- 播放队列（聊天模式）：跟电台模式共用同一套队列数据，方便在聊天里立刻确认换歌/换风格生效 -->
+        <div class="queue-section">
+          <div class="queue-header">
+            <div class="queue-title">▾ 接下来播放</div>
+            <div style="display:flex;align-items:center;gap:6px">
+              <span class="queue-count">0 TRACKS</span>
+              <span class="queue-toggle-icon">▾</span>
+            </div>
           </div>
-          <div class="queue-wave">
-            <div class="queue-wave-bar"></div>
-            <div class="queue-wave-bar"></div>
-            <div class="queue-wave-bar"></div>
-            <div class="queue-wave-bar"></div>
+          <div class="queue-list"></div>
+        </div>
+
+        <div class="transcript-wrap">
+          <div class="transcript-scroll chat-container" id="chatContainer">
+            <div class="connection-status">Connected to Hermudio server</div>
+          </div>
+        </div>
+
+        <div class="player chat-player-input">
+          <input type="text" class="chat-input" id="chatInput" placeholder="想聊点什么，或者告诉 Hermes 你想听什么">
+          <div class="input-actions">
+            <button class="input-btn send" id="chatSendBtn" title="发送">➤</button>
           </div>
         </div>
       </div>
+    </div>
 
-      <div class="chat-container" id="chatContainer">
-        <div class="connection-status">Connected to Hermudio server</div>
-      </div>
-
-      <div class="chat-input-container">
-        <input type="text" class="chat-input" id="chatInput" placeholder="Say something to Hermes...">
-        <div class="input-actions">
-          <button class="input-btn send" id="chatSendBtn">➤</button>
+    <div class="sleep-row">
+      <div class="sleep-label">🌙 模式切换</div>
+      <div class="sleep-timer">
+        <button class="sleep-preset" id="bottomLoginBtn">LOGIN</button>
+        <button class="sleep-preset active" data-mode="radio" id="bottomRadioBtn">电台</button>
+        <button class="sleep-preset" data-mode="chat" id="bottomChatBtn">聊天</button>
+        <div class="skin-switch-wrap" data-skin-switch>
+          <button class="sleep-preset" data-skin-switch-btn title="切换界面皮肤">🎨 皮肤</button>
+          <div class="skin-switch-menu" data-skin-switch-menu>
+            <button class="skin-switch-option" data-skin-option="default">默认 · Nightfall Ember</button>
+            <button class="skin-switch-option" data-skin-option="cinema">Cinema · 影院</button>
+            <button class="skin-switch-option" data-skin-option="magazine">Magazine · 杂志</button>
+          </div>
         </div>
       </div>
     </div>
   </div>
 </div>
+</div>
+
+<div class="skin-cinema-root skin-root" id="skinRootCinema">
+  <div class="ember-stage">
+    <div class="ember-orb orb-central"></div>
+    <div class="ember-orb orb-left"></div>
+    <div class="ember-orb orb-right"></div>
+    <div class="ember-orb orb-ground"></div>
+  </div>
+  <div class="vignette"></div>
+
+  <div class="stage">
+    <header class="topnav">
+      <div class="brand">
+        <div class="cinema-brand-avatar"><img src="/icon.svg" alt="Hermudio"></div>
+        <div>
+          <div class="brand-name">Hermudio</div>
+          <div class="brand-sub">CINEMA · NIGHTFALL EMBER</div>
+        </div>
+      </div>
+      <div class="topnav-right">
+        <div class="now-time" id="cinemaClock">--:--</div>
+        <div class="skin-switch-wrap" data-skin-switch>
+          <button class="util-btn skin-switch-icon-btn" data-skin-switch-btn title="切换界面皮肤" type="button">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="8" r="1.4" fill="currentColor" stroke="none"/><circle cx="8.5" cy="13" r="1.4" fill="currentColor" stroke="none"/><circle cx="15.5" cy="13" r="1.4" fill="currentColor" stroke="none"/></svg>
+          </button>
+          <div class="skin-switch-menu drop-down align-right" data-skin-switch-menu>
+            <button class="skin-switch-option" data-skin-option="default">默认 · Nightfall Ember</button>
+            <button class="skin-switch-option" data-skin-option="cinema">Cinema · 影院</button>
+            <button class="skin-switch-option" data-skin-option="magazine">Magazine · 杂志</button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="mode-toggle" role="tablist">
+      <button class="mode-btn active" data-mode="radio" role="tab">电台</button>
+      <button class="mode-btn" data-mode="chat" role="tab">聊天</button>
+    </div>
+
+    <div class="mode-stage">
+      <div class="mode-pane active" data-cinema-pane="radio">
+        <div class="radio-stage">
+          <div class="album-cover">
+            <div class="album-cover-glow"></div>
+            <div class="album-cover-art" data-role="song-name-char">♪</div>
+            <div class="album-cover-meta" data-role="song-artist-album">Hermudio 陪你聊聊</div>
+          </div>
+          <div class="radio-meta">
+            <div>
+              <div class="radio-meta-song" data-role="song-name">等待音乐</div>
+              <div class="radio-meta-artist" data-role="song-artist">深夜电台准备中</div>
+              <div class="radio-meta-album" data-role="song-album"></div>
+            </div>
+            <div>
+              <div class="progress" data-role="progress-cells"></div>
+              <div class="progress-time">
+                <span data-role="time-current">0:00</span>
+                <span data-role="time-total">0:00</span>
+              </div>
+            </div>
+            <div class="player-controls">
+              <button class="ctrl" data-role="btn-prev" aria-label="上一首">
+                <svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+              </button>
+              <button class="ctrl play" data-role="btn-play" aria-label="播放/暂停">
+                <svg data-role="icon-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                <svg data-role="icon-pause" viewBox="0 0 24 24" style="display:none"><path d="M6 5h4v14H6zm8 0h4v14h-4z"/></svg>
+              </button>
+              <button class="ctrl" data-role="btn-next" aria-label="下一首">
+                <svg viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="host-card">
+          <div class="host-label"><span class="host-dot"></span>DJ · 此刻</div>
+          <div class="host-text" data-role="dj-text">正在连接电台……</div>
+          <div class="host-history" data-role="dj-history"></div>
+        </div>
+      </div>
+
+      <div class="mode-pane" data-cinema-pane="chat" hidden>
+        <div class="chat-stage">
+          <div class="chat-header">
+            <div class="chat-avatar-ai">H</div>
+            <div>
+              <div class="chat-title">Hermes 电台助手</div>
+              <div class="chat-status">在线</div>
+            </div>
+          </div>
+          <div class="chat-messages" data-role="chat-messages"></div>
+          <div class="chat-input-area">
+            <input class="chat-input" data-role="chat-input" placeholder="说点什么…比如 想听爵士 / 换一批 / 安静点">
+            <button class="send-btn" data-role="chat-send" aria-label="发送">
+              <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mini-player">
+    <div class="mini-cover" data-role="song-name-char-mini">♪</div>
+    <div class="mini-info">
+      <div class="mini-song" data-role="song-name-mini">等待音乐</div>
+      <div class="mini-artist" data-role="song-artist-mini">--</div>
+    </div>
+    <button class="mini-play" data-role="btn-play-mini" aria-label="播放/暂停">
+      <svg data-role="icon-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+      <svg data-role="icon-pause" viewBox="0 0 24 24" style="display:none"><path d="M6 5h4v14H6zm8 0h4v14h-4z"/></svg>
+    </button>
+  </div>
+</div>
+
+<div class="skin-magazine-root skin-root" id="skinRootMagazine">
+  <header class="masthead">
+    <div class="masthead-row">
+      <div class="masthead-brand">
+        <div class="masthead-mark">H</div>
+        <div>
+          <div class="masthead-name">Hermudio</div>
+          <div class="masthead-issue">深夜电台 · 杂志版</div>
+        </div>
+      </div>
+      <div class="masthead-meta">
+        <span id="magazineDate">--</span>
+        <button class="theme-toggle" id="magazineThemeBtn">DARK</button>
+        <div class="skin-switch-wrap" data-skin-switch>
+          <button class="theme-toggle" data-skin-switch-btn title="切换界面皮肤" type="button">皮肤</button>
+          <div class="skin-switch-menu drop-down align-right" data-skin-switch-menu>
+            <button class="skin-switch-option" data-skin-option="default">默认 · Nightfall Ember</button>
+            <button class="skin-switch-option" data-skin-option="cinema">Cinema · 影院</button>
+            <button class="skin-switch-option" data-skin-option="magazine">Magazine · 杂志</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="masthead-rule"></div>
+  </header>
+
+  <nav class="mode-tab">
+    <button class="mode-tab-btn mode-btn active" data-mode="radio">本期 · COVER STORY</button>
+    <button class="mode-tab-btn mode-btn" data-mode="chat">读者来信 · LETTERS</button>
+  </nav>
+
+  <main class="magazine-page">
+    <section class="mode-pane active" data-mag-pane="radio">
+      <article class="cover">
+        <div class="cover-kicker">本期 · 深夜独处</div>
+        <h1 class="cover-title" data-role="mag-cover-title">连接电台中</h1>
+        <p class="cover-deck" data-role="mag-cover-deck">正在为你准备今晚的音乐。</p>
+        <div class="cover-byline">
+          <span>编辑：HERMES</span>
+          <span class="cover-byline-dot"></span>
+          <span>DJ 推荐</span>
+        </div>
+      </article>
+
+      <article class="article">
+        <div class="article-meta">
+          <span>DJ 播报 · 此刻</span>
+        </div>
+        <h2 class="article-title">主持人说</h2>
+        <div class="article-body">
+          <p data-role="dj-text">正在连接电台……</p>
+          <div class="article-history" data-role="dj-history"></div>
+        </div>
+      </article>
+
+      <section class="next-section">
+        <div class="next-label">下一首 · UP NEXT</div>
+        <div class="next-title" data-role="next-title">暂无排期</div>
+        <div class="next-artist" data-role="next-artist"></div>
+      </section>
+    </section>
+
+    <section class="mode-pane" data-mag-pane="chat" hidden>
+      <div class="letters">
+        <div class="letters-header">读者来信</div>
+        <div data-role="chat-messages"></div>
+        <div class="letter-input">
+          <input type="text" data-role="chat-input" placeholder="给电台写一句……比如 换一批 / 想听陈粒的光">
+          <button data-role="chat-send">寄出</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="mini-player">
+    <div class="mini-marker"></div>
+    <div class="mini-info">
+      <div class="mini-song" data-role="song-name-mini">等待音乐</div>
+      <div class="mini-artist" data-role="song-artist-mini">--</div>
+    </div>
+    <span class="mini-time"><span data-role="time-current">0:00</span> / <span data-role="time-total">0:00</span></span>
+    <button class="mini-play" data-role="btn-play-mini" aria-label="播放/暂停">
+      <svg data-role="icon-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+      <svg data-role="icon-pause" viewBox="0 0 24 24" style="display:none"><path d="M6 5h4v14H6zm8 0h4v14h-4z"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- 播放计数器 -->
+<div class="play-counter" id="playCounterDiv" style="position:fixed;right:80px;bottom:16px;color:rgba(255,255,255,0.6);font-size:14px;display:flex;align-items:center;gap:12px;cursor:pointer;z-index:1001;background:rgba(16,10,6,0.85);backdrop-filter:blur(20px);border:1px solid rgba(255,160,60,0.12);border-radius:999px;padding:8px 16px;" title="点击重置计数器">
+  <span>🎵 已发起:</span>
+  <span id="attemptedCounter" style="font-weight:bold;color:#ffb86c;font-size:18px;">0</span>
+  <span style="opacity:0.6;">首</span>
+  <span style="margin-left:8px;">✨ 完整播放:</span>
+  <span id="completedCounter" style="font-weight:bold;color:#69db7c;font-size:18px;">0</span>
+  <span style="opacity:0.6;">首</span>
+  <button id="muteToggleBtn" type="button" style="margin-left:8px;border:none;border-radius:999px;padding:6px 10px;background:rgba(255,255,255,0.08);color:#f7e7ce;font-size:12px;cursor:pointer;">静音</button>
 </div>
 
 <button class="tweaks-toggle" id="tweaksToggle">
@@ -1361,25 +1895,31 @@
         }
 
         // Waveform — warm ember color (demo style)
-        const canvas = document.getElementById('waveCanvas');
-        const ctx = canvas.getContext('2d');
+        const waveCanvases = ['waveCanvas', 'chatWaveCanvas']
+            .map(id => document.getElementById(id))
+            .filter(Boolean);
         function drawWave(t) {
-            const w = canvas.width, h = canvas.height;
-            ctx.clearRect(0, 0, w, h);
-            const bars = 100;
-            for (let i = 0; i < bars; i++) {
-                const x = i * (w / bars) + (w / (bars * 2));
-                const phase = (i / bars) * Math.PI * 3;
-                const amp = Math.sin(t * 0.0007 + phase) * 0.45 + Math.sin(t * 0.0004 + phase * 1.7) * 0.25 + 0.35;
-                const barH = Math.max(2, amp * h * 0.65);
-                const alpha = 0.08 + amp * 0.55;
-                const hue = 20 + amp * 15;
-                ctx.fillStyle = `hsla(${hue}, 90%, ${60 + amp * 20}%, ${alpha})`;
-                ctx.fillRect(x - 1, (h - barH) / 2, 2, barH);
-            }
+            waveCanvases.forEach(canvas => {
+                const ctx = canvas.getContext('2d');
+                const w = canvas.width, h = canvas.height;
+                ctx.clearRect(0, 0, w, h);
+                const bars = 100;
+                for (let i = 0; i < bars; i++) {
+                    const x = i * (w / bars) + (w / (bars * 2));
+                    const phase = (i / bars) * Math.PI * 3;
+                    const amp = Math.sin(t * 0.0007 + phase) * 0.45 + Math.sin(t * 0.0004 + phase * 1.7) * 0.25 + 0.35;
+                    const barH = Math.max(2, amp * h * 0.65);
+                    const alpha = 0.08 + amp * 0.55;
+                    const hue = 20 + amp * 15;
+                    ctx.fillStyle = `hsla(${hue}, 90%, ${60 + amp * 20}%, ${alpha})`;
+                    ctx.fillRect(x - 1, (h - barH) / 2, 2, barH);
+                }
+            });
             requestAnimationFrame(drawWave);
         }
-        drawWave(0);
+        if (waveCanvases.length > 0) {
+            drawWave(0);
+        }
 
         // Utility Functions
         const Utils = {
@@ -1420,6 +1960,296 @@
         };
 
         // API Client
+
+        /**
+         * SkinRenderer — 皮肤系统
+         *
+         * 设计原则：不改写默认皮肤已有的渲染函数内部逻辑（那些今天刚稳定下来，
+         * 回归风险高），而是在它们末尾"侧挂"一次调用，把同样的真实数据广播给
+         * 当前已渲染在 DOM 里的所有皮肤节点（通过 data-role 属性定位，不管
+         * 当前显示的是哪套皮肤，数据都会同步更新，切换时不会显示旧数据）。
+         * 交互（播放/暂停/切歌/发消息/切模式）一律复用 AppState 已有方法，
+         * 不新写一套业务逻辑。
+         */
+        const SkinRenderer = {
+            current: 'default',
+
+            init() {
+                const saved = localStorage.getItem('hermudio_skin') || 'default';
+                this.apply(saved, { silent: true });
+                this.bindSwitcher();
+                this.bindControls();
+            },
+
+            // 三套皮肤各有一份自己的切换入口（默认皮肤在底部模式切换行，Cinema/Magazine
+            // 在各自顶部导航里），因为每套皮肤切走后其它皮肤的容器都是 display:none，
+            // 唯独当前激活皮肤自己的入口是可见的——所以每套皮肤必须各自带一份，不能只放一份。
+            bindSwitcher() {
+                document.querySelectorAll('[data-skin-switch]').forEach(wrap => {
+                    const btn = wrap.querySelector('[data-skin-switch-btn]');
+                    const menu = wrap.querySelector('[data-skin-switch-menu]');
+                    if (!btn || !menu) return;
+                    btn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        document.querySelectorAll('[data-skin-switch-menu]').forEach(m => {
+                            if (m !== menu) m.classList.remove('open');
+                        });
+                        menu.classList.toggle('open');
+                    });
+                    menu.querySelectorAll('[data-skin-option]').forEach(opt => {
+                        opt.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            this.apply(opt.dataset.skinOption);
+                            menu.classList.remove('open');
+                        });
+                    });
+                });
+                document.addEventListener('click', () => {
+                    document.querySelectorAll('[data-skin-switch-menu]').forEach(m => m.classList.remove('open'));
+                });
+            },
+
+            apply(skin, opts = {}) {
+                this.current = skin;
+                document.body.classList.remove('skin-cinema', 'skin-magazine');
+                document.documentElement.classList.remove('skin-cinema', 'skin-magazine');
+                if (skin === 'cinema') {
+                    document.body.classList.add('skin-cinema');
+                    document.documentElement.classList.add('skin-cinema');
+                }
+                if (skin === 'magazine') {
+                    document.body.classList.add('skin-magazine');
+                    document.documentElement.classList.add('skin-magazine');
+                }
+                try { localStorage.setItem('hermudio_skin', skin); } catch (e) {}
+
+                document.querySelectorAll('[data-skin-option]').forEach(opt => {
+                    opt.classList.toggle('active', opt.dataset.skinOption === skin);
+                });
+
+                if (!opts.silent && window.AppState) {
+                    // 切换皮肤时用当前真实状态立刻刷新一遍，避免看到空白/旧数据
+                    this.updateSong(window.AppState.currentSong);
+                    this.updatePlaying(window.AppState.isPlaying);
+                    if (window.AppState.currentMode) this.syncMode(window.AppState.currentMode);
+                }
+            },
+
+            bindControls() {
+                document.querySelectorAll('[data-role="btn-play"], [data-role="btn-play-mini"]').forEach(btn => {
+                    btn.addEventListener('click', () => window.AppState.togglePlay());
+                });
+                document.querySelectorAll('[data-role="btn-prev"]').forEach(btn => {
+                    btn.addEventListener('click', () => window.AppState.playPrevious());
+                });
+                document.querySelectorAll('[data-role="btn-next"]').forEach(btn => {
+                    btn.addEventListener('click', () => window.AppState.playNext());
+                });
+
+                // 电台/聊天模式切换：直接复用真正的 switchMode，不搞本地假状态
+                document.querySelectorAll('.skin-cinema-root [data-mode], .skin-magazine-root [data-mode]').forEach(btn => {
+                    btn.addEventListener('click', () => window.AppState.switchMode(btn.dataset.mode));
+                });
+
+                document.querySelectorAll('[data-role="chat-input"]').forEach(input => {
+                    input.addEventListener('keypress', (e) => {
+                        if (e.key === 'Enter') this.sendFromSkinInput(input);
+                    });
+                });
+                document.querySelectorAll('[data-role="chat-send"]').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const wrap = btn.closest('.skin-cinema-root, .skin-magazine-root');
+                        const input = wrap && wrap.querySelector('[data-role="chat-input"]');
+                        if (input) this.sendFromSkinInput(input);
+                    });
+                });
+
+                // Magazine 明暗切换：只切自己容器上的 class，不动全局 body
+                const themeBtn = document.getElementById('magazineThemeBtn');
+                if (themeBtn) {
+                    themeBtn.addEventListener('click', () => {
+                        const root = document.querySelector('.skin-magazine-root');
+                        if (!root) return;
+                        root.classList.toggle('dark');
+                        themeBtn.textContent = root.classList.contains('dark') ? 'LIGHT' : 'DARK';
+                    });
+                }
+            },
+
+            sendFromSkinInput(input) {
+                const text = input.value.trim();
+                if (!text) return;
+                // 复用真正的聊天输入框 + 发送逻辑（API 调用、queue_next 处理等都不用重写）
+                const mainInput = document.getElementById('chatInput');
+                if (mainInput && window.AppState) {
+                    mainInput.value = text;
+                    window.AppState.sendChatMessage();
+                }
+                input.value = '';
+            },
+
+            updateSong(song) {
+                if (!song) return;
+                const name = song.name || '等待音乐';
+                const artist = song.artist || '';
+                const artistAlbum = song.album ? `${artist} · ${song.album}` : (artist || '--');
+                const firstChar = name ? name.charAt(0) : '♪';
+
+                document.querySelectorAll('[data-role="song-name"], [data-role="song-name-mini"]').forEach(el => { el.textContent = name; });
+                document.querySelectorAll('[data-role="song-artist"], [data-role="song-artist-mini"]').forEach(el => { el.textContent = artist || '--'; });
+                document.querySelectorAll('[data-role="song-artist-album"]').forEach(el => { el.textContent = artistAlbum; });
+                document.querySelectorAll('[data-role="song-album"]').forEach(el => { el.textContent = song.album || ''; });
+                document.querySelectorAll('[data-role="song-name-char"], [data-role="song-name-char-mini"]').forEach(el => { el.textContent = firstChar; });
+
+                // 大号衬线标题只放歌名，跟默认皮肤/Cinema 保持一致，"正在播放"这层信息挪到下面小号斜体摘要里
+                document.querySelectorAll('[data-role="mag-cover-title"]').forEach(el => {
+                    el.textContent = name;
+                });
+                document.querySelectorAll('[data-role="mag-cover-deck"]').forEach(el => {
+                    el.textContent = artist ? `正在播放 · 来自 ${artist}${song.album ? '，收录于《' + song.album + '》' : ''}` : '正在播放';
+                });
+            },
+
+            updatePlaying(playing) {
+                document.querySelectorAll('[data-role="icon-play"]').forEach(el => { el.style.display = playing ? 'none' : ''; });
+                document.querySelectorAll('[data-role="icon-pause"]').forEach(el => { el.style.display = playing ? '' : 'none'; });
+            },
+
+            updateProgress(progress, positionSec, durationSec) {
+                const pct = Math.max(0, Math.min(100, progress || 0));
+
+                document.querySelectorAll('[data-role="progress-cells"]').forEach(container => {
+                    const total = 40;
+                    if (container.children.length !== total) {
+                        container.innerHTML = '';
+                        for (let i = 0; i < total; i++) {
+                            const cell = document.createElement('div');
+                            cell.className = 'progress-cell';
+                            container.appendChild(cell);
+                        }
+                    }
+                    const filledCount = Math.round((pct / 100) * total);
+                    Array.from(container.children).forEach((cell, i) => {
+                        cell.classList.toggle('filled', i < filledCount);
+                    });
+                });
+
+                const fmt = (s) => {
+                    if (s === null || s === undefined || isNaN(s)) return '0:00';
+                    s = Math.floor(s);
+                    return `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
+                };
+                document.querySelectorAll('[data-role="time-current"]').forEach(el => { el.textContent = fmt(positionSec); });
+                document.querySelectorAll('[data-role="time-total"]').forEach(el => { el.textContent = fmt(durationSec); });
+            },
+
+            addChatMessage(text, isUser) {
+                const now = new Date();
+                const time = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+                document.querySelectorAll('.skin-cinema-root [data-role="chat-messages"]').forEach(container => {
+                    const msg = document.createElement('div');
+                    msg.className = `chat-msg ${isUser ? 'user' : 'ai'}`;
+                    msg.innerHTML = `
+                        <div class="chat-msg-avatar">${isUser ? '你' : 'H'}</div>
+                        <div class="chat-bubble">${text}</div>
+                    `;
+                    container.appendChild(msg);
+                    container.scrollTop = container.scrollHeight;
+                });
+
+                document.querySelectorAll('.skin-magazine-root [data-role="chat-messages"]').forEach(container => {
+                    const letter = document.createElement('article');
+                    letter.className = 'letter';
+                    letter.innerHTML = `
+                        <div class="letter-meta">
+                            <span>${time}</span>
+                            <span class="role ${isUser ? '' : 'ai'}">${isUser ? '读者' : 'HERMES'}</span>
+                        </div>
+                        <div class="letter-body"><p>${text}</p></div>
+                    `;
+                    container.appendChild(letter);
+                    container.scrollTop = container.scrollHeight;
+                });
+            },
+
+            // DJ 逐字稿：跟默认皮肤共用同一套分词（Utils.splitTextForHighlight）
+            _currentDJText: null,
+            djHistory: [],
+
+            setDJText(text) {
+                if (!text) return;
+                // 上一条播报进历史（对应默认皮肤的历史文案区，填充新皮肤 DJ 卡下方的留白）
+                if (this._currentDJText && this._currentDJText !== text) {
+                    const now = new Date();
+                    const time = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+                    this.djHistory.unshift({ text: this._currentDJText, time });
+                    if (this.djHistory.length > 5) this.djHistory.length = 5;
+                    this.renderDJHistory();
+                }
+                this._currentDJText = text;
+                const chars = Utils.splitTextForHighlight(text);
+                const spans = chars.map((c, i) => `<span class="word future" data-index="${i}">${c}</span>`).join('');
+                document.querySelectorAll('[data-role="dj-text"]').forEach(el => { el.innerHTML = spans; });
+            },
+
+            renderDJHistory() {
+                document.querySelectorAll('.skin-cinema-root [data-role="dj-history"]').forEach(el => {
+                    el.innerHTML = this.djHistory.map(h => `
+                        <div class="host-history-item">
+                            <span class="host-history-time">${h.time}</span>
+                            <div class="host-history-text">${h.text}</div>
+                        </div>
+                    `).join('');
+                });
+                document.querySelectorAll('.skin-magazine-root [data-role="dj-history"]').forEach(el => {
+                    el.innerHTML = this.djHistory.map(h => `
+                        <div class="article-history-item">
+                            <span class="article-history-time">${h.time} · 往期播报</span>
+                            <div class="article-history-text">${h.text}</div>
+                        </div>
+                    `).join('');
+                });
+            },
+
+            setDJWordIndex(index) {
+                document.querySelectorAll('[data-role="dj-text"]').forEach(el => {
+                    el.querySelectorAll('.word').forEach((w, i) => {
+                        w.classList.remove('said', 'current', 'future');
+                        if (i < index) w.classList.add('said');
+                        else if (i === index) w.classList.add('current');
+                        else w.classList.add('future');
+                    });
+                });
+            },
+
+            // switchMode() 调用后同步两套新皮肤的电台/聊天面板显隐
+            syncMode(mode) {
+                // Cinema 的 mini-player 只在聊天面板显示（电台面板主播放器已有完整控制，纯重复）
+                const cinemaRoot = document.querySelector('.skin-cinema-root');
+                if (cinemaRoot) cinemaRoot.classList.toggle('chat-active', mode === 'chat');
+                document.querySelectorAll('.skin-cinema-root [data-cinema-pane]').forEach(pane => {
+                    const match = pane.dataset.cinemaPane === mode;
+                    pane.classList.toggle('active', match);
+                });
+                document.querySelectorAll('.skin-magazine-root [data-mag-pane]').forEach(pane => {
+                    const match = pane.dataset.magPane === mode;
+                    pane.classList.toggle('active', match);
+                    pane.hidden = !match;
+                });
+            },
+
+            // 队列"下一首"（Magazine 用来填 next-section；Cinema 遵循设计稿不展示完整队列）
+            updateNextUp(song) {
+                if (!song) return;
+                document.querySelectorAll('[data-role="next-title"]').forEach(el => { el.textContent = song.name || ''; });
+                document.querySelectorAll('[data-role="next-artist"]').forEach(el => { el.textContent = song.artist || ''; });
+            }
+        };
+        // 【关键】const 顶层声明不会自动挂到 window 上，其它模块用 window.SkinRenderer
+        // 做存在性判断（如 updateCurrentSong 里的 bolt-on 调用）必须显式暴露，否则判断永远为假。
+        window.SkinRenderer = SkinRenderer;
+
         const API = {
             baseUrl: '',
             maxRetries: 3,
@@ -1430,7 +2260,12 @@
                 try {
                     const response = await fetch(url, options);
                     if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
+                        let errorMessage = `HTTP error! status: ${response.status}`;
+                        try {
+                            const errorBody = await response.json();
+                            errorMessage = errorBody.message || errorBody.error || errorMessage;
+                        } catch (parseError) {}
+                        throw new Error(errorMessage);
                     }
                     return await response.json();
                 } catch (error) {
@@ -1485,7 +2320,7 @@
             getLoginUrl() { return this.get('/api/login-url'); },
             search(keyword, limit = 10) { return this.get(`/api/search?keyword=${encodeURIComponent(keyword)}&limit=${limit}`); },
             
-            async play(songId, encryptedId = null) {
+            async play(songId, encryptedId = null, song = null) {
                 console.log('=== [API.play] START ===');
                 console.log('=== [API.play] songId:', songId);
                 console.log('=== [API.play] encryptedId:', encryptedId);
@@ -1493,7 +2328,7 @@
                 
                 const startTime = Date.now();
                 try {
-                    const response = await this.post('/api/play', { songId, encryptedId });
+                    const response = await this.post('/api/play', { songId, encryptedId, song });
                     const endTime = Date.now();
                     console.log('=== [API.play] 响应耗时:', (endTime - startTime), 'ms ===');
                     console.log('=== [API.play] 响应内容:', response);
@@ -1565,6 +2400,10 @@
                     throw error;
                 }
             },
+
+            setMute(muted) {
+                return this.post('/api/audio/mute', { muted });
+            },
             
             chat(message, blockedSongs = []) { return this.post('/api/chat', { message, blockedSongs }); },
             feedback(songId, action) { return this.post('/api/feedback', { songId, action }); },
@@ -1572,6 +2411,7 @@
             // Playlist Service APIs
             playlistInitialize() { return this.post('/api/playlist/initialize'); },
             playlistNext() { return this.post('/api/playlist/next'); },
+            playlistPrevious() { return this.post('/api/playlist/previous'); },
             playlistStatus() { return this.get('/api/playlist/status'); },
             playlistRequestBatch() { return this.post('/api/playlist/request-batch'); },
             playlistRecordSkip(songId, song) { return this.post('/api/playlist/record-skip', { songId, song }); },
@@ -2223,7 +3063,9 @@
                 console.log('[TTS] Audio object created');
 
                 // 设置音频音量
-                this.audioPlayer.volume = Math.min(this.volume / 2, 1.0); // 音频元素音量范围是 0-1
+                const isMuted = !!window.AppState?.isMuted;
+                this.audioPlayer.muted = isMuted;
+                this.audioPlayer.volume = isMuted ? 0 : Math.min(this.volume / 2, 1.0); // 音频元素音量范围是 0-1
                 console.log('[TTS] Audio volume set to:', this.audioPlayer.volume);
 
                 // 保存音频引用到 AppState 用于 Hermes 控制
@@ -2621,8 +3463,11 @@
                 
                 // Mark current turn as active
                 turn.classList.add('active');
-                
+
                 this.currentTurn = turn;
+
+                if (window.SkinRenderer) SkinRenderer.setDJText(text);
+
                 return turn;
             },
 
@@ -2652,6 +3497,18 @@
                     window.AppState.resetHermesProgress();
                 }
 
+                // 【修复】TTS 播放完成信号可能来自两条路径：正常播完（audioPlayer.onended）
+                // 或音频播放失败/被浏览器自动播放策略拦截（TTSService.speak 返回的 Promise 被 reject）。
+                // 两条路径过去都会各自调用 options.onEnd()，一旦某次播放同时触发（例如失败重抛后
+                // 上层 catch 又调用一次），调用方（如电台流程的"播完后播下一首"）会被触发两次，
+                // 导致同一首歌被播放两次。这里加门禁确保 options.onEnd 只真正执行一次。
+                let onEndCalled = false;
+                const callOnEndOnce = () => {
+                    if (onEndCalled) return;
+                    onEndCalled = true;
+                    if (options.onEnd) options.onEnd();
+                };
+
                 // 调用 TTS 服务
                 console.log('[RadioHost] Calling TTSService.speak...');
                 const speakResult = TTSService.speak(text, {
@@ -2679,6 +3536,7 @@
                             }
                         });
                         if (options.onWord) options.onWord(word, index);
+                        if (window.SkinRenderer) SkinRenderer.setDJWordIndex(index);
                     },
                     onProgress: (currentTime, duration) => {
                         // 更新 Hermes 进度条
@@ -2701,7 +3559,7 @@
                         if (window.AppState && window.AppState.setHermesProgressFull) {
                             window.AppState.setHermesProgressFull();
                         }
-                        if (options.onEnd) options.onEnd();
+                        callOnEndOnce();
                     }
                 });
                 
@@ -2724,7 +3582,7 @@
                             window.AppState.hermesPaused = false;
                             window.AppState.updateHermesPlayButton();
                         }
-                        if (options.onEnd) options.onEnd();
+                        callOnEndOnce();
                     });
                 }
             },
@@ -2930,10 +3788,21 @@
             blockedSongs: new Set(), // 屏蔽的歌曲ID集合
             _isPlayingSong: false, // 【新增】播放锁，防止并发播放
             _playLockTimeout: null, // 【新增】播放锁超时定时器
+            _radioShowStarting: false, // 防止欢迎文案重入
+            _loginInProgress: false, // 防止重复拉起授权登录
+            _lastLoginRequestAt: 0,
+            _loginCooldownMs: 60000,
             _pausedProgress: null, // 【新增】保存暂停时的进度
             hermesSpeaking: false, // Hermes TTS 播放状态
             hermesPaused: false, // Hermes TTS 暂停状态
             hermesAudio: null, // Hermes TTS 音频元素
+            playCount: 0, // 【新增】播放计数器
+            attemptedCount: 0, // 【新增】已发起播放数量
+            completedCount: 0, // 【新增】完整播放数量
+            playHistory: [], // 【新增】播放历史记录，包含每首歌的播放时长
+            isMuted: false,
+            _savedTtsVolume: null,
+            _savedWebSpeechVolume: null,
 
             async init() {
                 // 【修复】重置所有播放相关状态，防止刷新后状态混乱
@@ -2955,11 +3824,65 @@
                     mpTime.textContent = '0:00 / 0:00';
                 }
 
-                // 页面加载时先停止所有播放（避免刷新后仍有音乐在播放）
-                await this.stopAllPlaybackOnInit();
+                // 【修复】服务器端播放独立于浏览器标签页——关闭/刷新页面不会真的停止后台播放。
+                // 之前这里无条件 stop() 再重新走一遍"欢迎语+随机选新歌"的完整流程，
+                // 导致每次打开/刷新页面都会打断正在正常播放的歌、换成另一首歌重新开始，
+                // 表现为"打开界面就卡一下"。现在先问一下后台是否已经在播，如果是，
+                // 直接接上现有状态显示，不再粗暴地停掉重来。
+                let adoptedExistingPlayback = false;
+                try {
+                    const existing = await API.getStatus();
+                    if (existing?.success && existing.status?.isPlaying && existing.status?.currentSong) {
+                        console.log('[Init] Backend already playing, adopting existing state:', existing.status.currentSong.name);
+                        this.currentSong = existing.status.currentSong;
+                        this.radioState = 'playing';
+                        this.updateCurrentSong(existing.status.currentSong);
+                        this.setPlaying(true);
+                        this.monitorSongProgress();
+                        adoptedExistingPlayback = true;
+
+                        // 【修复】接上已有播放状态时，这里之前只是接了"当前这首歌"用于展示，
+                        // 从没把 this.playlist 从服务端 PlaylistService 的真实队列同步过来。
+                        // 后面 checkLoginAndShowWelcome() 一看 isPlaying 已经是 true，
+                        // 会跳过 startRadioShow()（唯一填充 this.playlist 的地方），
+                        // 于是 this.playlist 一直是空数组——这是打开/刷新页面时最常见的场景
+                        // （服务是长期后台运行的，几乎总是"已经在播"），点上一首/下一首因此
+                        // 长期悄悄走的是没有真实队列支撑的兜底逻辑：下一首兜底是随机推荐一首
+                        // 新歌，表面上"看起来还在正常工作"；上一首兜底是 ncm-cli 自己内部的
+                        // prev 历史，跟这里的播放方式（每首歌单独 `ncm-cli play <id>`）对不上，
+                        // 点了没有任何可见效果。这里直接从服务端拉一次真实队列同步过来。
+                        try {
+                            const playlistStatus = await API.playlistStatus();
+                            if (playlistStatus?.success && playlistStatus.status) {
+                                const { played = [], current, queued = [] } = playlistStatus.status;
+                                const combined = [...played, ...(current ? [current] : []), ...queued];
+                                if (combined.length > 0) {
+                                    this.playlist = combined;
+                                    this.currentSongIndex = current
+                                        ? combined.findIndex(s => s.id === current.id)
+                                        : played.length;
+                                    if (this.currentSongIndex < 0) this.currentSongIndex = played.length;
+                                    console.log('[Init] Synced playlist from server:', combined.length, 'songs, index', this.currentSongIndex);
+                                }
+                            }
+                        } catch (syncError) {
+                            console.warn('[Init] Failed to sync playlist on adopt:', syncError.message);
+                        }
+                    }
+                } catch (error) {
+                    console.warn('[Init] Failed to check existing playback status:', error.message);
+                }
+
+                if (!adoptedExistingPlayback) {
+                    // 后台确实没有在播（比如服务器刚重启），才走原来的清场逻辑
+                    await this.stopAllPlaybackOnInit();
+                }
 
                 // 加载已屏蔽的歌曲列表
                 this.loadBlockedSongs();
+                // 【新增】加载播放计数
+                this.loadPlayCount();
+                this.loadMutePreference();
                 // Wait for server to be ready before initializing
                 const serverReady = await ServerConnection.waitForServer();
                 if (!serverReady) {
@@ -2968,7 +3891,15 @@
                 }
 
                 TTSService.init();
+                this.applyMuteState();
+                this.updateMuteButton();
+                try {
+                    await API.setMute(this.isMuted);
+                } catch (error) {
+                    console.warn('[Audio] Failed to sync mute state on init:', error.message);
+                }
                 this.generateWaveforms();
+                this.updateBrandAvatars();
                 this.startClock();
                 this.initEventListeners();
                 // 【修复】延迟启动状态轮询，避免启动时大量日志
@@ -2979,6 +3910,9 @@
 
                 // 检查登录状态
                 await this.checkLoginAndShowWelcome();
+
+                // 初始化皮肤系统（恢复上次选择的皮肤 + 绑定切换菜单和控件）
+                if (window.SkinRenderer) SkinRenderer.init();
             },
 
             // 页面初始化时停止音乐播放（语音播报继续）
@@ -3061,12 +3995,20 @@
 
                     // 如果已经登录，强制启动电台欢迎流程（忽略当前状态）
                     if (response.isLoggedIn && this.currentMode === 'radio') {
-                        console.log('[Init] Logged in, FORCING start of radio welcome...');
-                        this.radioState = 'idle'; // 重置状态
-                        setTimeout(() => {
-                            console.log('[RadioFlow] Auto-starting Hermes welcome NOW (login complete)!');
-                            this.startRadioShow();
-                        }, 300);
+                        console.log('[Init] Logged in, evaluating whether radio welcome should start...');
+                        if (!this._radioShowStarting && this.radioState === 'idle' && !this.hermesSpeaking && !this.isPlaying) {
+                            setTimeout(() => {
+                                console.log('[RadioFlow] Auto-starting Hermes welcome NOW (login complete)!');
+                                this.startRadioShow();
+                            }, 300);
+                        } else {
+                            console.log('[RadioFlow] Skip auto-start on login complete:', {
+                                radioShowStarting: this._radioShowStarting,
+                                radioState: this.radioState,
+                                hermesSpeaking: this.hermesSpeaking,
+                                isPlaying: this.isPlaying
+                            });
+                        }
                         return;
                     }
 
@@ -3074,7 +4016,7 @@
                     console.log('[Init] Current mode:', this.currentMode);
                     console.log('[Init] Current radio state:', this.radioState);
                     
-                    if (this.currentMode === 'radio') {
+                    if (this.currentMode === 'chat') {
                         // 当前在聊天模式
                         let messages = [];
                         const chatContainer = document.getElementById('chatContainer');
@@ -3090,7 +4032,7 @@
                             this.sendChatWelcome();
                         }
                     } else {
-                        console.log('[Init] Not starting - mode:', this.currentMode);
+                        console.log('[Init] Not sending chat welcome - mode:', this.currentMode);
                     }
                 } catch (error) {
                     console.error('[Init] Failed to check login status:', error);
@@ -3098,11 +4040,19 @@
                     console.log('[Init] Failed to check login, but still starting radio...');
                     this.updateLoginButtonStyle(false);
                     
-                    if (this.currentMode === 'radio') {
+                    if (this.currentMode === 'radio' && !this._radioShowStarting && this.radioState === 'idle' && !this.hermesSpeaking && !this.isPlaying) {
                         setTimeout(() => {
                             console.log('[RadioFlow] Auto-starting Hermes welcome NOW!');
                             this.startRadioShow();
                         }, 500);
+                    } else {
+                        console.log('[RadioFlow] Skip fallback auto-start after login check failure:', {
+                            currentMode: this.currentMode,
+                            radioShowStarting: this._radioShowStarting,
+                            radioState: this.radioState,
+                            hermesSpeaking: this.hermesSpeaking,
+                            isPlaying: this.isPlaying
+                        });
                     }
                 }
             },
@@ -3178,13 +4128,12 @@
                 
                 console.log('[Init] trackSong content before clear:', trackSong?.textContent);
                 console.log('[Init] trackArtist content before clear:', trackArtist?.textContent);
-                
                 if (trackSong) {
-                    trackSong.textContent = '';
+                    trackSong.textContent = '等待音乐';
                     console.log('[Init] trackSong cleared');
                 }
                 if (trackArtist) {
-                    trackArtist.textContent = '';
+                    trackArtist.textContent = '深夜电台准备中';
                     console.log('[Init] trackArtist cleared');
                 }
                 
@@ -3224,11 +4173,20 @@
                     const now = new Date();
                     const hours = String(now.getHours()).padStart(2, '0');
                     const minutes = String(now.getMinutes()).padStart(2, '0');
+                    this.updateBrandAvatars(now);
                     const headerTime = document.getElementById('headerTime');
                     if (headerTime) {
                         headerTime.textContent = `${hours}:${minutes}`;
                     }
-                    
+                    const cinemaClock = document.getElementById('cinemaClock');
+                    if (cinemaClock) {
+                        cinemaClock.textContent = `${hours}:${minutes}`;
+                    }
+                    const magazineDate = document.getElementById('magazineDate');
+                    if (magazineDate) {
+                        magazineDate.textContent = `${now.getMonth() + 1}.${String(now.getDate()).padStart(2, '0')} · ${hours}:${minutes}`;
+                    }
+
                     const day = now.getDate();
                     const month = now.getMonth() + 1;
                     const weekDays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
@@ -3253,6 +4211,24 @@
                 };
                 updateClock();
                 setInterval(updateClock, 1000);
+            },
+
+            getBrandAvatarState(date = new Date()) {
+                const hour = date.getHours();
+                if (hour >= 6 && hour < 18) {
+                    return { icon: '☀', label: '白天', timeOfDay: 'day' };
+                }
+                return { icon: '🌙', label: '夜晚', timeOfDay: 'night' };
+            },
+
+            updateBrandAvatars(now = new Date()) {
+                const { icon, label, timeOfDay } = this.getBrandAvatarState(now);
+                document.querySelectorAll('.brand-avatar').forEach(avatar => {
+                    avatar.textContent = icon;
+                    avatar.dataset.timeOfDay = timeOfDay;
+                    avatar.setAttribute('aria-label', `${label}图标`);
+                    avatar.setAttribute('title', label);
+                });
             },
 
             initEventListeners() {
@@ -3381,11 +4357,10 @@
                     topLikeBtn.addEventListener('click', () => this.toggleLike());
                 }
 
-                // Queue toggle
-                const queueHeader = document.getElementById('queueHeader');
-                if (queueHeader) {
-                    queueHeader.addEventListener('click', () => this.toggleQueue());
-                }
+                // Queue toggle（电台模式和聊天模式各有一份队列面板，两个都要绑定）
+                document.querySelectorAll('.queue-header').forEach(header => {
+                    header.addEventListener('click', () => this.toggleQueue());
+                });
 
                 // Queue items
                 document.querySelectorAll('.queue-item').forEach(item => {
@@ -3414,6 +4389,8 @@
                 const previousMode = this.currentMode;
                 this.currentMode = mode;
 
+                if (window.SkinRenderer) SkinRenderer.syncMode(mode);
+
                 // Update buttons
                 document.querySelectorAll('.mode-btn').forEach(btn => {
                     btn.classList.toggle('active', btn.dataset.mode === mode);
@@ -3431,10 +4408,14 @@
                 const radioMode = document.getElementById('radioMode');
                 if (radioMode) {
                     radioMode.classList.toggle('active', mode === 'radio');
+                    radioMode.inert = mode !== 'radio';
+                    radioMode.setAttribute('aria-hidden', mode !== 'radio');
                 }
                 const chatMode = document.getElementById('chatMode');
                 if (chatMode) {
                     chatMode.classList.toggle('active', mode === 'chat');
+                    chatMode.inert = mode !== 'chat';
+                    chatMode.setAttribute('aria-hidden', mode !== 'chat');
                 }
 
                 // Handle mode switch: pause radio when switching to chat, resume when switching back
@@ -3644,9 +4625,10 @@
 
             toggleQueue() {
                 this.queueExpanded = !this.queueExpanded;
-                document.getElementById('queueList').classList.toggle('expanded', this.queueExpanded);
-                document.getElementById('queueToggleIcon').classList.toggle('expanded', this.queueExpanded);
-                
+                // 电台模式和聊天模式各有一份队列面板，统一展开/收起
+                document.querySelectorAll('.queue-list').forEach(el => el.classList.toggle('expanded', this.queueExpanded));
+                document.querySelectorAll('.queue-toggle-icon').forEach(el => el.classList.toggle('expanded', this.queueExpanded));
+
                 // Load queue when expanding
                 if (this.queueExpanded) {
                     this.loadQueue();
@@ -3687,41 +4669,45 @@
             },
 
             // Render queue list (with currentSong parameter)
+            // 电台模式和聊天模式各有一份队列面板（同一份数据），两处都要同步更新
             renderQueue(songs, currentSong = null) {
-                const queueList = document.getElementById('queueList');
-                const queueCount = document.getElementById('queueCount');
-                
-                if (!queueList) return;
-                
-                // Update count
-                if (queueCount) {
-                    queueCount.textContent = `${songs.length} TRACKS`;
+                // Magazine 皮肤的"下一首"预告栏：取当前播放歌曲之后的第一首
+                if (window.SkinRenderer && songs && songs.length > 0) {
+                    const curIdx = currentSong ? songs.findIndex(s => s.id === currentSong.id) : -1;
+                    const nextSong = curIdx >= 0 ? songs[curIdx + 1] : songs[0];
+                    if (nextSong) SkinRenderer.updateNextUp(nextSong);
                 }
-                
-                if (songs.length === 0) {
-                    queueList.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--text-secondary); font-size: 12px;">暂无歌曲</div>';
-                    return;
-                }
-                
-                // Render queue items
-                queueList.innerHTML = songs.map((song, index) => {
-                    const isActive = currentSong && song.id === currentSong.id;
-                    
-                    return `
-                        <div class="queue-item ${isActive ? 'active' : ''}" data-index="${index}" data-song-id="${song.id || ''}">
-                            <div class="queue-number">${isActive ? '<span class="queue-play-icon">▶</span>' : index + 1}</div>
-                            <div class="queue-track-info">
-                                <div class="queue-track-name">${song.name}</div>
-                                <div class="queue-track-artist">${song.artist}</div>
-                                ${song.reason ? `<div style="font-size: 10px; color: var(--text-secondary); margin-top: 2px;">${song.reason}</div>` : ''}
+
+                const queueLists = document.querySelectorAll('.queue-list');
+                const queueCounts = document.querySelectorAll('.queue-count');
+
+                if (queueLists.length === 0) return;
+
+                queueCounts.forEach(el => { el.textContent = `${songs.length} TRACKS`; });
+
+                const html = songs.length === 0
+                    ? '<div style="padding: 20px; text-align: center; color: var(--text-secondary); font-size: 12px;">暂无歌曲</div>'
+                    : songs.map((song, index) => {
+                        const isActive = currentSong && song.id === currentSong.id;
+                        // 推荐理由不再常驻占一行（原来三行文字挤在一起、字号还比艺人名大，
+                        // 层级是反的），改成原生 title 提示：hover/长按能看到，不占用列表空间。
+                        const titleAttr = song.reason ? ` title="${song.reason.replace(/"/g, '&quot;')}"` : '';
+                        return `
+                            <div class="queue-item ${isActive ? 'active' : ''}" data-index="${index}" data-song-id="${song.id || ''}"${titleAttr}>
+                                <div class="queue-number">${isActive ? '<span class="queue-play-icon">▶</span>' : index + 1}</div>
+                                <div class="queue-track-info">
+                                    <div class="queue-track-name">${song.name}</div>
+                                    <div class="queue-track-artist">${song.artist}</div>
+                                </div>
                             </div>
-                        </div>
-                    `;
-                }).join('');
-                
-                // Add click handlers
-                queueList.querySelectorAll('.queue-item').forEach(item => {
-                    item.addEventListener('click', () => this.selectQueueItem(item));
+                        `;
+                    }).join('');
+
+                queueLists.forEach(queueList => {
+                    queueList.innerHTML = html;
+                    queueList.querySelectorAll('.queue-item').forEach(item => {
+                        item.addEventListener('click', () => this.selectQueueItem(item));
+                    });
                 });
             },
 
@@ -3821,7 +4807,9 @@
                         
                         const response = await API.pause();
                         console.log('=== [togglePlay] API.pause() 响应:', response);
-                        
+
+                        // 【修复】标记为用户主动暂停，防止 monitorSongProgress 把暂停误判为播放失败而自动跳歌
+                        this._userPaused = true;
                         this.setPlaying(false);
                         console.log('=== [togglePlay] 音乐已暂停 ===');
                     } catch (error) {
@@ -3844,14 +4832,22 @@
                             console.log('=== [togglePlay] API.resume() 响应:', response);
                             
                             if (response.success) {
+                                // 【修复】恢复播放，清除用户暂停标记
+                                this._userPaused = false;
                                 this.currentSong = currentSong;
                                 this.radioState = 'playing';
                                 this.updateCurrentSong(currentSong);
                                 this.setPlaying(true);
                                 console.log('=== [togglePlay] 播放成功 ===');
+                            } else {
+                                console.warn('=== [togglePlay] resume 失败，尝试重新播放歌曲 ===');
+                                // Fallback: 如果 resume 失败，直接重新播放歌曲
+                                await this.actuallyPlaySong(currentSong);
                             }
                         } catch (error) {
-                            console.error('=== [togglePlay] 播放失败:', error);
+                            console.error('=== [togglePlay] 播放失败，尝试重新播放歌曲 ===', error);
+                            // Fallback: 如果 resume 失败，直接重新播放歌曲
+                            await this.actuallyPlaySong(currentSong);
                         }
                     } else {
                         console.log('=== [togglePlay] 无当前歌曲，启动电台 ===');
@@ -3877,8 +4873,14 @@
                 
                 try {
                     console.log('[RadioFlow] Calling API.play for song:', song.id, song.encryptedId);
-                    const response = await API.play(song.id, song.encryptedId);
+                    // #region debug-point A:frontend-play-request
+                    fetch("http://127.0.0.1:7777/event",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({sessionId:"music-playback-stuck",runId:"pre-fix",hypothesisId:"A",location:"public/index.html:4024",msg:"[DEBUG] frontend api.play request",data:{songId:song?.id||null,originalId:song?.originalId||null,encryptedId:song?.encryptedId||null,name:song?.name||null,radioState:this.radioState||null,currentMode:this.currentMode||null},ts:Date.now()})}).catch(()=>{});
+                    // #endregion
+                    const response = await API.play(song.originalId || song.id, song.encryptedId, song);
                     console.log('[RadioFlow] API.play response:', response);
+                    // #region debug-point A:frontend-play-response
+                    fetch("http://127.0.0.1:7777/event",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({sessionId:"music-playback-stuck",runId:"pre-fix",hypothesisId:"A",location:"public/index.html:4025",msg:"[DEBUG] frontend api.play response",data:{success:!!response?.success,error:response?.error||null,message:response?.message||null,loginRequired:!!response?.loginRequired},ts:Date.now()})}).catch(()=>{});
+                    // #endregion
                     
                     if (response.success) {
                         this.updateCurrentSong(song);
@@ -3886,11 +4888,42 @@
                         console.log('[RadioFlow] Song playback started successfully');
                     } else {
                         console.error('[RadioFlow] API.play failed:', response);
+                        // #region debug-point A:frontend-play-failed
+                        fetch("http://127.0.0.1:7777/event",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({sessionId:"music-playback-stuck",runId:"pre-fix",hypothesisId:"A",location:"public/index.html:4032",msg:"[DEBUG] frontend play failed",data:{response:response||null},ts:Date.now()})}).catch(()=>{});
+                        // #endregion
                     }
                 } catch (error) {
                     console.error('[RadioFlow] Failed to play song:', error);
+                    // #region debug-point A:frontend-play-exception
+                    fetch("http://127.0.0.1:7777/event",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({sessionId:"music-playback-stuck",runId:"pre-fix",hypothesisId:"A",location:"public/index.html:4035",msg:"[DEBUG] frontend play exception",data:{message:error?.message||String(error)},ts:Date.now()})}).catch(()=>{});
+                    // #endregion
                 }
                 console.log('=== [actuallyPlaySong] END ===');
+            },
+            
+            // 【新增】播放特定歌曲（用于过渡文案后播放预期的歌曲）
+            async playSpecificSong(song) {
+                console.log('=== [playSpecificSong] START ===');
+                console.log('=== [playSpecificSong] Playing specific song:', song?.name);
+                
+                if (!song || !song.id) {
+                    console.error('[RadioFlow] Invalid song for playSpecificSong');
+                    this.playNextFromPlaylist();
+                    return;
+                }
+                
+                // 【关键】从队列中移除这首歌曲（因为它已经被标记为下一首）
+                if (this.playlist && this.playlist.length > 0) {
+                    const index = this.playlist.findIndex(s => s.id === song.id || s.originalId === song.id);
+                    if (index !== -1) {
+                        console.log('[RadioFlow] Removing song from playlist queue:', song.name);
+                        this.playlist.splice(index, 1);
+                    }
+                }
+                
+                // 播放歌曲
+                await this.actuallyPlaySong(song);
+                console.log('=== [playSpecificSong] END ===');
             },
 
             // 暂停 Hermes 语音播报
@@ -4084,9 +5117,30 @@
                 console.log('[RadioFlow] ========== startRadioShow called ==========');
                 console.log('[RadioFlow] Current radio state:', this.radioState);
                 console.log('[RadioFlow] Current mode:', this.currentMode);
+
+                if (this.currentMode !== 'radio') {
+                    console.log('[RadioFlow] Skip startRadioShow because mode is not radio:', this.currentMode);
+                    return;
+                }
+                if (this._radioShowStarting || this.radioState === 'welcome') {
+                    console.log('[RadioFlow] Skip duplicate welcome start:', {
+                        radioShowStarting: this._radioShowStarting,
+                        radioState: this.radioState
+                    });
+                    return;
+                }
+                if (this.hermesSpeaking || this.isPlaying || ['intro', 'playing', 'outro'].includes(this.radioState)) {
+                    console.log('[RadioFlow] Skip startRadioShow because radio flow is already active:', {
+                        hermesSpeaking: this.hermesSpeaking,
+                        isPlaying: this.isPlaying,
+                        radioState: this.radioState
+                    });
+                    return;
+                }
                 
                 // 【关键修复】强制重置所有状态，确保重新开始
                 console.log('[RadioFlow] Forcing reset of radio state...');
+                this._radioShowStarting = true;
                 this.radioState = 'idle';
                 TTSService.stop();
                 this._playlistReady = false; // 重置歌单准备状态
@@ -4117,6 +5171,7 @@
                                 console.log('[RadioFlow] Welcome TTS started');
                             },
                             onEnd: () => {
+                                this._radioShowStarting = false;
                                 this.logWithTime('🎙️ 欢迎文案 TTS 播放结束！现在播放第一首歌...');
                                 console.log('[RadioFlow] Welcome TTS ended, now playing first song');
                                 
@@ -4134,6 +5189,7 @@
                     } else {
                         // 如果没有欢迎文案，直接获取第一首歌并播放
                         console.log('[RadioFlow] No welcome script, playing directly...');
+                        this._radioShowStarting = false;
                         if (this._playlistReady && this.playlist && this.playlist.length > 0) {
                             this.playNextFromPlaylist();
                         } else {
@@ -4142,6 +5198,7 @@
                     }
                     
                 } catch (error) {
+                    this._radioShowStarting = false;
                     console.error('[RadioFlow] ERROR in startRadioShow:', error);
                     console.error('[RadioFlow] Error stack:', error.stack);
                 }
@@ -4190,8 +5247,10 @@
                     if (response.success && response.song) {
                         const song = response.song;
                         console.log('[RadioFlow] Playing next song:', song.name, '-', song.artist);
-                        this.actuallyPlaySong(song);
-                        
+                        // 【修复】/api/playlist/next 服务端已经调用 playSong 真正播放了这首歌，
+                        // 这里传 alreadyPlaying 避免 actuallyPlaySong 再调一次 API.play 造成重复播放
+                        this.actuallyPlaySong(song, { alreadyPlaying: true });
+
                         // 更新本地播放列表索引
                         this.currentSongIndex = (this.currentSongIndex + 1) % this.playlist.length;
                         
@@ -4206,6 +5265,43 @@
                 } catch (error) {
                     console.error('[RadioFlow] Failed to get next song:', error);
                     this.playRecommendedSong();
+                }
+            },
+
+            // 回退到上一首（跟 playNextFromPlaylist 对称）。没有"上一首"可回退时
+            // 什么都不做——跟"下一首"不同，这里不该 fallback 去随机播一首新推荐歌，
+            // 那样就不是"上一首"该有的语义了。
+            async playPreviousFromPlaylist() {
+                this.logWithTime('🎵 playPreviousFromPlaylist 开始...');
+                console.log('[RadioFlow] playPreviousFromPlaylist called');
+
+                if (this._monitorSongInterval) {
+                    console.log('[RadioFlow] Clearing monitor interval in playPreviousFromPlaylist');
+                    clearInterval(this._monitorSongInterval);
+                    this._monitorSongInterval = null;
+                }
+                this._monitorSongActive = false;
+
+                try {
+                    const response = await API.playlistPrevious();
+                    console.log('[RadioFlow] Previous song response:', response);
+
+                    if (response.success && response.song) {
+                        const song = response.song;
+                        console.log('[RadioFlow] Playing previous song:', song.name, '-', song.artist);
+                        // 服务端 /api/playlist/previous 已经调用 playSong 真正播放了这首歌
+                        this.actuallyPlaySong(song, { alreadyPlaying: true });
+
+                        this.currentSongIndex = Math.max(0, this.currentSongIndex - 1);
+
+                        if (this.queueExpanded) {
+                            this.refreshQueueStatus();
+                        }
+                    } else {
+                        console.warn('[RadioFlow] No previous song available');
+                    }
+                } catch (error) {
+                    console.error('[RadioFlow] Failed to get previous song:', error);
                 }
             },
 
@@ -4623,7 +5719,7 @@
                 }
             },
 
-            async actuallyPlaySong(song) {
+            async actuallyPlaySong(song, options = {}) {
                 this.logWithTime(`🎶 actuallyPlaySong 开始播放：${song.name}`);
                 console.log('[RadioFlow] ===== TIMING: actuallyPlaySong called for:', song.name, 'id:', song.id, '=====');
                 console.time('[RadioFlow] actuallyPlaySong total');
@@ -4699,7 +5795,14 @@
                     let response;
                     const isFirstSong = song.id === this.playlist?.[0]?.id;
 
-                    if (this.firstSongPreloadPromise && isFirstSong) {
+                    if (options.alreadyPlaying) {
+                        // 【修复】调用方（如 playNextFromPlaylist）已经通过服务端接口
+                        // （/api/playlist/next 内部会调用 playSong）真正播放了这首歌，
+                        // 这里不再重复调用 API.play，否则会对同一首歌起两个 ncm-cli play 进程，
+                        // 导致播放不稳定（mpv/队列状态被两条并行链路互相覆盖）。
+                        console.log('[RadioFlow] Song already started server-side, skipping duplicate API.play call');
+                        response = { success: true };
+                    } else if (this.firstSongPreloadPromise && isFirstSong) {
                         const preloadElapsed = Date.now() - (this.firstSongPreloadStartTime || 0);
                         const remainingWait = this.firstSongPreloadMaxWait - preloadElapsed;
 
@@ -4746,6 +5849,9 @@
                             console.log('🚀 ========================================');
                             this._firstSongPlayed = true;
                         }
+
+                        // 【新增】记录播放开始！
+                        this.recordPlayStart(song);
 
                         // 缓存成功的歌曲URL（用于下次快速播放）
                         if (response.url) {
@@ -4817,13 +5923,10 @@
             // Show login required message
             showLoginRequiredMessage() {
                 console.log('[RadioFlow] Showing login required message');
-                const loginMessage = '请先登录网易云音乐账号才能播放歌曲。请点击页面上的"登录网易云音乐"按钮完成登录。';
-
-                // Add system message to chat
+                const loginMessage = '需要登录网易云音乐账号才能播放歌曲，正在为你打开登录窗口...';
                 this.addChatMessage('🔐 ' + loginMessage, false);
-
-                // Show confirm dialog
-                alert(loginMessage);
+                // 自动触发登录流程
+                this.handleLogin();
             },
 
             // Skip to next song after playback failure (no outro, just intro for next song)
@@ -4886,7 +5989,7 @@
                 }
             },
 
-            monitorSongProgress() {
+            async monitorSongProgress() {
                 console.log('[RadioFlow] monitorSongProgress started (方案1: 前端独立状态管理)');
                 
                 // 【关键修复1】先清理旧的定时器，再初始化变量
@@ -4913,8 +6016,29 @@
                 
                 // 获取当前歌曲信息
                 const currentSong = this.playlist[this.currentSongIndex];
-                // 估算歌曲时长，确保 duration 是合理的毫秒数
-                let durationMs = currentSong?.duration || 180000;
+                // 【DEBUG】打印完整的歌曲信息
+                console.log('[RadioFlow] [DEBUG] Current song full info:', currentSong);
+                
+                // 【关键修复】先从 API 获取真实的歌曲时长！
+                let durationMs = 180000; // 默认3分钟
+                try {
+                    const status = await API.getStatus();
+                    if (status.success && status.status && status.status.duration && status.status.duration > 0) {
+                        // ncm-cli 返回的 duration 是秒！转换成毫秒！
+                        durationMs = status.status.duration * 1000;
+                        console.log('[RadioFlow] [DEBUG] Using ncm-cli real duration from API:', status.status.duration, 'sec =', durationMs, 'ms');
+                    }
+                } catch (e) {
+                    console.log('[RadioFlow] [DEBUG] Failed to get real duration, using fallback');
+                }
+                
+                // 如果没有从 API 获取到，再用 currentSong.duration
+                if (durationMs === 180000 && currentSong?.duration) {
+                    durationMs = currentSong.duration;
+                    console.log('[RadioFlow] [DEBUG] Using currentSong.duration:', durationMs, 'ms');
+                }
+                
+                console.log('[RadioFlow] [DEBUG] Raw duration value:', durationMs, 'typeof:', typeof durationMs);
                 // 安全检查：如果 duration 超过1小时，说明可能有问题
                 if (durationMs > 3600000) {
                     // 如果 duration 小于 10000，可能是以秒为单位的，乘以1000
@@ -4925,8 +6049,12 @@
                         durationMs = 240000;
                     }
                 }
-                const estimatedDuration = durationMs;
-                console.log('[RadioFlow] Estimated song duration:', estimatedDuration, 'ms for:', currentSong?.name);
+                let estimatedDuration = durationMs; // 改成 let 允许动态更新
+                const durationMinutes = (estimatedDuration / 60000).toFixed(2);
+                console.log('[RadioFlow] Final estimated song duration:', estimatedDuration, 'ms (' + durationMinutes + 'min) for:', currentSong?.name);
+                
+                // 【新增】记录播放开始
+                this.recordPlayStart(currentSong);
                 
                 // Poll for song completion
                 this._monitorSongInterval = setInterval(async () => {
@@ -4942,9 +6070,16 @@
                     
                     // 如果 this.isPlaying 为 false，先不要立即停止，再检查几次！
                     if (!this.isPlaying) {
+                        // 【修复】用户主动暂停时，保持监控挂起，不累计失败计数、不触发自动跳歌
+                        if (this._userPaused) {
+                            isPlayingFalseCount = 0;
+                            console.log('[RadioFlow] User paused, holding monitor (no failure judgment)');
+                            return;
+                        }
+
                         isPlayingFalseCount++;
                         console.log('[RadioFlow] isPlaying=false count:', isPlayingFalseCount);
-                        
+
                         // 只有连续3次 isPlaying 都是 false，才停止监控
                         if (isPlayingFalseCount < 3) {
                             console.log('[RadioFlow] isPlaying is false but continuing to check...');
@@ -4973,17 +6108,23 @@
                         
                         if (isFailure) {
                             console.log('[RadioFlow] Detected playback failure!');
+                            // 【新增】记录播放失败
+                            this.recordPlayFailure(currentSong, elapsedSinceStart, estimatedDuration);
                             this.skipToNextSongAfterFailure();
                         } else {
                             // 判断是否是正常播放完成（进度≥95%或已超过预估时长）
                             const lastEffectiveProgress = lastProgress || 0;
-                            const shouldTriggerOutro = lastEffectiveProgress > 90 || elapsedSinceStart > estimatedDuration;
+                            const shouldTriggerOutro = lastEffectiveProgress > 95 || elapsedSinceStart > estimatedDuration;
                             
                             if (shouldTriggerOutro) {
                                 console.log('[RadioFlow] Detected normal song completion! Triggering outro.');
+                                // 【新增】记录播放完成
+                                this.recordPlayComplete(currentSong, elapsedSinceStart, estimatedDuration);
                                 this.onSongFinished();
                             } else {
                                 console.log('[RadioFlow] Playback stopped prematurely but not failure, skipping.');
+                                // 【新增】记录播放失败（提前终止）
+                                this.recordPlayFailure(currentSong, elapsedSinceStart, estimatedDuration);
                             }
                         }
                         return;
@@ -4997,6 +6138,16 @@
                         if (status.success && status.status) {
                             const progress = status.status.progress || 0;
                             const isPlayingStatus = status.status.isPlaying;
+                            
+                            // 【关键修复】轮询时也更新真实的歌曲时长！
+                            if (status.status.duration && status.status.duration > 0) {
+                                const realDurationMs = status.status.duration * 1000;
+                                // 如果和当前 estimatedDuration 差异超过 30 秒，更新！
+                                if (Math.abs(realDurationMs - estimatedDuration) > 30000) {
+                                    estimatedDuration = realDurationMs;
+                                    console.log('[RadioFlow] [DEBUG] Updated estimatedDuration to real value:', (estimatedDuration/1000).toFixed(1) + 'sec');
+                                }
+                            }
                             
                             // 方案1: 前端独立状态判断
                             // 1. 标记歌曲开始 - 基于进度或时间
@@ -5038,44 +6189,44 @@
                             
                             // 每30秒或前3次轮询记录日志
                             if (pollCount % 6 === 0 || pollCount <= 3) {
-                                console.log(`[RadioFlow] Progress: ${progress.toFixed(1)}% (effective: ${effectiveProgress.toFixed(1)}%), ncmPlaying: ${isPlayingStatus}, hasStarted: ${hasStartedPlaying}, stuck: ${progressStuckCount}`);
+                                const elapsed = songStartTime ? (Date.now() - songStartTime) : 0;
+                                console.log(`[RadioFlow] Progress: ${progress.toFixed(1)}% (effective: ${effectiveProgress.toFixed(1)}%), elapsed: ${(elapsed/1000).toFixed(0)}s/${(estimatedDuration/1000).toFixed(0)}s, stuck: ${progressStuckCount}`);
                             }
                             
                             // 4. 判断歌曲是否结束 - 不依赖 ncm isPlaying 状态
                             let shouldTriggerOutro = false;
                             
-                            // 【关键修复】更严格的判断：必须满足两个条件才会触发过渡
-                            // 条件A: 进度超过95%
+                            // 条件A: 进度超过95%（提高条件，防止提前结束）
                             let conditionA = false;
                             if (hasStartedPlaying && effectiveProgress > 95) {
                                 console.log('[RadioFlow] Song finish detected: progress > 95%');
                                 conditionA = true;
                             }
                             
-                            // 条件B: 基于时间的检测（歌曲预估时长已过）
+                            // 条件B: 基于时间的检测（歌曲预估时长已过 + 15秒缓冲）
                             let conditionB = false;
                             if (hasStartedPlaying && songStartTime) {
                                 const elapsed = Date.now() - songStartTime;
-                                if (elapsed > estimatedDuration + 10000) { // 给予10秒缓冲
-                                    console.log('[RadioFlow] Song finish detected: duration exceeded (', elapsed, 'ms)');
+                                if (elapsed > estimatedDuration + 15000) {
+                                    console.log('[RadioFlow] Song finish detected: duration exceeded (', (elapsed/1000).toFixed(0), 'sec)');
                                     conditionB = true;
                                 }
                             }
                             
-                            // 条件C: 进度卡住检测（连续3次轮询进度不变，且超过预估时长的80%）
+                            // 条件C: 进度卡住检测（连续5次轮询进度不变，且超过预估时长的80%）
                             let conditionC = false;
-                            if (hasStartedPlaying && progressStuckCount >= 3) {
+                            if (hasStartedPlaying && progressStuckCount >= 5) {
                                 const elapsed = Date.now() - songStartTime;
-                                if (elapsed > estimatedDuration * 0.8) {
+                                if (elapsed > estimatedDuration * 0.9) {
                                     console.log('[RadioFlow] Song finish detected: progress stuck for', progressStuckCount, 'polls');
                                     conditionC = true;
                                 }
                             }
                             
-                            // 必须至少满足两个条件才触发过渡，避免误判
-                            shouldTriggerOutro = (conditionA && conditionB) || (conditionA && conditionC) || (conditionB && conditionC);
+                            // 只要满足任意一个条件就触发过渡
+                            shouldTriggerOutro = conditionA || conditionB || conditionC;
                             if (shouldTriggerOutro) {
-                                console.log('[RadioFlow] Triggering outro: multiple conditions met');
+                                console.log('[RadioFlow] Triggering outro: condition met');
                             }
                             
                             if (shouldTriggerOutro) {
@@ -5083,9 +6234,29 @@
                                 clearInterval(this._monitorSongInterval);
                                 this._monitorSongInterval = null;
                                 this._monitorSongActive = false; // 【关键修复】释放 active 标志
+                                
+                                // 【新增】记录播放完成
+                                const elapsedSinceStart = songStartTime ? (Date.now() - songStartTime) : 0;
+                                this.recordPlayComplete(currentSong, elapsedSinceStart, estimatedDuration);
+                                
                                 this.stopStatusPolling();
                                 this.setPlaying(false);
                                 this.onSongFinished();
+                            }
+                            
+                            // 【关键】检测播放失败：超过预估时长 + 60秒还没触发完成
+                            if (hasStartedPlaying && songStartTime) {
+                                const elapsed = Date.now() - songStartTime;
+                                if (elapsed > estimatedDuration + 60000 && !shouldTriggerOutro) {
+                                    console.log('[RadioFlow] Detected playback timeout! elapsed:', (elapsed/1000).toFixed(0), 'sec, estimated:', (estimatedDuration/1000).toFixed(0), 'sec');
+                                    clearInterval(this._monitorSongInterval);
+                                    this._monitorSongInterval = null;
+                                    this._monitorSongActive = false;
+                                    
+                                    // 【新增】记录播放失败
+                                    this.recordPlayFailure(currentSong, elapsed, estimatedDuration);
+                                    this.skipToNextSongAfterFailure();
+                                }
                             }
                         }
                     } catch (e) {
@@ -5103,6 +6274,18 @@
                 }
                 this._onSongFinishedLock = true;
                 console.log('[RadioFlow] onSongFinished called');
+                const lastKnownSong = this.currentSong;
+                
+                // 【关键修复1】先强制停止音乐！
+                console.log('[RadioFlow] First, stopping music...');
+                try {
+                    await API.stop();
+                } catch (e) {
+                    console.error('[RadioFlow] Failed to stop music:', e);
+                }
+                // 【关键修复2】等待 1.5秒，确保音乐真的停止了！
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                console.log('[RadioFlow] Music should have stopped now, continuing...');
                 
                 // 获取当前播放的歌曲
                 let currentSong;
@@ -5121,7 +6304,7 @@
                 
                 // 如果没有通过 API 获取到歌曲，尝试从本地获取
                 if (!currentSong) {
-                    currentSong = this.playlist[this.currentSongIndex];
+                    currentSong = lastKnownSong || this.currentSong || this.playlist[this.currentSongIndex];
                 }
                 
                 if (!currentSong) {
@@ -5383,10 +6566,18 @@
             },
 
             async playPrevious() {
-                const response = await API.playPrevious();
-                if (response.success) {
-                    this.updateCurrentSong(response.song);
-                    this.setPlaying(true);
+                console.log('[RadioFlow] playPrevious called');
+                // 【修复】跟 playNext() 一样优先走 PlaylistService 的队列（真正在用的播放链路）；
+                // 老的 API.playPrevious() 走的是 ncm-cli 自己内部的 prev 历史，
+                // 跟 PlaylistService 维护的队列完全不同步，点了没反应或对不上号。
+                if (this.playlist && this.playlist.length > 0) {
+                    await this.playPreviousFromPlaylist();
+                } else {
+                    const response = await API.playPrevious();
+                    if (response.success) {
+                        this.updateCurrentSong(response.song);
+                        this.setPlaying(true);
+                    }
                 }
             },
 
@@ -5495,6 +6686,177 @@
                 }
             },
 
+            // 【新增】加载播放计数
+            loadPlayCount() {
+                try {
+                    const stored = localStorage.getItem('hermudio_play_count');
+                    const storedAttempted = localStorage.getItem('hermudio_attempted_count');
+                    const storedCompleted = localStorage.getItem('hermudio_completed_count');
+                    const storedHistory = localStorage.getItem('hermudio_play_history');
+                    
+                    if (stored) {
+                        this.playCount = parseInt(stored, 10) || 0;
+                    }
+                    if (storedAttempted) {
+                        this.attemptedCount = parseInt(storedAttempted, 10) || 0;
+                    }
+                    if (storedCompleted) {
+                        this.completedCount = parseInt(storedCompleted, 10) || 0;
+                    }
+                    if (storedHistory) {
+                        try {
+                            this.playHistory = JSON.parse(storedHistory);
+                        } catch (e) {
+                            this.playHistory = [];
+                        }
+                    }
+                    console.log('[PlayCounter] Loaded: attempted=' + this.attemptedCount + ', completed=' + this.completedCount + ', history=' + this.playHistory.length);
+                    this.updatePlayCountDisplay();
+                } catch (error) {
+                    console.warn('[PlayCounter] Failed to load play count:', error);
+                    this.playCount = 0;
+                    this.attemptedCount = 0;
+                    this.completedCount = 0;
+                    this.playHistory = [];
+                }
+            },
+
+            // 【新增】保存播放计数
+            savePlayCount() {
+                try {
+                    localStorage.setItem('hermudio_play_count', this.playCount.toString());
+                    localStorage.setItem('hermudio_attempted_count', this.attemptedCount.toString());
+                    localStorage.setItem('hermudio_completed_count', this.completedCount.toString());
+                    localStorage.setItem('hermudio_play_history', JSON.stringify(this.playHistory));
+                } catch (error) {
+                    console.warn('[PlayCounter] Failed to save play count:', error);
+                }
+            },
+
+            // 【新增】记录播放开始
+            recordPlayStart(song) {
+                this.attemptedCount++;
+                console.log('[PlayCounter] Recorded play start: ' + (song?.name || 'Unknown'));
+                this.savePlayCount();
+                this.updatePlayCountDisplay();
+            },
+
+            // 【新增】记录播放完成
+            recordPlayComplete(song, actualDuration, expectedDuration) {
+                this.completedCount++;
+                this.playCount++;
+                
+                // 记录播放历史
+                const record = {
+                    songName: song?.name || 'Unknown',
+                    artist: song?.artist || 'Unknown',
+                    expectedDuration: expectedDuration || 0,
+                    actualDuration: actualDuration || 0,
+                    isComplete: true,
+                    timestamp: new Date().toISOString()
+                };
+                this.playHistory.push(record);
+                
+                console.log('[PlayCounter] Recorded play complete: ' + (song?.name || 'Unknown') + ' expected=' + (expectedDuration/1000) + 's, actual=' + (actualDuration/1000) + 's');
+                this.savePlayCount();
+                this.updatePlayCountDisplay();
+            },
+
+            // 【新增】记录播放失败
+            recordPlayFailure(song, actualDuration, expectedDuration) {
+                // 记录播放历史
+                const record = {
+                    songName: song?.name || 'Unknown',
+                    artist: song?.artist || 'Unknown',
+                    expectedDuration: expectedDuration || 0,
+                    actualDuration: actualDuration || 0,
+                    isComplete: false,
+                    timestamp: new Date().toISOString()
+                };
+                this.playHistory.push(record);
+                
+                console.log('[PlayCounter] Recorded play failure: ' + (song?.name || 'Unknown') + ' expected=' + (expectedDuration/1000) + 's, actual=' + (actualDuration/1000) + 's');
+                this.savePlayCount();
+            },
+
+            // 【新增】更新页面上的播放计数显示
+            updatePlayCountDisplay() {
+                const attemptedEl = document.getElementById('attemptedCounter');
+                const completedEl = document.getElementById('completedCounter');
+                if (attemptedEl) {
+                    attemptedEl.textContent = this.attemptedCount.toString();
+                }
+                if (completedEl) {
+                    completedEl.textContent = this.completedCount.toString();
+                }
+            },
+
+            loadMutePreference() {
+                this.isMuted = localStorage.getItem('hermudio_muted') === 'true';
+            },
+
+            updateMuteButton() {
+                const muteToggleBtn = document.getElementById('muteToggleBtn');
+                if (!muteToggleBtn) return;
+
+                muteToggleBtn.textContent = this.isMuted ? '恢复' : '静音';
+                muteToggleBtn.title = this.isMuted ? '恢复声音' : '静音';
+                muteToggleBtn.style.background = this.isMuted
+                    ? 'rgba(255, 120, 120, 0.18)'
+                    : 'rgba(255,255,255,0.08)';
+                muteToggleBtn.style.color = this.isMuted ? '#ffd1d1' : '#f7e7ce';
+            },
+
+            applyMuteState() {
+                if (this._savedTtsVolume === null) {
+                    this._savedTtsVolume = TTSService.volume;
+                }
+                if (this._savedWebSpeechVolume === null) {
+                    this._savedWebSpeechVolume = TTSService.webSpeechVolume;
+                }
+
+                const nextTtsVolume = this.isMuted ? 0 : this._savedTtsVolume;
+                const nextWebSpeechVolume = this.isMuted ? 0 : this._savedWebSpeechVolume;
+
+                TTSService.volume = nextTtsVolume;
+                TTSService.webSpeechVolume = nextWebSpeechVolume;
+
+                if (TTSService.audioPlayer) {
+                    TTSService.audioPlayer.muted = this.isMuted;
+                    TTSService.audioPlayer.volume = this.isMuted ? 0 : Math.min(nextTtsVolume / 2, 1.0);
+                }
+
+                if (this.hermesAudio) {
+                    this.hermesAudio.muted = this.isMuted;
+                    this.hermesAudio.volume = this.isMuted ? 0 : Math.min(nextTtsVolume / 2, 1.0);
+                }
+
+                document.querySelectorAll('audio, video').forEach((media) => {
+                    media.muted = this.isMuted;
+                    if (this.isMuted) {
+                        media.volume = 0;
+                    }
+                });
+            },
+
+            async toggleMute() {
+                const previousMuted = this.isMuted;
+                this.isMuted = !this.isMuted;
+                localStorage.setItem('hermudio_muted', String(this.isMuted));
+                this.applyMuteState();
+                this.updateMuteButton();
+                try {
+                    await API.setMute(this.isMuted);
+                    console.log('[Audio] Mute toggled:', this.isMuted ? 'muted' : 'unmuted');
+                } catch (error) {
+                    this.isMuted = previousMuted;
+                    localStorage.setItem('hermudio_muted', String(this.isMuted));
+                    this.applyMuteState();
+                    this.updateMuteButton();
+                    console.warn('[Audio] Failed to sync mute state:', error.message);
+                }
+            },
+
             // 添加歌曲到屏蔽列表
             addBlockedSong(songId, songName) {
                 if (!songId) return;
@@ -5550,6 +6912,19 @@
 
             async handleLogin() {
                 console.log('[Login] ========== handleLogin START ==========');
+                const now = Date.now();
+                if (now - this._lastLoginRequestAt < this._loginCooldownMs) {
+                    const waitSeconds = Math.ceil((this._loginCooldownMs - (now - this._lastLoginRequestAt)) / 1000);
+                    console.log('[Login] Login request throttled, remaining seconds:', waitSeconds);
+                    this.addChatMessage(`🔐 登录请求过于频繁，请 ${waitSeconds} 秒后再试。`, false);
+                    return;
+                }
+                if (this._loginInProgress) {
+                    console.log('[Login] Login already in progress, skipping duplicate request');
+                    return;
+                }
+                this._lastLoginRequestAt = now;
+                this._loginInProgress = true;
                 try {
                     console.log('[Login] Calling API.getLoginUrl...');
                     const response = await API.getLoginUrl();
@@ -5591,6 +6966,7 @@
                                     // 重新检查登录状态并启动流程
                                     console.log('[Login] Calling checkLoginAndShowWelcome...');
                                     await this.checkLoginAndShowWelcome();
+                                    this._loginInProgress = false;
                                     console.log('[Login] ========== handleLogin COMPLETED ==========');
                                 }
                             } catch (e) {
@@ -5604,21 +6980,35 @@
                             if (loginWindow && !loginWindow.closed) {
                                 loginWindow.close();
                             }
+                            this._loginInProgress = false;
                             console.log('[Login] Polling timeout');
                         }, 5 * 60 * 1000);
 
                     } else {
                         console.error('[Login] getLoginUrl failed:', response);
-                        alert('获取登录链接失败，请重试');
+                        // 显示更详细的错误提示
+                        const errorMessage = response.message || '无法获取登录链接';
+                        if (errorMessage.includes('API key') || errorMessage.includes('签名失败')) {
+                            alert('登录功能配置未完成\n\n请联系管理员配置网易云音乐 API 凭证\n\n错误信息: ' + errorMessage);
+                        } else {
+                            alert('获取登录链接失败: ' + errorMessage);
+                        }
+                        this._loginInProgress = false;
                     }
                 } catch (error) {
                     console.error('[Login] Login error:', error);
-                    alert('登录功能暂时不可用，请稍后重试');
+                    this._loginInProgress = false;
+                    alert('登录功能暂时不可用，请稍后重试\n\n错误: ' + error.message);
                 }
             },
 
             setPlaying(playing) {
                 this.isPlaying = playing;
+
+                // 【修复】只要真正开始播放，就清除用户暂停标记（覆盖 resume/回退重播/新歌等所有路径）
+                if (playing) {
+                    this._userPaused = false;
+                }
 
                 // Update radio mode (unified design)
                 const radioContentStatus = document.getElementById('radioContentStatus');
@@ -5637,7 +7027,12 @@
 
                 // Update chat mode
                 const topPlayBtn = document.getElementById('topPlayBtn');
-                if (topPlayBtn) topPlayBtn.textContent = playing ? '⏸' : '▶';
+                const topIconPlay = document.getElementById('topIconPlay');
+                const topIconPause = document.getElementById('topIconPause');
+                if (topPlayBtn && topIconPlay && topIconPause) {
+                    topIconPlay.style.display = playing ? 'none' : 'block';
+                    topIconPause.style.display = playing ? 'block' : 'none';
+                }
 
                 // Update player bars animation
                 document.querySelectorAll('.radio-player-bar').forEach((bar, index) => {
@@ -5658,6 +7053,8 @@
                 // 【优化】平滑过渡波形振幅
                 this.wavePlaying = playing;
                 this.waveTargetAmplitude = playing ? 30 : 10;
+
+                if (window.SkinRenderer) SkinRenderer.updatePlaying(playing);
             },
 
             updateCurrentSong(song) {
@@ -5690,8 +7087,24 @@
                 console.log('[updateCurrentSong] trackArtist element:', trackArtist);
 
                 if (trackSong) {
-                    trackSong.textContent = song.name || 'Unknown Song';
-                    console.log('[updateCurrentSong] Updated trackSong to:', song.name);
+                    // 【防御性修复】确保歌曲名称有效，避免显示十六进制字符串
+                    let songName = song.name || 'Unknown Song';
+                    
+                    // 检查是否是加密ID（纯十六进制字符串）
+                    if (!song.name || /^([0-9A-Fa-f]{2}\s*)+$/.test(songName)) {
+                        // 如果是加密ID或没有名称，尝试从其他字段获取信息
+                        if (song.originalId) {
+                            songName = `歌曲 ID: ${song.originalId}`;
+                        } else if (song.id) {
+                            songName = `歌曲 ID: ${song.id}`;
+                        } else {
+                            songName = 'Unknown Song';
+                        }
+                        console.warn('[updateCurrentSong] Song name appears to be encrypted ID, using fallback:', songName);
+                    }
+                    
+                    trackSong.textContent = songName;
+                    console.log('[updateCurrentSong] Updated trackSong to:', songName);
                 } else {
                     console.warn('[updateCurrentSong] trackSong element not found!');
                 }
@@ -5733,6 +7146,32 @@
                 if (this.queueExpanded && this.playlist.length > 0) {
                     this.renderQueue(this.playlist);
                 }
+
+                // 同步给皮肤系统（Cinema/Magazine），不影响默认皮肤自身逻辑
+                if (window.SkinRenderer) SkinRenderer.updateSong(song);
+            },
+
+            clearCurrentSongDisplay() {
+                this.currentSong = null;
+                this.currentSongDuration = 0;
+                this.lastKnownProgress = 0;
+                this._pausedProgress = null;
+
+                const trackSong = document.getElementById('trackSong');
+                const trackArtist = document.getElementById('trackArtist');
+                const trackSource = document.getElementById('trackSource');
+                const topTrackName = document.getElementById('topTrackName');
+                const topTrackArtist = document.getElementById('topTrackArtist');
+
+                if (trackSong) trackSong.textContent = '等待音乐';
+                if (trackArtist) trackArtist.textContent = '深夜电台准备中';
+                if (trackSource) trackSource.style.display = 'none';
+                if (topTrackName) topTrackName.textContent = 'Waiting for music...';
+                if (topTrackArtist) topTrackArtist.textContent = '--';
+
+                this.updateMiniPlayerProgress(0, null, 0, 0);
+                this.updateChatProgress(0, null, 0, 0);
+                this.setPlaying(false);
             },
             
             resetLikeButton() {
@@ -5816,6 +7255,11 @@
                             this.addChatMessage(response.message, false);
                             this.updateCurrentSong(response.song);
                             this.setPlaying(true);
+                        } else if (response.action === 'queue_next') {
+                            // 【聊天控队列】换一批/安静热闹/点歌：服务端已经更新了播放队列，
+                            // 这里复用电台流程里已验证过的单次播放路径去真正播放队首歌曲
+                            this.addChatMessage(response.message, false);
+                            await this.playNextFromPlaylist();
                         } else {
                             // Regular chat message
                             this.addChatMessage(response.message, false);
@@ -5976,6 +7420,8 @@
                 `;
                 container.appendChild(message);
                 container.scrollTop = container.scrollHeight;
+
+                if (window.SkinRenderer) SkinRenderer.addChatMessage(text, isUser);
             },
 
             /**
@@ -6166,6 +7612,10 @@
                                 console.log('[Status] Song changed, updating display:', song.name, 'previous:', this.currentSong?.name);
                                 this.updateCurrentSong(song);
                             }
+                        } else if (this.currentSong && !status.isPlaying) {
+                            console.log('[Status] Backend has no current song, clearing stale player display:', this.currentSong?.name);
+                            this.clearCurrentSongDisplay();
+                            return;
                         }
 
                         // 【修复】更新播放状态 - 优先信任前端状态，仅在明确知道状态变化时才更新
@@ -6187,8 +7637,16 @@
                             }
                         } else if (!this.isPlaying && status.isPlaying) {
                             // 前端认为未播放，但后端报告在播放
-                            console.log('[Status] Backend reports playing, updating state');
-                            this.setPlaying(true);
+                            // 【修复】这个轮询请求可能是在用户点暂停"之前"发出的，响应到达时
+                            // 后端还没来得及处理暂停，报告的仍是暂停前的"正在播放"。如果用户刚
+                            // 主动暂停过，不要信任这个可能过期的结果去悄悄撤销暂停（否则会清掉
+                            // _userPaused 标记，导致后续 visibilitychange 等场景真的把歌又播起来）。
+                            if (this._userPaused) {
+                                console.log('[Status] User just paused, ignoring possibly-stale "playing" report from backend');
+                            } else {
+                                console.log('[Status] Backend reports playing, updating state');
+                                this.setPlaying(true);
+                            }
                         }
 
                         // 【修复】更新进度时记录时间和进度
@@ -6306,6 +7764,8 @@
                         timeEl.textContent = `${currentMins}:${currentSecs.toString().padStart(2, '0')} / ${durationMins}:${durationSecs.toString().padStart(2, '0')}`;
                     }
                 }
+
+                if (window.SkinRenderer) SkinRenderer.updateProgress(progress, positionSec, durationSec);
             },
 
             // Update chat mode progress bar and time
@@ -6411,38 +7871,69 @@
         });
         
         // 也处理 visibilitychange，当页面隐藏时暂停播放
+        // 【修复】某些浏览器/自动化环境会在短时间内连续触发多次 visibilitychange
+        // （例如切换应用、锁屏解锁动画期间），如果每次都直接调用 API.resume()，
+        // 会对同一次"恢复可见"并发起多个 resume 请求，backend resume() 没有互斥锁，
+        // 多个并发请求互相竞争会导致播放状态被反复覆盖、不稳定。
+        // 这里做两层防护：① 防抖，短时间内的多次触发只处理最后一次的稳定状态；
+        // ② 并发锁，避免上一个 resume 请求还没返回时又发起新的请求。
+        let visibilityDebounceTimer = null;
+        let resumeInFlight = false;
         document.addEventListener('visibilitychange', () => {
-            if (document.hidden) {
-                console.log('[Audio] Page hidden, pausing playback...');
-                // 暂停前端音频
-                if (window.audioPlayer) {
-                    window.audioPlayer.pause();
-                }
-                if (window.TTSService && window.TTSService.audioPlayer) {
-                    window.TTSService.audioPlayer.pause();
-                }
-                // 暂停语音合成
-                if (window.speechSynthesis) {
-                    window.speechSynthesis.pause();
-                }
-            } else {
-                console.log('[Audio] Page visible, checking if TTS needs to be resumed...');
-                // 如果 TTS 应该正在播放但被暂停了，尝试恢复
-                if (window.TTSService && window.TTSService.isSpeaking) {
-                    console.log('[Audio] TTS was speaking, attempting to resume...');
-                    window.speechSynthesis.resume();
-                }
-                // 如果 Hermes 应该在说话，通知它
-                if (RadioHost && RadioHost.hermesSpeaking && RadioHost.hermesPaused) {
-                    console.log('[Audio] Hermes was paused, resuming...');
-                    RadioHost.hermesPaused = false;
-                    RadioHost.updateHermesPlayButton();
-                    // 尝试恢复 TTS
-                    if (RadioHost.currentWords && RadioHost.currentWordInterval) {
-                        TTSService.resume(RadioHost.currentWords, RadioHost.currentWordInterval);
+            if (visibilityDebounceTimer) {
+                clearTimeout(visibilityDebounceTimer);
+            }
+            visibilityDebounceTimer = setTimeout(async () => {
+                visibilityDebounceTimer = null;
+                if (document.hidden) {
+                    console.log('[Audio] Page hidden, pausing playback...');
+                    // 暂停前端音频
+                    if (window.audioPlayer) {
+                        window.audioPlayer.pause();
+                    }
+                    if (window.TTSService && window.TTSService.audioPlayer) {
+                        window.TTSService.audioPlayer.pause();
+                    }
+                    // 暂停语音合成
+                    if (window.speechSynthesis) {
+                        window.speechSynthesis.pause();
+                    }
+                } else {
+                    console.log('[Audio] Page visible, checking if TTS needs to be resumed...');
+                    // 如果 TTS 应该正在播放但被暂停了，尝试恢复
+                    if (window.TTSService && window.TTSService.isSpeaking) {
+                        console.log('[Audio] TTS was speaking, attempting to resume...');
+                        window.speechSynthesis.resume();
+                    }
+                    // 如果 Hermes 应该在说话，通知它
+                    if (RadioHost && RadioHost.hermesSpeaking && RadioHost.hermesPaused) {
+                        console.log('[Audio] Hermes was paused, resuming...');
+                        RadioHost.hermesPaused = false;
+                        RadioHost.updateHermesPlayButton();
+                        // 尝试恢复 TTS
+                        if (RadioHost.currentWords && RadioHost.currentWordInterval) {
+                            TTSService.resume(RadioHost.currentWords, RadioHost.currentWordInterval);
+                        }
+                    }
+                    // 【关键修复】如果之前正在播放音乐，恢复播放！（带并发锁，防止重叠请求）
+                    if (window.AppState && window.AppState.isPlaying && window.AppState.radioState !== 'idle') {
+                        if (resumeInFlight) {
+                            console.log('[Audio] Resume already in flight, skipping duplicate call');
+                        } else {
+                            resumeInFlight = true;
+                            console.log('[Audio] Music was playing, attempting to resume...');
+                            try {
+                                const response = await API.resume();
+                                console.log('[Audio] Music resume response:', response);
+                            } catch (e) {
+                                console.warn('[Audio] Failed to resume music:', e.message);
+                            } finally {
+                                resumeInFlight = false;
+                            }
+                        }
                     }
                 }
-            }
+            }, 400);
         });
 
 
@@ -6564,6 +8055,35 @@
             unlockAudio();
             AppState.init();
             initTTSSwitchButton();
+
+            // 【新增】播放计数器点击重置
+            const playCounterDiv = document.getElementById('playCounterDiv');
+            if (playCounterDiv) {
+                playCounterDiv.addEventListener('click', () => {
+                    if (confirm('确定要重置播放计数器吗？')) {
+                        localStorage.removeItem('hermudio_play_count');
+                        localStorage.removeItem('hermudio_attempted_count');
+                        localStorage.removeItem('hermudio_completed_count');
+                        localStorage.removeItem('hermudio_play_history');
+                        if (window.AppState) {
+                            window.AppState.playCount = 0;
+                            window.AppState.attemptedCount = 0;
+                            window.AppState.completedCount = 0;
+                            window.AppState.playHistory = [];
+                            window.AppState.updatePlayCountDisplay();
+                        }
+                        alert('播放计数器已重置！');
+                    }
+                });
+            }
+            const muteToggleBtn = document.getElementById('muteToggleBtn');
+            if (muteToggleBtn) {
+                muteToggleBtn.addEventListener('click', (event) => {
+                    event.stopPropagation();
+                    AppState.toggleMute();
+                });
+                AppState.updateMuteButton();
+            }
         });
 
         // TTS Service Switch Button Initialization

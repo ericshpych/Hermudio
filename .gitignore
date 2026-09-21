@@ -71,3 +71,5 @@ Hermudio/public/part*.html
 Hermudio/public/temp-script.js
 Hermudio/public/hermudio-design-*.html
 hermudio-design-*.html
+# @byted-motor/aicoding-telemetry: git-hook run log (do not commit)
+.motor-code/log/

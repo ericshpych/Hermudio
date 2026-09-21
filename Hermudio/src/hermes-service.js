@@ -235,6 +235,93 @@ class HermesService {
     return response;
   }
 
+  ensureMentions(message, song) {
+    if (!message || !song) return message;
+
+    const safeMessage = String(message);
+    const hasName = song.name && safeMessage.includes(song.name);
+    const hasArtist = song.artist && safeMessage.includes(song.artist);
+    if (hasName || hasArtist) {
+      return safeMessage;
+    }
+
+    const base = safeMessage.replace(/[。！!?]?$/, '');
+    const templates = [
+      `${base}，试试这首：${song.name} - ${song.artist}`,
+      `${base}。给你推荐《${song.name}》（${song.artist}）`,
+      `好的，这首应该合你的心意：${song.name} - ${song.artist}`
+    ];
+    return templates[Math.floor(Math.random() * templates.length)];
+  }
+
+  finalizeSongResponse(response) {
+    if (!response || !response.song) {
+      return response;
+    }
+
+    return {
+      ...response,
+      message: this.ensureMentions(response.message, response.song)
+    };
+  }
+
+  extractIntentHeuristically(userMessage = '') {
+    const text = String(userMessage).trim();
+    const intent = {};
+
+    const artistSongMatch = text.match(/(?:想听|我要听|播放|放|听|来一首)\s*([^的《\s]{1,20})\s*的\s*《?([^》]+)》?/);
+    if (artistSongMatch) {
+      intent.artistHint = artistSongMatch[1].trim();
+      intent.keyword = artistSongMatch[2].trim();
+      return intent;
+    }
+
+    const explicitSongMatch = text.match(/(?:想听|我要听|播放|放|听)\s*《?([^》]+)》?/);
+    if (explicitSongMatch) {
+      intent.keyword = explicitSongMatch[1].trim();
+      return intent;
+    }
+
+    const artistOnlyMatch = text.match(/(?:推荐|来一首|想听)\s*([^的《\s]{1,20})\s*(?:的歌|的歌曲|歌曲|歌)\b/);
+    if (artistOnlyMatch) {
+      intent.artistHint = artistOnlyMatch[1].trim();
+    }
+
+    const moodKeywords = ['开心', '快乐', '难过', '伤心', '放松', '轻松', '专注', '安静', '睡眠', '睡觉'];
+    const mood = moodKeywords.find((item) => text.includes(item));
+    if (mood) {
+      intent.mood = mood;
+    }
+
+    const genreKeywords = ['爵士', '钢琴', '轻音乐', '流行', '摇滚', '古典', '电子', '民谣'];
+    const genre = genreKeywords.find((item) => text.includes(item));
+    if (genre) {
+      intent.genre = genre;
+    }
+
+    return intent;
+  }
+
+  async extractIntent(userMessage) {
+    return this.extractIntentHeuristically(userMessage);
+  }
+
+  async composeReply({ songName, artist, intent = {} }) {
+    if (intent.artistHint && intent.keyword) {
+      return `给你放这首《${songName}》，来自${artist}。`;
+    }
+
+    if (intent.keyword) {
+      return `试试这首《${songName}》，歌手是${artist}。`;
+    }
+
+    if (intent.mood) {
+      return `按你现在的状态，推荐《${songName}》这首${artist}的歌。`;
+    }
+
+    return `给你推荐《${songName}》，来自${artist}。`;
+  }
+
   /**
    * Parse user intent from message
    */
@@ -378,11 +465,11 @@ class HermesService {
     await this.musicService.playSong(recommendation.song.id);
     await this.userProfile.recordPlay(userId, recommendation.song.id, recommendation.song);
 
-    return {
+    return this.finalizeSongResponse({
       message: `为你准备了一首${intent.style}风格的歌曲：\n🎵 ${recommendation.song.name} - ${recommendation.song.artist}`,
       action: 'play',
       song: recommendation.song
-    };
+    });
   }
 
   /**
@@ -423,11 +510,11 @@ class HermesService {
       'sleep': '祝你有个好梦 🌟'
     };
 
-    return {
+    return this.finalizeSongResponse({
       message: `${moodResponses[intent.mood] || '为你找到这首歌'}\n\n🎵 ${song.name} - ${song.artist}`,
       action: 'play',
       song
-    };
+    });
   }
 
   /**
@@ -553,6 +640,32 @@ class HermesService {
     // Check if user explicitly requested a specific song to play immediately
     const specificSongMatch = message.match(/(?:我想听|我要听|播放|放|听)[:：]?\s*这?首?歌?[:：]?\s*《?([^》]+)》?/);
     const isExplicitPlayRequest = specificSongMatch && /(?:我想听|我要听|播放|放|听)/.test(message);
+    const extractedIntent = await this.extractIntent(message);
+    const shouldResolveFirst = Boolean(
+      isExplicitPlayRequest ||
+      extractedIntent?.keyword ||
+      extractedIntent?.artistHint
+    );
+
+    if (shouldResolveFirst) {
+      const resolvedSong = await this.musicService.resolveSongByIntent(extractedIntent);
+      if (resolvedSong) {
+        await this.musicService.playSong(resolvedSong.id, resolvedSong.encryptedId, resolvedSong);
+        await this.userProfile.recordPlay(userId, resolvedSong.id, resolvedSong);
+
+        return this.finalizeSongResponse({
+          message: await this.composeReply({
+            userMessage: message,
+            songName: resolvedSong.name,
+            artist: resolvedSong.artist,
+            intent: extractedIntent
+          }),
+          action: 'play',
+          song: resolvedSong,
+          ai: false
+        });
+      }
+    }
     
     // First, try to get Hermes AI response
     const hermesAvailable = await this.checkHermesAvailability();
@@ -587,12 +700,12 @@ class HermesService {
             await this.musicService.playSong(requestedSong.id, requestedSong.encryptedId);
             await this.userProfile.recordPlay(userId, requestedSong.id, requestedSong);
             
-            return {
+            return this.finalizeSongResponse({
               message: hermesResponse.message,
               action: 'play',
               song: requestedSong,
               ai: true
-            };
+            });
           }
           
           // Return recommendations with cards for non-explicit requests
@@ -632,11 +745,11 @@ class HermesService {
         await this.musicService.playSong(bestMatch.id, bestMatch.encryptedId);
         await this.userProfile.recordPlay(userId, bestMatch.id, bestMatch);
         
-        return {
+        return this.finalizeSongResponse({
           message: `为你播放 **《${bestMatch.name}》** — ${bestMatch.artist} 🎵`,
           action: 'play',
           song: bestMatch
-        };
+        });
       }
     }
     
@@ -647,11 +760,11 @@ class HermesService {
       await this.musicService.playSong(recommendation.song.id);
       await this.userProfile.recordPlay(userId, recommendation.song.id, recommendation.song);
 
-      return {
+      return this.finalizeSongResponse({
         message: `听起来不错！试试这首歌：\n🎵 ${recommendation.song.name} - ${recommendation.song.artist}\n\n${recommendation.reason}`,
         action: 'play',
         song: recommendation.song
-      };
+      });
     }
 
     // Fallback: Generic response
@@ -819,7 +932,7 @@ class HermesService {
 
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30秒超时
+      const timeoutId = setTimeout(() => controller.abort(), 60000); // 60秒超时
 
       const messages = [
         { role: 'system', content: this.radioHostSystemPrompt },

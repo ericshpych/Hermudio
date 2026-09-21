@@ -11,7 +11,153 @@ const execAsync = promisify(exec);
 const fetch = require('node-fetch');
 
 // Project config directory (same as server.js)
-const PROJECT_HOME = path.join(__dirname, '..', '..', '.ncm-home');
+const PROJECT_HOME = path.join(__dirname, '..', '..', '.claudio');
+
+/**
+ * Parse JSON from ncm-cli stdout, tolerating non-JSON preamble.
+ * ncm-cli may print banners (e.g. "有新版本 ... 运行 ncm-cli upgrade 升级")
+ * before the JSON payload, which breaks a naive JSON.parse. This extracts
+ * the JSON blob spanning the first "{"/"[" to the last "}"/"]".
+ */
+function parseNcmJson(stdout) {
+  const text = stdout == null ? '' : String(stdout);
+  try {
+    return JSON.parse(text);
+  } catch (_) {
+    const start = text.search(/[{[]/);
+    const end = Math.max(text.lastIndexOf('}'), text.lastIndexOf(']'));
+    if (start === -1 || end <= start) {
+      throw new Error('no JSON found in ncm-cli output');
+    }
+    return JSON.parse(text.slice(start, end + 1));
+  }
+}
+
+class MpvWatchdog {
+  constructor(musicService, opts = {}) {
+    this.svc = musicService;
+    this.intervalMs = opts.intervalMs || 30000;
+    this.maxAllowed = opts.maxAllowed || 1;
+    this.idleGraceMs = opts.idleGraceMs || 60000;
+    this.timer = null;
+    this.lastKillAt = 0;
+    this.killCount = 0;
+    this.idleSince = null;
+    this._listPidsImpl = opts.listPidsImpl || null;
+    this._sortByStartTimeImpl = opts.sortByStartTimeImpl || null;
+    this._killImpl = opts.killImpl || null;
+  }
+
+  start() {
+    if (this.timer) return;
+    this.timer = setInterval(() => {
+      this.tick().catch(() => {});
+    }, this.intervalMs);
+    this.timer.unref?.();
+    console.log('[MpvWatchdog] started, interval=', this.intervalMs);
+  }
+
+  stop() {
+    if (this.timer) {
+      clearInterval(this.timer);
+      this.timer = null;
+    }
+  }
+
+  async tick() {
+    const mpvPids = await this.listPids('mpv');
+    // 【修复】npx/npm bin 符号链接解析后的真实进程命令行是 ".../node_modules/.bin/ncm-cli play ..."，
+    // 不包含 "@music163/" scope 前缀，用旧字符串永远匹配不到真实运行的进程，
+    // 导致这个安全检查形同虚设：只要 isPlayingTracked() 短暂误判为 false，
+    // watchdog 就会把仍在正常播放的 mpv 当成孤儿进程杀掉（实测已发生 3 次)。
+    const ncmPlayPids = await this.listPids('node', 'ncm-cli play');
+    const isPlaying = this.svc.isPlayingTracked();
+
+    if (mpvPids.length > this.maxAllowed) {
+      const sorted = await this.sortByStartTime(mpvPids);
+      const toKill = sorted.slice(0, sorted.length - this.maxAllowed);
+      await this.kill(toKill, 'excess_mpv');
+      return;
+    }
+
+    if (mpvPids.length > 0 && !isPlaying && ncmPlayPids.length === 0) {
+      if (!this.idleSince) this.idleSince = Date.now();
+      const idleFor = Date.now() - this.idleSince;
+      if (idleFor >= this.idleGraceMs) {
+        await this.kill(mpvPids, 'orphan_idle');
+        this.idleSince = null;
+      }
+    } else {
+      this.idleSince = null;
+    }
+  }
+
+  async listPids(name, mustContain) {
+    if (this._listPidsImpl) {
+      return this._listPidsImpl(name, mustContain);
+    }
+
+    try {
+      const { stdout } = await execAsync('ps -axo pid=,command=', { timeout: 3000 });
+      const lines = stdout.split('\n').map(line => line.trim()).filter(Boolean);
+      const pids = [];
+      for (const line of lines) {
+        const match = line.match(/^(\d+)\s+(.*)$/);
+        if (!match) continue;
+        const pid = Number(match[1]);
+        const command = match[2];
+        const exactNameMatch = name === 'mpv'
+          ? /(^|\/)mpv(\s|$)/.test(command)
+          : command.includes(name);
+        if (!exactNameMatch) continue;
+        if (mustContain && !command.includes(mustContain)) continue;
+        pids.push(pid);
+      }
+      return pids;
+    } catch (error) {
+      return [];
+    }
+  }
+
+  async sortByStartTime(pids) {
+    if (this._sortByStartTimeImpl) {
+      return this._sortByStartTimeImpl(pids);
+    }
+
+    const arr = await Promise.all(pids.map(async (pid) => {
+      try {
+        const { stdout } = await execAsync(`ps -p ${pid} -o lstart=`, { timeout: 2000 });
+        return { pid, t: Date.parse(stdout.trim()) || 0 };
+      } catch (error) {
+        return { pid, t: 0 };
+      }
+    }));
+    return arr.sort((a, b) => a.t - b.t).map(item => item.pid);
+  }
+
+  async kill(pids, reason) {
+    if (!pids?.length) return;
+    const now = Date.now();
+    if (now - this.lastKillAt < 10000) return;
+    this.lastKillAt = now;
+    this.killCount++;
+    console.warn(`[MpvWatchdog] killing ${pids.length} mpv pids reason=${reason}`, pids);
+
+    if (this._killImpl) {
+      await this._killImpl(pids, reason);
+      return;
+    }
+
+    await execAsync(`kill -9 ${pids.join(' ')}`, { timeout: 3000 }).catch(() => {});
+  }
+
+  getStats() {
+    return {
+      killCount: this.killCount,
+      lastKillAt: this.lastKillAt
+    };
+  }
+}
 
 class MusicService {
   constructor(db) {
@@ -22,28 +168,110 @@ class MusicService {
     this.playQueue = []; // 播放队列，用于上一曲/下一曲
     this.currentQueueIndex = -1; // 当前播放位置
     this.ncmLoggedIn = null; // Cache login status
+    this._lastLoginCheckTime = 0; // 上次登录检查时间
+    this._loginCheckInterval = 5 * 60 * 1000; // 5分钟才检查一次
+    this._hasLoggedInBefore = false; // 标记是否曾经登录成功过
     // 【修复】日志节流变量
     this._lastReportedNcmStatus = null;
     this._statusCheckCount = 0;
-    this.checkNcmLogin();
+    this._isPlayingTracked = false;
+    this._currentSongId = null;
+    // 【修复】之前默认 50，页面没有音量滑块能把它调回 100——每次 applyOutputVolume()
+    // 被调用（切歌、或下面 visibilitychange 里"切回标签页就顺手 resume 一次"的兜底逻辑）
+    // 都会把 mpv 音量强制拉低到 50%，而 mpv 本身没被动过时是接近满音量的，
+    // 于是用户会感觉"切回 Hermudio 界面音量突然变小"。默认改成 100，跟 mpv 的自然音量一致。
+    this._outputVolume = 100;
+    this._lastNonMutedVolume = 100;
+    this._isMuted = false;
+    this.watchdog = new MpvWatchdog(this, {
+      intervalMs: 30000,
+      maxAllowed: 1,
+      idleGraceMs: 60000
+    });
+    this.watchdog.start();
+    // 【优化】不在构造函数中同步调用，改为异步初始化，不阻塞启动
+    this._initAsync();
+  }
+
+  // 【新增】异步初始化，不阻塞服务启动
+  async _initAsync() {
+    console.log('[MusicService] Starting async initialization in background...');
+    // 延迟2秒再检查登录，避免阻塞服务启动
+    setTimeout(() => {
+      this.checkNcmLogin(true);
+    }, 2000);
   }
 
   /**
-   * Get environment with project HOME
+   * Get environment for ncm-cli child processes.
+   * 默认使用真实用户 HOME，确保服务端能读取用户刚扫码登录的 ncm-cli 凭据。
+   * 如需项目隔离配置，可显式设置 HERMUDIO_USE_PROJECT_NCM_HOME=true。
    */
   getEnv() {
+    if (process.env.HERMUDIO_USE_PROJECT_NCM_HOME === 'true') {
+      return {
+        ...process.env,
+        HOME: PROJECT_HOME,
+        USERPROFILE: PROJECT_HOME,
+        XDG_CONFIG_HOME: path.join(PROJECT_HOME, '.config')
+      };
+    }
+    return { ...process.env };
+  }
+
+  getAudioState() {
     return {
-      ...process.env,
-      HOME: PROJECT_HOME,
-      USERPROFILE: PROJECT_HOME,
-      XDG_CONFIG_HOME: path.join(PROJECT_HOME, '.config')
+      muted: this._isMuted,
+      volume: this._isMuted ? 0 : this._outputVolume
     };
   }
 
+  async applyOutputVolume() {
+    const targetVolume = this._isMuted ? 0 : this._outputVolume;
+    await execAsync(`npx @music163/ncm-cli volume ${targetVolume}`, {
+      timeout: 5000,
+      env: this.getEnv()
+    }).catch(() => {});
+    return {
+      success: true,
+      muted: this._isMuted,
+      volume: targetVolume
+    };
+  }
+
+  async setMuted(muted = true) {
+    const nextMuted = !!muted;
+    if (nextMuted === this._isMuted) {
+      return {
+        success: true,
+        ...this.getAudioState()
+      };
+    }
+
+    if (nextMuted) {
+      this._lastNonMutedVolume = this._outputVolume;
+    } else if (this._lastNonMutedVolume > 0) {
+      this._outputVolume = this._lastNonMutedVolume;
+    }
+
+    this._isMuted = nextMuted;
+    return this.applyOutputVolume();
+  }
+
   /**
-   * Check if ncm-cli is logged in
+   * Check if ncm-cli is logged in (with caching)
    */
-  async checkNcmLogin() {
+  async checkNcmLogin(force = false) {
+    // 【新增】如果不是强制检查，且5分钟内检查过，直接返回缓存
+    const now = Date.now();
+    if (!force && this.ncmLoggedIn !== null && (now - this._lastLoginCheckTime) < this._loginCheckInterval) {
+      // 【优化】如果之前已经登录成功过，直接返回 true，不做严格检查
+      if (this._hasLoggedInBefore && this.ncmLoggedIn === true) {
+        return true;
+      }
+      return this.ncmLoggedIn;
+    }
+    
     try {
       // Use login --check to verify actual login status
       const command = `npx @music163/ncm-cli login --check`;
@@ -55,7 +283,7 @@ class MusicService {
       // ncm-cli login --check returns JSON format
       let isLoggedIn = false;
       try {
-        const jsonOutput = JSON.parse(stdout);
+        const jsonOutput = parseNcmJson(stdout);
         // success 为 true 表示已登录
         isLoggedIn = jsonOutput.success === true;
       } catch (e) {
@@ -64,11 +292,27 @@ class MusicService {
       }
 
       this.ncmLoggedIn = isLoggedIn;
+      this._lastLoginCheckTime = now;
+      
+      // 【新增】如果登录成功，记住曾经登录过
+      if (isLoggedIn) {
+        this._hasLoggedInBefore = true;
+      }
+      
       console.log('[MusicService] ncm-cli login status:', isLoggedIn ? 'logged in' : 'not logged in');
       return this.ncmLoggedIn;
     } catch (error) {
-      console.log('[MusicService] ncm-cli not logged in or not available:', error.message);
+      console.log('[MusicService] ncm-cli login check failed:', error.message);
+      // 【新增】即使检查失败，如果曾经登录成功过，我们仍然返回 true（信任之前的登录）
+      if (this._hasLoggedInBefore) {
+        console.log('[MusicService] Trusting previous login state (hasLoggedInBefore=true), skipping login required check');
+        // 【关键优化】即使检查失败，只要之前登录过，就认为是已登录，不阻止播放
+        this.ncmLoggedIn = true;
+        this._lastLoginCheckTime = now;
+        return true;
+      }
       this.ncmLoggedIn = false;
+      this._lastLoginCheckTime = now;
       return false;
     }
   }
@@ -78,6 +322,55 @@ class MusicService {
    */
   isNcmLoggedIn() {
     return this.ncmLoggedIn;
+  }
+
+  markLoginSuccess() {
+    this.ncmLoggedIn = true;
+    this._hasLoggedInBefore = true;
+    this._lastLoginCheckTime = Date.now();
+  }
+
+  isPlayingTracked() {
+    return this._isPlayingTracked;
+  }
+
+  getWatchdogStats() {
+    return this.watchdog.getStats();
+  }
+
+  async hasActivePlaybackProcess() {
+    try {
+      const { stdout } = await execAsync('ps -axo command=', { timeout: 3000 });
+      return stdout
+        .split('\n')
+        .some(line => /(^|\/)mpv(\s|$)|@music163\/ncm-cli play|ncm-cli play/.test(line));
+    } catch (error) {
+      return false;
+    }
+  }
+
+  async resolveSongByIntent(intent = {}) {
+    const queries = [
+      intent.artistHint && intent.keyword ? `${intent.artistHint} ${intent.keyword}` : null,
+      intent.artistHint || null,
+      intent.keyword || null,
+      intent.mood ? `${intent.mood} 歌曲` : null,
+      intent.genre || null,
+      intent.scene || null
+    ].filter(Boolean);
+
+    for (const query of queries) {
+      try {
+        const results = await this.searchSongs(query, 1);
+        if (results?.[0]?.id) {
+          return results[0];
+        }
+      } catch (error) {
+        console.warn('[MusicService] resolveSongByIntent search failed:', query, error.message);
+      }
+    }
+
+    return null;
   }
 
   /**
@@ -95,7 +388,7 @@ class MusicService {
       });
 
       // Parse JSON response
-      const data = JSON.parse(stdout);
+      const data = parseNcmJson(stdout);
 
       if (!data || !data.data || !data.data.records || data.data.records.length === 0) {
         console.log('[MusicService] No search results found from ncm-cli');
@@ -167,16 +460,20 @@ class MusicService {
    * Play a song using ncm-cli
    * Falls back to mock mode if ncm-cli is not available
    */
-  async playSong(songId, encryptedId = null) {
+  async playSong(songId, encryptedId = null, songMetadata = null) {
     const MAX_RETRIES = 3;
     let retryCount = 0;
 
     const attemptPlay = async () => {
       try {
+        let resolvedSong = songMetadata ? { ...songMetadata } : null;
+        let fallbackSongName = songMetadata?.name || null;
+
         // Check ncm login status first
         const isLoggedIn = await this.checkNcmLogin();
 
-        if (!isLoggedIn) {
+        // 【优化】如果检查结果是未登录，但曾经登录过，我们仍然尝试播放
+        if (!isLoggedIn && !this._hasLoggedInBefore) {
           console.log('[MusicService] ncm-cli not logged in, returning login required');
           return {
             success: false,
@@ -184,6 +481,10 @@ class MusicService {
             message: '请先登录网易云音乐',
             loginRequired: true
           };
+        }
+        
+        if (!isLoggedIn && this._hasLoggedInBefore) {
+          console.log('[MusicService] Login check failed, but trusting previous login and attempting to play anyway');
         }
 
         // Stop current playback if any
@@ -202,13 +503,14 @@ class MusicService {
           if (encryptedId) {
             encId = encryptedId;
             console.log(`[MusicService] Using provided encryptedId directly: ${encId}`);
-            // 因为我们是从 playlistService 来的，已经有完整歌曲信息
-            // 所以我们可以构造一个简单的 currentSong 对象，不需要搜索
-            this.currentSong = { 
+            resolvedSong = {
               id: originalId,
               encryptedId: encId,
-              originalId: originalId
-              // name, artist 等信息在 playlistService 中已经有了，前端会处理显示
+              originalId: originalId,
+              ...songMetadata,
+              id: songMetadata?.id || originalId,
+              encryptedId: songMetadata?.encryptedId || encId,
+              originalId: songMetadata?.originalId || originalId
             };
           } else {
             // 如果没有提供 encryptedId，才从 details 找
@@ -217,11 +519,11 @@ class MusicService {
               encId = details.encryptedId;
               console.log(`[MusicService] Got encryptedId from details: ${encId}`);
             }
-            // 更新 currentSong
+            fallbackSongName = details?.name || fallbackSongName;
             if (details) {
-              this.currentSong = details;
+              resolvedSong = details;
             } else {
-              this.currentSong = { id: originalId };
+              resolvedSong = { id: originalId };
             }
           }
         } 
@@ -233,7 +535,8 @@ class MusicService {
           const details = await this.getSongDetails(songId);
           if (details && details.originalId && /^\d+$/.test(details.originalId)) {
             originalId = details.originalId;
-            this.currentSong = details;
+            resolvedSong = details;
+            fallbackSongName = details.name || fallbackSongName;
             console.log(`[MusicService] Got originalId from details: ${originalId}`);
           } else {
             // 搜索获取
@@ -242,17 +545,12 @@ class MusicService {
             if (match) {
               originalId = match.originalId;
               encId = match.encryptedId;
-              this.currentSong = match;
+              resolvedSong = match;
+              fallbackSongName = match.name || fallbackSongName;
               console.log(`[MusicService] Got from search: originalId=${originalId}, encryptedId=${encId}`);
             }
           }
         }
-        
-        this.isPlaying = true;
-        this._ncmStoppedCount = 0; // 重置计数器
-
-        // Add to history
-        await this.addToHistory(songId);
 
         // Try to play with ncm-cli
         // ncm-cli play requires --song --encrypted-id <id> --original-id <id>
@@ -281,7 +579,31 @@ class MusicService {
             if (stderr) {
               console.log(`[MusicService] ncm-cli play stderr:`, stderr);
             }
+
+            let playResult = null;
+            try {
+              playResult = parseNcmJson(stdout);
+            } catch (parseError) {
+              playResult = null;
+            }
+
+            if (playResult && playResult.success !== true) {
+              const message = playResult.message || '歌曲播放失败，请稍后重试';
+              const loginRequired = /登录|实名/.test(message);
+              if (loginRequired) {
+                this.ncmLoggedIn = false;
+                this._lastLoginCheckTime = Date.now();
+              }
+              return {
+                success: false,
+                error: loginRequired ? 'ncm_not_logged_in' : 'ncm_play_rejected',
+                message,
+                loginRequired
+              };
+            }
+
             console.log(`[MusicService] Successfully started playing with ncm-cli: ${songId}`);
+            await this.applyOutputVolume();
             ncmPlaySuccess = true;
           } catch (ncmError) {
             console.error(`[MusicService] ncm-cli play error:`, ncmError.message);
@@ -292,7 +614,7 @@ class MusicService {
               console.log(`[MusicService] Retrying with first search result (attempt ${retryCount}/${MAX_RETRIES})...`);
 
               // 获取歌曲名称并搜索
-              const songName = details?.name || songId;
+              const songName = fallbackSongName || songId;
               const searchResults = await this.searchSongs(songName, 5);
 
               // 找到第一个可播放的歌曲
@@ -306,7 +628,7 @@ class MusicService {
 
               if (playableSong) {
                 console.log(`[MusicService] Retrying with song: ${playableSong.name}`);
-                return await this.playSong(playableSong.originalId, playableSong.encryptedId);
+                return await this.playSong(playableSong.originalId, playableSong.encryptedId, playableSong);
               }
             }
 
@@ -321,8 +643,24 @@ class MusicService {
               originalId
             };
           }
+
+          if (!ncmPlaySuccess) {
+            this.isPlaying = false;
+            this._isPlayingTracked = false;
+            this._currentSongId = null;
+            this.currentSong = null;
+            return {
+              success: false,
+              error: 'ncm_play_not_started',
+              message: '播放器未成功启动'
+            };
+          }
         } catch (ncmError) {
           console.log(`[MusicService] ncm-cli error: ${ncmError.message}`);
+          this.isPlaying = false;
+          this._isPlayingTracked = false;
+          this._currentSongId = null;
+          this.currentSong = null;
           return {
             success: false,
             error: 'ncm_error',
@@ -330,12 +668,26 @@ class MusicService {
           };
         }
 
+        this.currentSong = resolvedSong || {
+          id: originalId || songId,
+          originalId: originalId || null,
+          encryptedId: encId || null
+        };
+        this.isPlaying = true;
+        this._isPlayingTracked = true;
+        this._currentSongId = originalId || songId;
+        this._ncmStoppedCount = 0; // 重置计数器
+
+        // Add to history only after playback really starts
+        await this.addToHistory(songId);
+
         // 添加到播放队列
         this.addToQueue(this.currentSong);
 
         return {
           success: true,
           songId,
+          song: this.currentSong,
           isPlaying: true,
           mock: false
         };
@@ -349,6 +701,8 @@ class MusicService {
           return await attemptPlay();
         }
 
+        this._isPlayingTracked = false;
+        this._currentSongId = null;
         return {
           success: false,
           error: error.message
@@ -447,7 +801,17 @@ class MusicService {
         timeout: 5000,
         env: this.getEnv()
       }).catch(() => {});
+      await execAsync('npx @music163/ncm-cli queue clear', {
+        timeout: 5000,
+        env: this.getEnv()
+      }).catch(() => {});
+      await execAsync("pkill -f '@music163/ncm-cli.* play'", { timeout: 3000 }).catch(() => {});
+      await execAsync("pkill -f 'ncm-cli play'", { timeout: 3000 }).catch(() => {});
       this.isPlaying = false;
+      this._isPlayingTracked = false;
+      this._currentSongId = null;
+      this.currentSong = null;
+      await execAsync('pkill -9 -x mpv', { timeout: 3000 }).catch(() => {});
       return { success: true };
     } catch (error) {
       return { success: false, error: error.message };
@@ -464,6 +828,7 @@ class MusicService {
         env: this.getEnv()
       }).catch(() => {});
       this.isPlaying = false;
+      this._isPlayingTracked = false;
       return { success: true };
     } catch (error) {
       return { success: false, error: error.message };
@@ -475,11 +840,36 @@ class MusicService {
    */
   async resume() {
     try {
+      const hadActivePlayback = await this.hasActivePlaybackProcess();
+      if (!hadActivePlayback) {
+        this.isPlaying = false;
+        this._isPlayingTracked = false;
+        return {
+          success: false,
+          error: 'no_active_playback',
+          message: '当前没有可恢复的播放实例'
+        };
+      }
+
       await execAsync('npx @music163/ncm-cli resume', { 
         timeout: 5000,
         env: this.getEnv()
       }).catch(() => {});
+      await this.applyOutputVolume();
+
+      const resumedPlayback = await this.hasActivePlaybackProcess();
+      if (!resumedPlayback) {
+        this.isPlaying = false;
+        this._isPlayingTracked = false;
+        return {
+          success: false,
+          error: 'resume_no_effect',
+          message: '恢复播放未生效'
+        };
+      }
+
       this.isPlaying = true;
+      this._isPlayingTracked = true;
       this._ncmStoppedCount = 0; // 重置计数器
       return { success: true };
     } catch (error) {
@@ -503,12 +893,13 @@ class MusicService {
         env: this.getEnv()
       });
       
-      const result = JSON.parse(stdout);
+      const result = parseNcmJson(stdout);
       // ncm-cli state returns { success: true, state: { status, title, position, duration, ... } }
       if (result.success && result.state) {
         const playState = result.state;
         ncmPosition = playState.position || 0;
         ncmDuration = playState.duration || 0;
+        const actualTitle = typeof playState.title === 'string' ? playState.title.trim() : '';
         
         // Calculate progress if playing
         if (playState.status === 'playing') {
@@ -517,60 +908,59 @@ class MusicService {
             progress = (ncmPosition / ncmDuration) * 100;
           }
           
-          // title format: "歌曲名 - 艺术家"
-          const titleParts = playState.title?.split(' - ') || ['Unknown', 'Unknown'];
-          const songName = titleParts[0];
-          const artistName = titleParts[1] || 'Unknown';
-          
-          // Check if it's different from our current song
-          if (!this.currentSong || this.currentSong.name !== songName) {
-            // Search for the song to get full details including cover
-            const searchResults = await this.searchSongs(songName, 5);
-            const match = searchResults.find(s => s.name === songName && s.artist.includes(artistName));
-            
-            if (match) {
+          if (actualTitle) {
+            const [actualNamePart, ...actualArtistParts] = actualTitle.split(' - ');
+            const actualName = actualNamePart?.trim() || actualTitle;
+            const actualArtist = actualArtistParts.join(' - ').trim();
+            const currentName = this.currentSong?.name?.trim();
+            const currentArtist = this.currentSong?.artist?.trim();
+            const titleMismatch = !currentName || currentName !== actualName;
+            const artistMismatch = actualArtist && currentArtist && currentArtist !== actualArtist;
+
+            if (titleMismatch || artistMismatch) {
               this.currentSong = {
-                id: match.id,
-                encryptedId: match.encryptedId,
-                originalId: match.originalId,
-                name: match.name,
-                artist: match.artist,
-                album: match.album,
-                duration: match.duration,
-                coverImgUrl: match.coverImgUrl
-              };
-            } else {
-              // Fallback to basic info if search fails
-              this.currentSong = {
-                id: playState.currentIndex || 0,
-                name: songName,
-                artist: artistName,
-                album: 'Unknown',
-                duration: ncmDuration * 1000 // convert to ms
+                ...(this.currentSong || {}),
+                id: this.currentSong?.id || this._currentSongId || actualTitle,
+                originalId: this.currentSong?.originalId || this._currentSongId || null,
+                name: actualName,
+                artist: actualArtist || currentArtist || '',
+                album: titleMismatch ? '' : (this.currentSong?.album || '')
               };
             }
-            this.isPlaying = true;
-            this._ncmStoppedCount = 0; // 重置计数器
-            console.log('[MusicService] Synced with ncm-cli:', songName);
           }
+
+          // ncm-cli 的 title 可能返回实际播放器内部曲目或 ID，不能覆盖推荐队列的歌曲元信息。
+          if (this.currentSong && ncmDuration > 0) {
+            this.currentSong.duration = this.currentSong.duration || ncmDuration * 1000;
+          }
+          this.isPlaying = true;
+          this._ncmStoppedCount = 0;
         } else if (playState.status === 'stopped' || playState.status === 'paused') {
-          // 【临时修复】暂时不更新 isPlaying 为 false，避免 ncm-cli 误报导致频繁切歌
-          // 日志节流：只有状态变化或每10次才打印
-          this._statusCheckCount++;
-          const statusKey = `ncm-${playState.status}`;
-          if (statusKey !== this._lastReportedNcmStatus || this._statusCheckCount % 10 === 0) {
-            console.log(`[MusicService] Status check #${this._statusCheckCount}, ncm reports ${playState.status} (ignoring for now)`);
-            this._lastReportedNcmStatus = statusKey;
-          }
-          // 暂时不更新 isPlaying，不重置计数器，避免误报影响体验
+          this.isPlaying = false;
+          this._isPlayingTracked = false;
         }
+      } else {
+        this.isPlaying = false;
+        this._isPlayingTracked = false;
+        this.currentSong = null;
+        this._currentSongId = null;
       }
     } catch (error) {
       // ncm-cli not playing or not available
     }
+
+    if (!ncmPlaying) {
+      const hasActivePlayback = await this.hasActivePlaybackProcess();
+      if (!hasActivePlayback) {
+        this.isPlaying = false;
+        this._isPlayingTracked = false;
+        this.currentSong = null;
+        this._currentSongId = null;
+      }
+    }
     
     // 【修复】确保不返回无效的歌曲数据
-    const validCurrentSong = this.currentSong && this.currentSong.id && this.currentSong.name 
+    const validCurrentSong = this.currentSong && (this.currentSong.id || this.currentSong.name) && this.currentSong.name 
       ? this.currentSong 
       : null;
     
@@ -708,4 +1098,4 @@ class MusicService {
   }
 }
 
-module.exports = { MusicService };
+module.exports = { MusicService, MpvWatchdog };
