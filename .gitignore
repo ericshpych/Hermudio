@@ -8,6 +8,12 @@ node_modules/
 .claudio/.npm/_cacache/
 .claudio/.npm/_npx/
 .ncm-home/.config/ncm-cli/
+.claudio/.config/ncm-cli/
+
+# Credentials (encrypted or not — never commit auth material)
+credentials.enc.json
+tokens.enc.json
+.env
 
 # Large binary files
 *.exe
